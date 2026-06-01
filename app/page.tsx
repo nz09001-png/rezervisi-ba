@@ -27,16 +27,16 @@
   <p className="text-gray-500">Sarajevo</p>
 </Link>
 
-          <div className="bg-white p-6 rounded-xl shadow">
-            <h3 className="font-bold text-lg">Salon Y</h3>
-            <p className="text-gray-500">Tuzla</p>
-          </div>
+          <Link href="/salon-y" className="bg-white p-6 rounded-xl shadow block hover:shadow-lg">
+  <h3 className="font-bold text-lg">Salon Y</h3>
+  <p className="text-gray-500">Tuzla</p>
+</Link>
 
-          <div className="bg-white p-6 rounded-xl shadow">
-            <h3 className="font-bold text-lg">Salon Z</h3>
-            <p className="text-gray-500">Mostar</p>
+<Link href="/salon-z" className="bg-white p-6 rounded-xl shadow block hover:shadow-lg">
+  <h3 className="font-bold text-lg">Salon Z</h3>
+  <p className="text-gray-500">Mostar</p>
+</Link>
           </div>
-        </div>
       </div>
     </main>
   );
