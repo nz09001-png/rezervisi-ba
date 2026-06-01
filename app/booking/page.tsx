@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
-export default function Booking() {
+function BookingContent() {
   const [booked, setBooked] = useState(false);
 
   const searchParams = useSearchParams();
@@ -70,5 +70,11 @@ export default function Booking() {
         </form>
       </div>
     </main>
+  );
+}export default function Booking() {
+  return (
+    <Suspense fallback={<div>Laddar...</div>}>
+      <BookingContent />
+    </Suspense>
   );
 }
