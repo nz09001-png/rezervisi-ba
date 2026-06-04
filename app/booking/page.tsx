@@ -9,8 +9,9 @@ function BookingContent() {
   const [loading, setLoading] = useState(false);
 
   const searchParams = useSearchParams();
-  const salon = searchParams.get("salon") || "Salon X";
-  const time = searchParams.get("time") || "10:00";
+const salon = searchParams.get("salon") || "Salon X";
+const time = searchParams.get("time") || "10:00";
+const dateFromUrl = searchParams.get("date") || "";
 
   async function handleBooking(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -19,7 +20,7 @@ function BookingContent() {
     const formData = new FormData(e.currentTarget);
     const customerName = formData.get("customer_name") as string;
     const phone = formData.get("phone") as string;
-    const bookingDate = formData.get("booking_date") as string;
+    const bookingDate = dateFromUrl || (formData.get("booking_date") as string);
 
     const { data: existingBooking } = await supabase
       .from("bookings")
@@ -106,12 +107,13 @@ function BookingContent() {
 
           <div>
             <label className="block mb-1 font-medium">Datum</label>
-            <input
-              name="booking_date"
-              className="w-full border p-3 rounded-lg"
-              type="date"
-              required
-            />
+<input
+  name="booking_date"
+  className="w-full border p-3 rounded-lg"
+  type="date"
+  defaultValue={dateFromUrl}
+  required
+/>
           </div>
 
           <button
