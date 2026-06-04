@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import { useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 
 function BookingContent() {
   const [booked, setBooked] = useState(false);
+  const [confirmedDate, setConfirmedDate] = useState("");
   const [loading, setLoading] = useState(false);
 
   const searchParams = useSearchParams();
@@ -51,6 +52,7 @@ const dateFromUrl = searchParams.get("date") || "";
       return;
     }
 
+    setConfirmedDate(bookingDate);
     setBooked(true);
     setLoading(false);
   }
@@ -59,14 +61,24 @@ const dateFromUrl = searchParams.get("date") || "";
     return (
       <main className="min-h-screen bg-gray-100 p-8">
         <div className="max-w-xl mx-auto bg-white p-8 rounded-xl shadow text-center">
-          <h1 className="text-3xl font-bold mb-4">Bokning genomförd!</h1>
+          <h1 className="text-3xl font-bold mb-4">Rezervacija uspješna!</h1>
 
-          <p className="text-gray-600 mb-6">
-            Din tid hos {salon} kl. {time} är nu bokad.
-          </p>
+          <div className="mb-6 space-y-2">
+  <p>
+    <strong>Salong:</strong> {salon}
+  </p>
+
+  <p>
+    <strong>Datum:</strong> {confirmedDate}
+  </p>
+
+  <p>
+    <strong>Tid:</strong> {time}
+  </p>
+</div>
 
           <a href="/" className="bg-black text-white px-6 py-3 rounded-lg">
-            Tillbaka till startsidan
+            Nazad na početnu
           </a>
         </div>
       </main>
@@ -76,7 +88,7 @@ const dateFromUrl = searchParams.get("date") || "";
   return (
     <main className="min-h-screen bg-gray-100 p-8">
       <div className="max-w-xl mx-auto bg-white p-8 rounded-xl shadow">
-        <h1 className="text-3xl font-bold mb-4">Boka tid</h1>
+        <h1 className="text-3xl font-bold mb-4">Rezerviši termin</h1>
 
         <p className="text-gray-600 mb-6">
           {salon} – {time}
@@ -84,7 +96,7 @@ const dateFromUrl = searchParams.get("date") || "";
 
         <form className="space-y-4" onSubmit={handleBooking}>
           <div>
-            <label className="block mb-1 font-medium">Namn</label>
+            <label className="block mb-1 font-medium">Ime</label>
             <input
               name="customer_name"
               className="w-full border p-3 rounded-lg"
@@ -95,7 +107,7 @@ const dateFromUrl = searchParams.get("date") || "";
           </div>
 
           <div>
-            <label className="block mb-1 font-medium">Telefonnummer</label>
+            <label className="block mb-1 font-medium">Broj telefona</label>
             <input
               name="phone"
               className="w-full border p-3 rounded-lg"
@@ -120,7 +132,7 @@ const dateFromUrl = searchParams.get("date") || "";
             disabled={loading}
             className="w-full bg-black text-white p-3 rounded-lg"
           >
-            {loading ? "Bokar..." : "Bekräfta bokning"}
+            {loading ? "Rezervišem..." : "Potvrdi rezervaciju"}
           </button>
         </form>
       </div>

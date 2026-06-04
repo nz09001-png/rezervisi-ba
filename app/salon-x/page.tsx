@@ -122,7 +122,7 @@ export default function SalonX() {
 
           {!selectedDate && (
             <p className="text-gray-600">
-              Prvo odaberi datum da bi vidio slobodne termine.
+              Prvo odaberi datum da vidite slobodne termine.
             </p>
           )}
 
