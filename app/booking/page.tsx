@@ -19,12 +19,28 @@ function BookingContent() {
     const formData = new FormData(e.currentTarget);
     const customerName = formData.get("customer_name") as string;
     const phone = formData.get("phone") as string;
+    const bookingDate = formData.get("booking_date") as string;
+
+    const { data: existingBooking } = await supabase
+      .from("bookings")
+      .select("*")
+      .eq("salon", salon)
+      .eq("booking_time", time)
+      .eq("booking_date", bookingDate)
+      .maybeSingle();
+
+    if (existingBooking) {
+      alert("Denna tid är redan bokad. Välj en annan tid.");
+      setLoading(false);
+      return;
+    }
 
     const { error } = await supabase.from("bookings").insert({
       customer_name: customerName,
       phone: phone,
       salon: salon,
       booking_time: time,
+      booking_date: bookingDate,
     });
 
     if (error) {
@@ -84,6 +100,16 @@ function BookingContent() {
               className="w-full border p-3 rounded-lg"
               type="tel"
               placeholder="+387..."
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block mb-1 font-medium">Datum</label>
+            <input
+              name="booking_date"
+              className="w-full border p-3 rounded-lg"
+              type="date"
               required
             />
           </div>

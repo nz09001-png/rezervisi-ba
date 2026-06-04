@@ -28,6 +28,7 @@ export default async function AdminPage() {
                 <th className="p-4">Telefon</th>
                 <th className="p-4">Salong</th>
                 <th className="p-4">Tid</th>
+                <th className="p-4">Datum</th>
                 <th className="p-4">Skapad</th>
               </tr>
             </thead>
@@ -39,6 +40,7 @@ export default async function AdminPage() {
                   <td className="p-4">{booking.phone}</td>
                   <td className="p-4">{booking.salon}</td>
                   <td className="p-4">{booking.booking_time}</td>
+                  <td className="p-4">{booking.booking_date}</td>
                   <td className="p-4">
                     {new Date(booking.created_at).toLocaleString("sv-SE")}
                   </td>
