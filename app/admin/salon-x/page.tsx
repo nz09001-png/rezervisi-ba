@@ -11,10 +11,10 @@ export default function AdminPage() {
   const [selectedDate, setSelectedDate] = useState("");
 
   function handleLogin() {
-  if (password.trim() === "admin123") {
+  if (password.trim() === "barber123") {
     setIsLoggedIn(true);
   } else {
-    alert("Fel lösenord");
+    alert("Pogrešna lozinka");
   }
 }
 
@@ -34,7 +34,7 @@ export default function AdminPage() {
   }
 
   async function handleDelete(id: number) {
-    const confirmDelete = confirm("Är du säker på att du vill radera bokningen?");
+    const confirmDelete = confirm("Da li ste sigurni da želite obrisati rezervaciju??");
 
     if (!confirmDelete) return;
 
@@ -44,7 +44,7 @@ export default function AdminPage() {
       .eq("id", id);
 
     if (error) {
-      alert("Kunde inte radera bokningen.");
+      alert("Nije moguće obrisati rezervaciju.");
       return;
     }
 
@@ -65,27 +65,39 @@ const filteredBookings = bookings.filter((booking) => {
 
   return matchesSalon && matchesDate;
 });
+const today = new Date().toISOString().split("T")[0];
+
+const todaysBookings = bookings.filter(
+  (booking) => booking.booking_date === today
+);
 
 if (!isLoggedIn) {
   return (
       <main className="min-h-screen flex items-center justify-center bg-[#f7f3ee]">
         <div className="bg-white p-8 rounded-2xl shadow w-96">
-          <h1 className="text-2xl font-bold mb-4">Admin Login</h1>
+          <h1 className="text-2xl font-bold mb-4">Admin prijava</h1>
 
-          <input
-            type="password"
-            placeholder="Lösenord"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full border p-2 rounded mb-4"
-          />
+          <form
+  onSubmit={(e) => {
+    e.preventDefault();
+    handleLogin();
+  }}
+>
+  <input
+    type="password"
+    placeholder="Lozinka"
+    value={password}
+    onChange={(e) => setPassword(e.target.value)}
+    className="w-full border p-2 rounded mb-4"
+  />
 
-          <button
-            onClick={handleLogin}
-            className="w-full bg-black text-white p-2 rounded"
-          >
-            Logga in
-          </button>
+  <button
+    type="submit"
+    className="w-full bg-black text-white p-2 rounded"
+  >
+    Prijavite se
+  </button>
+</form>
         </div>
       </main>
     );
@@ -95,7 +107,7 @@ if (!isLoggedIn) {
     return (
       <main className="min-h-screen bg-gray-100 p-8">
         <h1 className="text-3xl font-bold">Admin</h1>
-        <p className="mt-4 text-red-600">Kunde inte hämta bokningar.</p>
+        <p className="mt-4 text-red-600">Nije moguće učitati rezervacije.</p>
       </main>
     );
   }
@@ -113,11 +125,22 @@ if (!isLoggedIn) {
     onClick={() => setIsLoggedIn(false)}
     className="rounded bg-black px-4 py-2 text-white"
   >
-    Logga ut
+    Odjavi se
   </button>
 </div>
+<div className="mb-6 grid grid-cols-2 gap-4">
+  <div className="rounded-2xl bg-white p-4 shadow">
+    <p className="text-sm text-gray-500">Današnje rezervacije</p>
+    <p className="text-3xl font-bold">{todaysBookings.length}</p>
+  </div>
+
+  <div className="rounded-2xl bg-white p-4 shadow">
+    <p className="text-sm text-gray-500">Ukupno rezervacija</p>
+    <p className="text-3xl font-bold">{filteredBookings.length}</p>
+  </div>
+</div>
 <div className="mb-6 rounded-2xl bg-white p-4 shadow">
-  <label className="mb-2 block font-medium">Välj datum</label>
+  <label className="mb-2 block font-medium">Odaberite datum</label>
 
   <input
     type="date"
@@ -142,19 +165,19 @@ if (!isLoggedIn) {
           onClick={() => handleDelete(booking.id)}
           className="rounded bg-red-500 px-3 py-1 text-white"
         >
-          Radera
+          Obriši
         </button>
       </div>
 
       <div className="space-y-1">
         <p>
-          <strong>Namn:</strong> {booking.customer_name}
+          <strong>Ime i prezime:</strong> {booking.customer_name}
         </p>
         <p>
           <strong>Telefon:</strong> {booking.phone}
         </p>
         <p>
-          <strong>Salong:</strong> {booking.salon}
+          <strong>Salon:</strong> {booking.salon}
         </p>
       </div>
     </div>

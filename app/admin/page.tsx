@@ -64,11 +64,11 @@ if (!isLoggedIn) {
   return (
       <main className="min-h-screen flex items-center justify-center bg-[#f7f3ee]">
         <div className="bg-white p-8 rounded-2xl shadow w-96">
-          <h1 className="text-2xl font-bold mb-4">Admin Login</h1>
+          <h1 className="text-2xl font-bold mb-4">Admin prijava</h1>
 
           <input
             type="password"
-            placeholder="Lösenord"
+            placeholder="Lozinka"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full border p-2 rounded mb-4"

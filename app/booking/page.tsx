@@ -96,7 +96,7 @@ const dateFromUrl = searchParams.get("date") || "";
 
         <form className="space-y-4" onSubmit={handleBooking}>
           <div>
-            <label className="block mb-1 font-medium">Ime</label>
+            <label className="block mb-1 font-medium">Ime i prezime</label>
             <input
               name="customer_name"
               className="w-full border p-3 rounded-lg"
@@ -142,7 +142,7 @@ const dateFromUrl = searchParams.get("date") || "";
 
 export default function Booking() {
   return (
-    <Suspense fallback={<div>Laddar...</div>}>
+    <Suspense fallback={<div>učitava se...</div>}>
       <BookingContent />
     </Suspense>
   );
