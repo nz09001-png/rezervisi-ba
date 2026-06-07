@@ -9,6 +9,7 @@ export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [error, setError] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
+  const [filter, setFilter] = useState("all");
 
   function handleLogin() {
   if (password.trim() === "barber123") {
@@ -57,15 +58,43 @@ export default function AdminPage() {
   }
 }, [isLoggedIn]);
 
-const filteredBookings = bookings.filter((booking) => {
-  const matchesSalon = booking.salon === "Barber House Sarajevo";
-  const matchesDate = selectedDate
-    ? booking.booking_date === selectedDate
-    : true;
 
-  return matchesSalon && matchesDate;
-});
 const today = new Date().toISOString().split("T")[0];
+const currentDate = new Date();
+
+const startOfWeek = new Date(currentDate);
+startOfWeek.setDate(currentDate.getDate() - currentDate.getDay() + 1);
+
+const startOfMonth = new Date(
+  currentDate.getFullYear(),
+  currentDate.getMonth(),
+  1
+);
+
+const filteredBookings = bookings.filter((booking) => {
+  const bookingDate = new Date(booking.booking_date);
+  const matchesSalon = booking.salon === "Barber House Sarajevo";
+
+  if (!matchesSalon) return false;
+
+  if (selectedDate) {
+    return booking.booking_date === selectedDate;
+  }
+
+  if (filter === "today") {
+    return booking.booking_date === today;
+  }
+
+  if (filter === "week") {
+    return bookingDate >= startOfWeek;
+  }
+
+  if (filter === "month") {
+    return bookingDate >= startOfMonth;
+  }
+
+  return true;
+});
 
 const todaysBookings = bookings.filter(
   (booking) => booking.booking_date === today
@@ -139,6 +168,47 @@ if (!isLoggedIn) {
     <p className="text-3xl font-bold">{filteredBookings.length}</p>
   </div>
 </div>
+
+  <div className="mb-6 flex flex-wrap gap-2">
+  <button
+    onClick={() => setFilter("today")}
+    className={`rounded px-4 py-2 text-white ${
+      filter === "today" ? "bg-black" : "bg-gray-500"
+    }`}
+  >
+    Danas
+  </button>
+
+  <button
+    onClick={() => setFilter("week")}
+    className={`rounded px-4 py-2 text-white ${
+      filter === "week" ? "bg-black" : "bg-gray-500"
+    }`}
+  >
+    Ova sedmica
+  </button>
+
+  <button
+    onClick={() => setFilter("month")}
+    className={`rounded px-4 py-2 text-white ${
+      filter === "month" ? "bg-black" : "bg-gray-500"
+    }`}
+  >
+    Ovaj mjesec
+  </button>
+
+  <button
+    onClick={() => setFilter("all")}
+    className={`rounded px-4 py-2 text-white ${
+      filter === "all" ? "bg-black" : "bg-gray-500"
+    }`}
+  >
+    Sve
+  </button>
+</div>
+
+  
+
 <div className="mb-6 rounded-2xl bg-white p-4 shadow">
   <label className="mb-2 block font-medium">Odaberite datum</label>
 

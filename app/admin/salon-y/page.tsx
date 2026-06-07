@@ -9,21 +9,22 @@ export default function AdminPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [error, setError] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
+  const [filter, setFilter] = useState("all");
 
   function handleLogin() {
-  if (password.trim() === "tuzla123") {
-    setIsLoggedIn(true);
-  } else {
-    alert("Pogrešna lozinka");
+    if (password.trim() === "tuzla123") {
+      setIsLoggedIn(true);
+    } else {
+      alert("Pogrešna lozinka");
+    }
   }
-}
 
   async function fetchBookings() {
     const { data, error } = await supabase
-  .from("bookings")
-  .select("*")
-  .eq("salon", "Gentlemen Tuzla")
-  .order("created_at", { ascending: false });
+      .from("bookings")
+      .select("*")
+      .eq("salon", "Gentlemen Tuzla")
+      .order("created_at", { ascending: false });
 
     if (error) {
       setError(true);
@@ -34,14 +35,13 @@ export default function AdminPage() {
   }
 
   async function handleDelete(id: number) {
-    const confirmDelete = confirm("Da li ste sigurni da želite obrisati rezervaciju?");
+    const confirmDelete = confirm(
+      "Da li ste sigurni da želite obrisati rezervaciju?"
+    );
 
     if (!confirmDelete) return;
 
-    const { error } = await supabase
-      .from("bookings")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("bookings").delete().eq("id", id);
 
     if (error) {
       alert("Nije moguće obrisati rezervaciju.");
@@ -52,47 +52,76 @@ export default function AdminPage() {
   }
 
   useEffect(() => {
-  if (isLoggedIn) {
-    fetchBookings();
-  }
-}, [isLoggedIn]);
+    if (isLoggedIn) {
+      fetchBookings();
+    }
+  }, [isLoggedIn]);
 
-const filteredBookings = selectedDate
-  ? bookings.filter((booking) => booking.booking_date === selectedDate)
-  : bookings;
   const today = new Date().toISOString().split("T")[0];
+  const currentDate = new Date();
 
-const todaysBookings = bookings.filter(
-  (booking) => booking.booking_date === today
-);
+  const startOfWeek = new Date(currentDate);
+  startOfWeek.setDate(currentDate.getDate() - currentDate.getDay() + 1);
 
-if (!isLoggedIn) {
-  return (
+  const startOfMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    1
+  );
+
+  const filteredBookings = bookings.filter((booking) => {
+    const bookingDate = new Date(booking.booking_date);
+
+    if (selectedDate) {
+      return booking.booking_date === selectedDate;
+    }
+
+    if (filter === "today") {
+      return booking.booking_date === today;
+    }
+
+    if (filter === "week") {
+      return bookingDate >= startOfWeek;
+    }
+
+    if (filter === "month") {
+      return bookingDate >= startOfMonth;
+    }
+
+    return true;
+  });
+
+  const todaysBookings = bookings.filter(
+    (booking) => booking.booking_date === today
+  );
+
+  if (!isLoggedIn) {
+    return (
       <main className="min-h-screen flex items-center justify-center bg-[#f7f3ee]">
         <div className="bg-white p-8 rounded-2xl shadow w-96">
           <h1 className="text-2xl font-bold mb-4">Admin prijava</h1>
 
           <form
-  onSubmit={(e) => {
-    e.preventDefault();
-    handleLogin();
-  }}
->
-  <input
-    type="password"
-    placeholder="Lozinka"
-    value={password}
-    onChange={(e) => setPassword(e.target.value)}
-    className="w-full border p-2 rounded mb-4"
-  />
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleLogin();
+            }}
+          >
+            <input
+              type="password"
+              placeholder="Lozinka"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border p-2 rounded mb-4"
+            />
 
-  <button
-    type="submit"
-    className="w-full bg-black text-white p-2 rounded"
-  >
-    Prijavite se
-  </button>
-</form>
+            <button
+              type="submit"
+              className="w-full bg-black text-white p-2 rounded"
+            >
+              Prijavite se
+            </button>
+          </form>
         </div>
       </main>
     );
@@ -111,72 +140,112 @@ if (!isLoggedIn) {
     <main className="min-h-screen bg-[#f7f3ee] p-8">
       <div className="mx-auto max-w-6xl">
         <div className="mb-8 flex items-center justify-between">
-  <h1 className="text-4xl font-bold">
-  Bokningar ({filteredBookings.length})
-</h1>
+          <h1 className="text-4xl font-bold">
+            Gentlemen Tuzla Admin ({filteredBookings.length})
+          </h1>
 
-  <button
-    onClick={() => setIsLoggedIn(false)}
-    className="rounded bg-black px-4 py-2 text-white"
-  >
-    Odjaviti se
-  </button>
-</div>
-<div className="mb-6 grid grid-cols-2 gap-4">
-  <div className="rounded-2xl bg-white p-4 shadow">
-    <p className="text-sm text-gray-500">Današnje rezervacije</p>
-    <p className="text-3xl font-bold">{todaysBookings.length}</p>
-  </div>
-
-  <div className="rounded-2xl bg-white p-4 shadow">
-    <p className="text-sm text-gray-500">Ukupno rezervacija</p>
-    <p className="text-3xl font-bold">{filteredBookings.length}</p>
-  </div>
-</div>
-<div className="mb-6 rounded-2xl bg-white p-4 shadow">
-  <label className="mb-2 block font-medium">Odaberite datum</label>
-
-  <input
-    type="date"
-    value={selectedDate}
-    onChange={(e) => setSelectedDate(e.target.value)}
-    className="rounded border p-3"
-  />
-</div>
-        <div className="grid gap-4">
-  {filteredBookings.map((booking) => (
-    <div
-      key={booking.id}
-      className="rounded-2xl bg-white p-5 shadow"
-    >
-      <div className="mb-3 flex items-center justify-between">
-        <div>
-          <p className="text-2xl font-bold">{booking.booking_time}</p>
-          <p className="text-sm text-gray-500">{booking.booking_date}</p>
+          <button
+            onClick={() => setIsLoggedIn(false)}
+            className="rounded bg-black px-4 py-2 text-white"
+          >
+            Odjavi se
+          </button>
         </div>
 
-        <button
-          onClick={() => handleDelete(booking.id)}
-          className="rounded bg-red-500 px-3 py-1 text-white"
-        >
-          Obriši
-        </button>
-      </div>
+        <div className="mb-6 grid grid-cols-2 gap-4">
+          <div className="rounded-2xl bg-white p-4 shadow">
+            <p className="text-sm text-gray-500">Današnje rezervacije</p>
+            <p className="text-3xl font-bold">{todaysBookings.length}</p>
+          </div>
 
-      <div className="space-y-1">
-        <p>
-          <strong>Ime i prezime:</strong> {booking.customer_name}
-        </p>
-        <p>
-          <strong>Telefon:</strong> {booking.phone}
-        </p>
-        <p>
-          <strong>Salon:</strong> {booking.salon}
-        </p>
-      </div>
-    </div>
-  ))}
-</div>
+          <div className="rounded-2xl bg-white p-4 shadow">
+            <p className="text-sm text-gray-500">Ukupno rezervacija</p>
+            <p className="text-3xl font-bold">{filteredBookings.length}</p>
+          </div>
+        </div>
+
+        <div className="mb-6 flex flex-wrap gap-2">
+          <button
+            onClick={() => setFilter("today")}
+            className={`rounded px-4 py-2 text-white ${
+              filter === "today" ? "bg-black" : "bg-gray-500"
+            }`}
+          >
+            Danas
+          </button>
+
+          <button
+            onClick={() => setFilter("week")}
+            className={`rounded px-4 py-2 text-white ${
+              filter === "week" ? "bg-black" : "bg-gray-500"
+            }`}
+          >
+            Ova sedmica
+          </button>
+
+          <button
+            onClick={() => setFilter("month")}
+            className={`rounded px-4 py-2 text-white ${
+              filter === "month" ? "bg-black" : "bg-gray-500"
+            }`}
+          >
+            Ovaj mjesec
+          </button>
+
+          <button
+            onClick={() => setFilter("all")}
+            className={`rounded px-4 py-2 text-white ${
+              filter === "all" ? "bg-black" : "bg-gray-500"
+            }`}
+          >
+            Sve
+          </button>
+        </div>
+
+        <div className="mb-6 rounded-2xl bg-white p-4 shadow">
+          <label className="mb-2 block font-medium">Odaberite datum</label>
+
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="rounded border p-3"
+          />
+        </div>
+
+        <div className="grid gap-4">
+          {filteredBookings.map((booking) => (
+            <div key={booking.id} className="rounded-2xl bg-white p-5 shadow">
+              <div className="mb-3 flex items-center justify-between">
+                <div>
+                  <p className="text-2xl font-bold">{booking.booking_time}</p>
+                  <p className="text-sm text-gray-500">
+                    {booking.booking_date}
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => handleDelete(booking.id)}
+                  className="rounded bg-red-500 px-3 py-1 text-white"
+                >
+                  Obriši
+                </button>
+              </div>
+
+              <div className="space-y-1">
+                <p>
+                  <strong>Ime i prezime:</strong> {booking.customer_name}
+                </p>
+                <p>
+                  <strong>Telefon:</strong> {booking.phone}
+                </p>
+                <p>
+                  <strong>Salon:</strong> {booking.salon}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </main>
   );
