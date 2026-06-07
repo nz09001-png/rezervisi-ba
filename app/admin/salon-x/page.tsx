@@ -10,6 +10,7 @@ export default function AdminPage() {
   const [error, setError] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [filter, setFilter] = useState("all");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   function handleLogin() {
   if (password.trim() === "barber123") {
@@ -205,6 +206,24 @@ if (!isLoggedIn) {
   >
     Sve
   </button>
+</div>
+<div className="mb-6 rounded-2xl bg-white p-4 shadow">
+  <label className="mb-2 block font-medium">Profilna slika</label>
+
+  <input
+  
+    type="file"
+    accept="image/*"
+    onChange={(e) => {
+      if (e.target.files && e.target.files[0]) {
+        setSelectedFile(e.target.files[0]);
+      }
+    }}
+    className="block"
+  />
+  <button className="mt-4 rounded bg-black px-4 py-2 text-white">
+  Sačuvaj sliku
+</button>
 </div>
 
   
