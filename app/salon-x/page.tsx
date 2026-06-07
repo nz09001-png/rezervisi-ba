@@ -8,9 +8,30 @@ export default function SalonX() {
   const [selectedDate, setSelectedDate] = useState("");
   const [bookedTimes, setBookedTimes] = useState<string[]>([]);
   const [loadingTimes, setLoadingTimes] = useState(false);
+  const [salonImage, setSalonImage] = useState("");
 
   const salonName = "Barber House Sarajevo";
   const times = ["09:00", "10:00", "11:00"];
+  useEffect(() => {
+  async function fetchSalonImage() {
+    const { data, error } = await supabase
+      .from("salons")
+      .select("image_url")
+      .eq("salon_name", salonName)
+.single();
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    if (data?.image_url) {
+      setSalonImage(data.image_url);
+    }
+  }
+
+  fetchSalonImage();
+}, []);
 
   useEffect(() => {
     async function fetchBookedTimes() {
@@ -48,9 +69,8 @@ export default function SalonX() {
       <section
         className="h-72 bg-cover bg-center"
         style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1621605815971-fbc98d665033?auto=format&fit=crop&w=1200&q=80')",
-        }}
+  backgroundImage: `url(${salonImage || "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=1200&q=80"})`,
+}}
       ></section>
 
       <section className="mx-auto max-w-4xl px-8 py-10">

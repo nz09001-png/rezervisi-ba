@@ -53,6 +53,45 @@ export default function AdminPage() {
     fetchBookings();
   }
 
+async function handleImageUpload() {
+  if (!selectedFile) {
+    alert("Prvo odaberite sliku.");
+    return;
+  }
+
+  const fileName = `salon-x-${Date.now()}-${selectedFile.name}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("salon-images")
+    .upload(fileName, selectedFile);
+
+  if (uploadError) {
+    alert("Greška pri učitavanju slike.");
+    console.error(uploadError);
+    return;
+  }
+
+  const { data } = supabase.storage
+    .from("salon-images")
+    .getPublicUrl(fileName);
+
+  const imageUrl = data.publicUrl;
+
+  const { error: updateError } = await supabase
+    .from("salons")
+    .update({ image_url: imageUrl })
+    .eq("id", 1);
+
+  if (updateError) {
+    alert("Slika je učitana, ali nije spremljena u profil.");
+    console.error(updateError);
+    return;
+  }
+  
+
+  alert("Slika je uspješno spremljena.");
+}
+
   useEffect(() => {
   if (isLoggedIn) {
     fetchBookings();
@@ -221,7 +260,10 @@ if (!isLoggedIn) {
     }}
     className="block"
   />
-  <button className="mt-4 rounded bg-black px-4 py-2 text-white">
+  <button
+  onClick={handleImageUpload}
+  className="mt-4 rounded bg-black px-4 py-2 text-white"
+>
   Sačuvaj sliku
 </button>
 </div>
