@@ -10,6 +10,7 @@ export default function AdminPage() {
   const [error, setError] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [filter, setFilter] = useState("all");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   function handleLogin() {
     if (password.trim() === "tuzla123") {
@@ -50,7 +51,44 @@ export default function AdminPage() {
 
     fetchBookings();
   }
+async function handleImageUpload() {
+  if (!selectedFile) {
+    alert("Prvo odaberite sliku.");
+    return;
+  }
 
+  const fileName = `salon-y-${Date.now()}-${selectedFile.name}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("salon-images")
+    .upload(fileName, selectedFile);
+
+  if (uploadError) {
+    alert("Greška pri učitavanju slike.");
+    console.error(uploadError);
+    return;
+  }
+
+  const { data } = supabase.storage
+    .from("salon-images")
+    .getPublicUrl(fileName);
+
+  const imageUrl = data.publicUrl;
+
+  const { error: updateError } = await supabase
+    .from("salons")
+    .update({ image_url: imageUrl })
+    .eq("id", 2);
+
+  if (updateError) {
+    alert("Slika je učitana, ali nije spremljena u profil.");
+    console.error(updateError);
+    return;
+  }
+
+  alert("Slika je uspješno spremljena.");
+  setSelectedFile(null);
+}
   useEffect(() => {
     if (isLoggedIn) {
       fetchBookings();
@@ -201,6 +239,27 @@ export default function AdminPage() {
             Sve
           </button>
         </div>
+        <div className="mb-6 rounded-2xl bg-white p-4 shadow">
+  <label className="mb-2 block font-medium">Profilna slika</label>
+
+  <input
+    type="file"
+    accept="image/*"
+    onChange={(e) => {
+      if (e.target.files && e.target.files[0]) {
+        setSelectedFile(e.target.files[0]);
+      }
+    }}
+    className="block"
+  />
+
+  <button
+    onClick={handleImageUpload}
+    className="mt-4 rounded bg-black px-4 py-2 text-white"
+  >
+    Sačuvaj sliku
+  </button>
+</div>
 
         <div className="mb-6 rounded-2xl bg-white p-4 shadow">
           <label className="mb-2 block font-medium">Odaberite datum</label>
