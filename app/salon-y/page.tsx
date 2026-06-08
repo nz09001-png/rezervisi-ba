@@ -11,11 +11,12 @@ const times = ["09:00", "10:00", "11:00"];
 const [selectedDate, setSelectedDate] = useState("");
 const [bookedTimes, setBookedTimes] = useState<string[]>([]);
 const [salonImage, setSalonImage] = useState("");
+const [salonInfo, setSalonInfo] = useState<any>(null);
 useEffect(() => {
   async function fetchSalonImage() {
     const { data, error } = await supabase
       .from("salons")
-      .select("image_url")
+      .select("image_url, description, phone, address, opening_hours")
       .eq("salon_name", salonName)
       .single();
 
@@ -27,6 +28,7 @@ useEffect(() => {
     if (data?.image_url) {
       setSalonImage(data.image_url);
     }
+    setSalonInfo(data);
   }
 
   fetchSalonImage();
@@ -78,25 +80,32 @@ useEffect(() => {
           </h1>
 
           <p className="mb-6 text-gray-600">
-            Klasično i moderno šišanje za muškarce, bradu i stilizovanje.
-          </p>
+  {salonInfo?.description ||
+    "Klasično i moderno šišanje za muškarce, bradu i stilizovanje."}
+</p>
 
           <div className="mb-8 flex flex-wrap gap-4 text-sm text-gray-700">
             <div className="mb-8 grid gap-4 md:grid-cols-3">
   <div className="rounded-xl bg-gray-50 p-4">
-    <p className="text-sm text-gray-500">Adresa</p>
-    <p className="font-semibold">Korzo 8, Tuzla</p>
-  </div>
+  <p className="text-sm text-gray-500">Adresa</p>
+  <p className="font-semibold">
+    {salonInfo?.address || "Korzo 8, Tuzla"}
+  </p>
+</div>
 
-  <div className="rounded-xl bg-gray-50 p-4">
-    <p className="text-sm text-gray-500">Telefon</p>
-    <p className="font-semibold">+387 62 222 333</p>
-  </div>
+<div className="rounded-xl bg-gray-50 p-4">
+  <p className="text-sm text-gray-500">Telefon</p>
+  <p className="font-semibold">
+    {salonInfo?.phone || "+387 62 222 333"}
+  </p>
+</div>
 
-  <div className="rounded-xl bg-gray-50 p-4">
-    <p className="text-sm text-gray-500">Radno vrijeme</p>
-    <p className="font-semibold">10:00 - 19:00</p>
-  </div>
+<div className="rounded-xl bg-gray-50 p-4">
+  <p className="text-sm text-gray-500">Radno vrijeme</p>
+  <p className="font-semibold">
+    {salonInfo?.opening_hours || "10:00 - 19:00"}
+  </p>
+</div>
 </div> 
             <span>⭐ 4.8 (98 recenzije)</span>
             <span>📍 Tuzla</span>

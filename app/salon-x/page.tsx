@@ -9,6 +9,7 @@ export default function SalonX() {
   const [bookedTimes, setBookedTimes] = useState<string[]>([]);
   const [loadingTimes, setLoadingTimes] = useState(false);
   const [salonImage, setSalonImage] = useState("");
+  const [salonInfo, setSalonInfo] = useState<any>(null);
 
   const salonName = "Barber House Sarajevo";
   const times = ["09:00", "10:00", "11:00"];
@@ -16,7 +17,7 @@ export default function SalonX() {
   async function fetchSalonImage() {
     const { data, error } = await supabase
       .from("salons")
-      .select("image_url")
+      .select("image_url, description, phone, address, opening_hours")
       .eq("salon_name", salonName)
 .single();
 
@@ -28,7 +29,9 @@ export default function SalonX() {
     if (data?.image_url) {
       setSalonImage(data.image_url);
     }
+    setSalonInfo(data);
   }
+  
 
   fetchSalonImage();
 }, []);
@@ -84,8 +87,9 @@ export default function SalonX() {
           </h1>
 
           <p className="mb-6 text-gray-600">
-            Moderan frizerski salon za muško šišanje, bradu i dječije šišanje.
-          </p>
+  {salonInfo?.description ||
+    "Moderan frizerski salon za muško šišanje, bradu i dječije šišanje."}
+</p>
 
           <div className="mb-8 flex flex-wrap gap-4 text-sm text-gray-700">
             <span>⭐ 4.9 (124 recenzije)</span>
@@ -96,17 +100,23 @@ export default function SalonX() {
           <div className="mb-8 grid gap-4 md:grid-cols-3">
             <div className="rounded-xl bg-gray-50 p-4">
               <p className="text-sm text-gray-500">Adresa</p>
-              <p className="font-semibold">Ferhadija 12, Sarajevo</p>
+              <p className="font-semibold">
+  {salonInfo?.address || "Ferhadija 12, Sarajevo"}
+</p>
             </div>
 
             <div className="rounded-xl bg-gray-50 p-4">
               <p className="text-sm text-gray-500">Telefon</p>
-              <p className="font-semibold">+387 61 123 456</p>
+              <p className="font-semibold">
+  {salonInfo?.phone || "+387 61 123 456"}
+</p>
             </div>
 
             <div className="rounded-xl bg-gray-50 p-4">
               <p className="text-sm text-gray-500">Radno vrijeme</p>
-              <p className="font-semibold">09:00 - 18:00</p>
+              <p className="font-semibold">
+  {salonInfo?.opening_hours || "09:00 - 18:00"}
+</p>
             </div>
           </div>
 

@@ -11,6 +11,10 @@ export default function AdminPage() {
   const [selectedDate, setSelectedDate] = useState("");
   const [filter, setFilter] = useState("all");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [description, setDescription] = useState("");
+const [phone, setPhone] = useState("");
+const [address, setAddress] = useState("");
+const [openingHours, setOpeningHours] = useState("");
 
   function handleLogin() {
   if (password.trim() === "barber123") {
@@ -34,6 +38,23 @@ export default function AdminPage() {
 
     setBookings(data || []);
   }
+  async function fetchSalonInfo() {
+  const { data, error } = await supabase
+    .from("salons")
+    .select("description, phone, address, opening_hours")
+    .eq("id", 1)
+    .single();
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  setDescription(data.description || "");
+  setPhone(data.phone || "");
+  setAddress(data.address || "");
+  setOpeningHours(data.opening_hours || "");
+}
 
   async function handleDelete(id: number) {
     const confirmDelete = confirm("Da li ste sigurni da želite obrisati rezervaciju??");
@@ -91,10 +112,30 @@ async function handleImageUpload() {
 
   alert("Slika je uspješno spremljena.");
 }
+async function handleSalonInfoUpdate() {
+  const { error } = await supabase
+    .from("salons")
+    .update({
+      description: description,
+      phone: phone,
+      address: address,
+      opening_hours: openingHours,
+    })
+    .eq("id", 1);
+
+  if (error) {
+    alert("Greška pri spremanju podataka.");
+    console.error(error);
+    return;
+  }
+
+  alert("Podaci su uspješno spremljeni.");
+}
 
   useEffect(() => {
   if (isLoggedIn) {
     fetchBookings();
+    fetchSalonInfo();
   }
 }, [isLoggedIn]);
 
@@ -271,6 +312,48 @@ if (!isLoggedIn) {
   
 
 <div className="mb-6 rounded-2xl bg-white p-4 shadow">
+  <div className="mb-6 rounded-2xl bg-white p-4 shadow">
+  <h2 className="mb-4 text-xl font-bold">Informacije o salonu</h2>
+
+  <label className="mb-2 block font-medium">Opis</label>
+  <textarea
+    value={description}
+    onChange={(e) => setDescription(e.target.value)}
+    className="mb-4 w-full rounded border p-3"
+    rows={3}
+  />
+
+  <label className="mb-2 block font-medium">Telefon</label>
+  <input
+    type="text"
+    value={phone}
+    onChange={(e) => setPhone(e.target.value)}
+    className="mb-4 w-full rounded border p-3"
+  />
+
+  <label className="mb-2 block font-medium">Adresa</label>
+  <input
+    type="text"
+    value={address}
+    onChange={(e) => setAddress(e.target.value)}
+    className="mb-4 w-full rounded border p-3"
+  />
+
+  <label className="mb-2 block font-medium">Radno vrijeme</label>
+  <input
+    type="text"
+    value={openingHours}
+    onChange={(e) => setOpeningHours(e.target.value)}
+    className="mb-4 w-full rounded border p-3"
+  />
+
+  <button
+    onClick={handleSalonInfoUpdate}
+    className="rounded bg-black px-4 py-2 text-white"
+  >
+    Sačuvaj informacije
+  </button>
+</div>
   <label className="mb-2 block font-medium">Odaberite datum</label>
 
   <input
