@@ -10,7 +10,7 @@ export default function SalonZ() {
   async function fetchSalonImage() {
     const { data, error } = await supabase
       .from("salons")
-      .select("image_url")
+      .select("image_url, description, phone, address, opening_hours")
       .eq("salon_name", salonName)
       .single();
 
@@ -22,6 +22,7 @@ export default function SalonZ() {
     if (data?.image_url) {
       setSalonImage(data.image_url);
     }
+    setSalonInfo(data);
   }
 
   fetchSalonImage();
@@ -31,6 +32,7 @@ const times = ["09:00", "10:00", "11:00"];
 const [selectedDate, setSelectedDate] = useState("");
 const [bookedTimes, setBookedTimes] = useState<string[]>([]);
 const [salonImage, setSalonImage] = useState("");
+const [salonInfo, setSalonInfo] = useState<any>(null);
 
 const availableTimes = times.filter(
   (time) => !bookedTimes.includes(time)
@@ -79,24 +81,31 @@ useEffect(() => {
           </h1>
 
           <p className="mb-6 text-gray-600">
-            Premium fade šišanje, uređivanje brade i moderan barber stil.
-          </p>
+  {salonInfo?.description ||
+    "Premium fade šišanje, uređivanje brade i moderan barber stil."}
+</p>
 
           <div className="mb-8 flex flex-wrap gap-4 text-sm text-gray-700">
             <div className="mb-8 grid gap-4 md:grid-cols-3">
   <div className="rounded-xl bg-gray-50 p-4">
     <p className="text-sm text-gray-500">Adresa</p>
-    <p className="font-semibold">Braće Fejića 21, Mostar</p>
+    <p className="font-semibold">
+  {salonInfo?.address || "Braće Fejića 21, Mostar"}
+</p>
   </div>
 
   <div className="rounded-xl bg-gray-50 p-4">
     <p className="text-sm text-gray-500">Telefon</p>
-    <p className="font-semibold">+387 63 444 555</p>
+    <p className="font-semibold">
+  {salonInfo?.phone || "+387 63 444 555"}
+</p>
   </div>
 
   <div className="rounded-xl bg-gray-50 p-4">
     <p className="text-sm text-gray-500">Radno vrijeme</p>
-    <p className="font-semibold">09:00 - 20:00</p>
+    <p className="font-semibold">
+  {salonInfo?.opening_hours || "09:00 - 20:00"}
+</p>
   </div>
 </div>
             <span>⭐ 4.9 (137 recenzije)</span>
