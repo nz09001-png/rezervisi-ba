@@ -10,6 +10,7 @@ export default function SalonX() {
   const [loadingTimes, setLoadingTimes] = useState(false);
   const [salonImage, setSalonImage] = useState("");
   const [salonInfo, setSalonInfo] = useState<any>(null);
+  const [services, setServices] = useState<any[]>([]);
 
   const salonName = "Barber House Sarajevo";
   const times = ["09:00", "10:00", "11:00"];
@@ -34,6 +35,25 @@ export default function SalonX() {
   
 
   fetchSalonImage();
+}, []);
+useEffect(() => {
+  async function fetchServices() {
+    const { data, error } = await supabase
+      .from("services")
+      .select("*")
+      .eq("salon_id", 1)
+      .order("id", { ascending: true });
+
+    if (error) {
+      console.error("SERVICES ERROR:", error);
+      return;
+    }
+
+    console.log("SERVICES DATA:", data);
+    setServices(data || []);
+  }
+
+  fetchServices();
 }, []);
 
   useEffect(() => {
@@ -123,21 +143,16 @@ export default function SalonX() {
           <h2 className="text-2xl font-bold mb-4">Usluge</h2>
 
           <div className="mb-8 space-y-3">
-            <div className="flex justify-between rounded-xl bg-gray-50 p-4">
-              <span>✂️ Muško šišanje</span>
-              <strong>20 KM</strong>
-            </div>
-
-            <div className="flex justify-between rounded-xl bg-gray-50 p-4">
-              <span>🧔 Trimovanje brade</span>
-              <strong>10 KM</strong>
-            </div>
-
-            <div className="flex justify-between rounded-xl bg-gray-50 p-4">
-              <span>👦 Dječije šišanje</span>
-              <strong>15 KM</strong>
-            </div>
-          </div>
+  {services.map((service) => (
+    <div
+      key={service.id}
+      className="flex justify-between rounded-xl bg-gray-50 p-4"
+    >
+      <span>✂️ {service.name}</span>
+      <strong>{service.price}</strong>
+    </div>
+  ))}
+</div>
 
           <h2 className="text-2xl font-bold mb-4">Odaberi datum</h2>
 
