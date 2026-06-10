@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
@@ -8,11 +8,41 @@ function BookingContent() {
   const [booked, setBooked] = useState(false);
   const [confirmedDate, setConfirmedDate] = useState("");
   const [loading, setLoading] = useState(false);
+  const [services, setServices] = useState<any[]>([]);
+const [selectedService, setSelectedService] = useState("");
 
   const searchParams = useSearchParams();
 const salon = searchParams.get("salon") || "Salon X";
 const time = searchParams.get("time") || "10:00";
 const dateFromUrl = searchParams.get("date") || "";
+const salonId =
+  salon === "Barber House Sarajevo"
+    ? 1
+    : salon === "Gentlemen Tuzla"
+    ? 2
+    : salon === "Mostar Fade Studio"
+    ? 3
+    : null;
+    useEffect(() => {
+  async function fetchServices() {
+    if (!salonId) return;
+
+    const { data, error } = await supabase
+      .from("services")
+      .select("*")
+      .eq("salon_id", salonId)
+      .order("id", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setServices(data || []);
+  }
+
+  fetchServices();
+}, [salonId]);
 
   async function handleBooking(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -22,6 +52,7 @@ const dateFromUrl = searchParams.get("date") || "";
     const customerName = formData.get("customer_name") as string;
     const phone = formData.get("phone") as string;
     const bookingDate = dateFromUrl || (formData.get("booking_date") as string);
+    const service = selectedService;
 
     const { data: existingBooking } = await supabase
       .from("bookings")
@@ -38,12 +69,13 @@ const dateFromUrl = searchParams.get("date") || "";
     }
 
     const { error } = await supabase.from("bookings").insert({
-      customer_name: customerName,
-      phone: phone,
-      salon: salon,
-      booking_time: time,
-      booking_date: bookingDate,
-    });
+  customer_name: customerName,
+  phone: phone,
+  salon: salon,
+  service: service,
+  booking_time: time,
+  booking_date: bookingDate,
+});
 
     if (error) {
       alert("Något gick fel. Försök igen.");
@@ -95,6 +127,23 @@ const dateFromUrl = searchParams.get("date") || "";
         </p>
 
         <form className="space-y-4" onSubmit={handleBooking}>
+          <div>
+  <label className="block mb-1 font-medium">Usluga</label>
+  <select
+    value={selectedService}
+    onChange={(e) => setSelectedService(e.target.value)}
+    className="w-full border p-3 rounded-lg"
+    required
+  >
+    <option value="">Odaberite uslugu</option>
+
+    {services.map((service) => (
+      <option key={service.id} value={`${service.name} - ${service.price}`}>
+        {service.name} - {service.price}
+      </option>
+    ))}
+  </select>
+</div>
           <div>
             <label className="block mb-1 font-medium">Ime i prezime</label>
             <input

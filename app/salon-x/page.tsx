@@ -13,7 +13,7 @@ export default function SalonX() {
   const [services, setServices] = useState<any[]>([]);
 
   const salonName = "Barber House Sarajevo";
-  const times = ["09:00", "10:00", "11:00"];
+  const [times, setTimes] = useState<any[]>([]);
   useEffect(() => {
   async function fetchSalonImage() {
     const { data, error } = await supabase
@@ -55,6 +55,24 @@ useEffect(() => {
 
   fetchServices();
 }, []);
+useEffect(() => {
+  async function fetchTimes() {
+    const { data, error } = await supabase
+      .from("available_times")
+      .select("*")
+      .eq("salon_id", 1)
+      .order("time", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setTimes(data || []);
+  }
+
+  fetchTimes();
+}, []);
 
   useEffect(() => {
     async function fetchBookedTimes() {
@@ -85,7 +103,9 @@ useEffect(() => {
     fetchBookedTimes();
   }, [selectedDate]);
 
-  const availableTimes = times.filter((time) => !bookedTimes.includes(time));
+  const availableTimes = times.filter(
+  (item) => !bookedTimes.includes(item.time)
+);
 
   return (
     <main className="min-h-screen bg-[#f7f3ee]">
@@ -183,15 +203,15 @@ useEffect(() => {
 
           {selectedDate && !loadingTimes && availableTimes.length > 0 && (
             <div className="grid grid-cols-3 gap-4">
-              {availableTimes.map((time) => (
-                <Link
-                  key={time}
-                  href={`/booking?salon=${encodeURIComponent(
-                    salonName
-                  )}&time=${time}&date=${selectedDate}`}
+              {availableTimes.map((item) => (
+  <Link
+    key={item.id}
+    href={`/booking?salon=${encodeURIComponent(
+      salonName
+    )}&time=${item.time}&date=${selectedDate}`}
                   className="rounded-xl bg-black p-4 text-center font-semibold text-white"
                 >
-                  {time}
+                  {item.time}
                 </Link>
               ))}
             </div>

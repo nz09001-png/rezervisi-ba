@@ -514,6 +514,9 @@ async function handleSalonInfoUpdate() {
                 <p>
                   <strong>Telefon:</strong> {booking.phone}
                 </p>
+<p>
+  <strong>Usluga:</strong> {booking.service || "Nije odabrano"}
+</p>
                 <p>
                   <strong>Salon:</strong> {booking.salon}
                 </p>
