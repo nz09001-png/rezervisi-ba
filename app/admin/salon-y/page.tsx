@@ -15,6 +15,9 @@ export default function AdminPage() {
 const [phone, setPhone] = useState("");
 const [address, setAddress] = useState("");
 const [openingHours, setOpeningHours] = useState("");
+const [services, setServices] = useState<any[]>([]);
+const [serviceName, setServiceName] = useState("");
+const [servicePrice, setServicePrice] = useState("");
 
   function handleLogin() {
     if (password.trim() === "tuzla123") {
@@ -55,6 +58,63 @@ async function fetchSalonInfo() {
   setPhone(data.phone || "");
   setAddress(data.address || "");
   setOpeningHours(data.opening_hours || "");
+}
+
+async function fetchServices() {
+  const { data, error } = await supabase
+    .from("services")
+    .select("*")
+    .eq("salon_id", 2)
+    .order("id", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  setServices(data || []);
+}
+
+async function handleAddService() {
+  if (!serviceName.trim() || !servicePrice.trim()) {
+    alert("Unesite naziv i cijenu usluge.");
+    return;
+  }
+
+  const { error } = await supabase.from("services").insert({
+    salon_id: 2,
+    name: serviceName,
+    price: servicePrice,
+  });
+
+  if (error) {
+    alert("Greška pri dodavanju usluge.");
+    console.error(error);
+    return;
+  }
+
+  setServiceName("");
+  setServicePrice("");
+  fetchServices();
+}
+
+async function handleDeleteService(id: number) {
+  const confirmDelete = confirm("Da li ste sigurni da želite obrisati uslugu?");
+
+  if (!confirmDelete) return;
+
+  const { error } = await supabase
+    .from("services")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    alert("Greška pri brisanju usluge.");
+    console.error(error);
+    return;
+  }
+
+  fetchServices();
 }
 
   async function handleDelete(id: number) {
@@ -135,6 +195,7 @@ async function handleSalonInfoUpdate() {
   if (isLoggedIn) {
     fetchBookings();
     fetchSalonInfo();
+    fetchServices();
   }
 }, [isLoggedIn]);
 
@@ -344,6 +405,53 @@ async function handleSalonInfoUpdate() {
     className="rounded bg-black px-4 py-2 text-white"
   >
     Sačuvaj informacije
+  </button>
+</div>
+<div className="mb-6 rounded-2xl bg-white p-4 shadow">
+  <h2 className="mb-4 text-xl font-bold">Usluge</h2>
+
+  <div className="mb-4 space-y-2">
+    {services.map((service) => (
+      <div
+        key={service.id}
+        className="flex items-center justify-between rounded-xl bg-gray-50 p-3"
+      >
+        <div>
+          <p>{service.name}</p>
+          <p className="font-bold">{service.price}</p>
+        </div>
+
+        <button
+          onClick={() => handleDeleteService(service.id)}
+          className="rounded bg-red-500 px-3 py-1 text-white"
+        >
+          Obriši
+        </button>
+      </div>
+    ))}
+  </div>
+
+  <input
+    type="text"
+    placeholder="Naziv usluge"
+    value={serviceName}
+    onChange={(e) => setServiceName(e.target.value)}
+    className="mb-3 w-full rounded border p-3"
+  />
+
+  <input
+    type="text"
+    placeholder="Cijena"
+    value={servicePrice}
+    onChange={(e) => setServicePrice(e.target.value)}
+    className="mb-3 w-full rounded border p-3"
+  />
+
+  <button
+    onClick={handleAddService}
+    className="rounded bg-black px-4 py-2 text-white"
+  >
+    + Dodaj uslugu
   </button>
 </div>
 

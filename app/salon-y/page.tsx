@@ -12,6 +12,7 @@ const [selectedDate, setSelectedDate] = useState("");
 const [bookedTimes, setBookedTimes] = useState<string[]>([]);
 const [salonImage, setSalonImage] = useState("");
 const [salonInfo, setSalonInfo] = useState<any>(null);
+const [services, setServices] = useState<any[]>([]);
 useEffect(() => {
   async function fetchSalonImage() {
     const { data, error } = await supabase
@@ -32,6 +33,24 @@ useEffect(() => {
   }
 
   fetchSalonImage();
+}, []);
+useEffect(() => {
+  async function fetchServices() {
+    const { data, error } = await supabase
+      .from("services")
+      .select("*")
+      .eq("salon_id", 2)
+      .order("id", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setServices(data || []);
+  }
+
+  fetchServices();
 }, []);
 
 const availableTimes = times.filter(
@@ -115,21 +134,16 @@ useEffect(() => {
           <h2 className="text-2xl font-bold mb-4">Usluge</h2>
 
           <div className="mb-8 space-y-3">
-            <div className="flex justify-between rounded-xl bg-gray-50 p-4">
-              <span>✂️ Muško šišanje</span>
-              <strong>25 KM</strong>
-            </div>
-
-            <div className="flex justify-between rounded-xl bg-gray-50 p-4">
-              <span>🧔 Trimovanje brade</span>
-              <strong>15 KM</strong>
-            </div>
-
-            <div className="flex justify-between rounded-xl bg-gray-50 p-4">
-              <span>👦 Dječije šišanje</span>
-              <strong>20 KM</strong>
-            </div>
-          </div>
+  {services.map((service) => (
+    <div
+      key={service.id}
+      className="flex justify-between rounded-xl bg-gray-50 p-4"
+    >
+      <span>✂️ {service.name}</span>
+      <strong>{service.price}</strong>
+    </div>
+  ))}
+</div>
 
           <h2 className="text-2xl font-bold mb-4">Slobodni termini</h2>
           <div className="mb-6">
