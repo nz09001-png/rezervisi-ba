@@ -605,6 +605,9 @@ async function handleSalonInfoUpdate() {
                 <p>
                   <strong>Telefon:</strong> {booking.phone}
                 </p>
+                <p>
+  <strong>Email:</strong> {booking.email || "Nije uneseno"}
+</p>
 <p>
   <strong>Usluga:</strong> {booking.service || "Nije odabrano"}
 </p>

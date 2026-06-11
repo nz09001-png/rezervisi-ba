@@ -53,6 +53,7 @@ const salonId =
     const phone = formData.get("phone") as string;
     const bookingDate = dateFromUrl || (formData.get("booking_date") as string);
     const service = selectedService;
+    const email = formData.get("email") as string;
 
     const { data: existingBooking } = await supabase
       .from("bookings")
@@ -68,21 +69,39 @@ const salonId =
       return;
     }
 
-    const { error } = await supabase.from("bookings").insert({
-  customer_name: customerName,
-  phone: phone,
-  salon: salon,
-  service: service,
-  booking_time: time,
-  booking_date: bookingDate,
-});
-
+    const { data, error } = await supabase
+  .from("bookings")
+  .insert({
+    customer_name: customerName,
+    phone: phone,
+    email: email,
+    salon: salon,
+    service: service,
+    booking_time: time,
+    booking_date: bookingDate,
+  })
+  .select()
+  .single();
     if (error) {
       alert("Något gick fel. Försök igen.");
       console.error(error);
       setLoading(false);
       return;
     }
+    await fetch("/api/send-email", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    email,
+    salon,
+    service,
+    date: bookingDate,
+    time,
+    bookingId: data.id,
+  }),
+});
 
     setConfirmedDate(bookingDate);
     setBooked(true);
@@ -165,6 +184,16 @@ const salonId =
               required
             />
           </div>
+          <div>
+  <label className="block mb-1 font-medium">Email</label>
+  <input
+    name="email"
+    className="w-full border p-3 rounded-lg"
+    type="email"
+    placeholder="din@email.com"
+    required
+  />
+</div>
 
           <div>
             <label className="block mb-1 font-medium">Datum</label>
