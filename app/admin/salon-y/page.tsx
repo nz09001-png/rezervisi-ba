@@ -18,6 +18,8 @@ const [openingHours, setOpeningHours] = useState("");
 const [services, setServices] = useState<any[]>([]);
 const [serviceName, setServiceName] = useState("");
 const [servicePrice, setServicePrice] = useState("");
+const [times, setTimes] = useState<any[]>([]);
+const [newTime, setNewTime] = useState("");
 
   function handleLogin() {
     if (password.trim() === "tuzla123") {
@@ -73,6 +75,58 @@ async function fetchServices() {
   }
 
   setServices(data || []);
+}
+async function fetchTimes() {
+  const { data, error } = await supabase
+    .from("available_times")
+    .select("*")
+    .eq("salon_id", 2)
+    .order("time", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  setTimes(data || []);
+}
+async function handleAddTime() {
+  if (!newTime.trim()) {
+    alert("Unesite vrijeme.");
+    return;
+  }
+
+  const { error } = await supabase.from("available_times").insert({
+    salon_id: 2,
+    time: newTime,
+  });
+
+  if (error) {
+    alert("Greška pri dodavanju vremena.");
+    console.error(error);
+    return;
+  }
+
+  setNewTime("");
+  fetchTimes();
+}
+async function handleDeleteTime(id: number) {
+  const confirmDelete = confirm("Da li ste sigurni da želite obrisati vrijeme?");
+
+  if (!confirmDelete) return;
+
+  const { error } = await supabase
+    .from("available_times")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    alert("Greška pri brisanju vremena.");
+    console.error(error);
+    return;
+  }
+
+  fetchTimes();
 }
 
 async function handleAddService() {
@@ -196,6 +250,7 @@ async function handleSalonInfoUpdate() {
     fetchBookings();
     fetchSalonInfo();
     fetchServices();
+    fetchTimes();
   }
 }, [isLoggedIn]);
 
@@ -452,6 +507,42 @@ async function handleSalonInfoUpdate() {
     className="rounded bg-black px-4 py-2 text-white"
   >
     + Dodaj uslugu
+  </button>
+</div>
+<div className="mb-6 rounded-2xl bg-white p-4 shadow">
+  <h2 className="mb-4 text-xl font-bold">Termini</h2>
+
+  <div className="mb-4 space-y-2">
+    {times.map((item) => (
+      <div
+        key={item.id}
+        className="flex items-center justify-between rounded-xl bg-gray-50 p-3"
+      >
+        <span>{item.time}</span>
+
+        <button
+          onClick={() => handleDeleteTime(item.id)}
+          className="rounded bg-red-500 px-3 py-1 text-white"
+        >
+          Obriši
+        </button>
+      </div>
+    ))}
+  </div>
+
+  <input
+    type="text"
+    placeholder="Vrijeme, npr. 09:30"
+    value={newTime}
+    onChange={(e) => setNewTime(e.target.value)}
+    className="mb-3 w-full rounded border p-3"
+  />
+
+  <button
+    onClick={handleAddTime}
+    className="rounded bg-black px-4 py-2 text-white"
+  >
+    + Dodaj termin
   </button>
 </div>
 

@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 
 export default function SalonY() {
   const salonName = "Gentlemen Tuzla";
-const times = ["09:00", "10:00", "11:00"];
+const [times, setTimes] = useState<any[]>([]);
 
 const [selectedDate, setSelectedDate] = useState("");
 const [bookedTimes, setBookedTimes] = useState<string[]>([]);
@@ -52,9 +52,27 @@ useEffect(() => {
 
   fetchServices();
 }, []);
+useEffect(() => {
+  async function fetchTimes() {
+    const { data, error } = await supabase
+      .from("available_times")
+      .select("*")
+      .eq("salon_id", 2)
+      .order("time", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setTimes(data || []);
+  }
+
+  fetchTimes();
+}, []);
 
 const availableTimes = times.filter(
-  (time) => !bookedTimes.includes(time)
+  (item) => !bookedTimes.includes(item.time)
 );
 useEffect(() => {
   async function fetchBookedTimes() {
@@ -159,15 +177,15 @@ useEffect(() => {
 
           {selectedDate ? (
   <div className="grid grid-cols-3 gap-4">
-    {availableTimes.map((time) => (
-      <Link
-        key={time}
-        href={`/booking?salon=${encodeURIComponent(
-          salonName
-        )}&time=${time}&date=${selectedDate}`}
+    {availableTimes.map((item) => (
+  <Link
+    key={item.id}
+    href={`/booking?salon=${encodeURIComponent(
+      salonName
+    )}&time=${item.time}&date=${selectedDate}`}
         className="rounded-xl bg-black p-4 text-center font-semibold text-white"
       >
-        {time}
+        {item.time}
       </Link>
     ))}
   </div>
