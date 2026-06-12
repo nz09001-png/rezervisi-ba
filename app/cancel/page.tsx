@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 export default function CancelPage() {
   const searchParams = useSearchParams();
   const bookingId = searchParams.get("id");
+  const token = searchParams.get("token");
 
   const [cancelled, setCancelled] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -24,9 +25,10 @@ export default function CancelPage() {
     setLoading(true);
 
     const { error } = await supabase
-      .from("bookings")
-      .delete()
-      .eq("id", bookingId);
+  .from("bookings")
+  .delete()
+  .eq("id", bookingId)
+  .eq("cancel_token", token);
 
     if (error) {
       alert("Greška pri otkazivanju rezervacije.");

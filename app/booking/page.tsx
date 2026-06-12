@@ -10,6 +10,7 @@ function BookingContent() {
   const [loading, setLoading] = useState(false);
   const [services, setServices] = useState<any[]>([]);
 const [selectedService, setSelectedService] = useState("");
+const [selectedServiceDuration, setSelectedServiceDuration] = useState(60);
 
   const searchParams = useSearchParams();
 const salon = searchParams.get("salon") || "Salon X";
@@ -54,6 +55,7 @@ const salonId =
     const bookingDate = dateFromUrl || (formData.get("booking_date") as string);
     const service = selectedService;
     const email = formData.get("email") as string;
+    const cancelToken = crypto.randomUUID();
 
     const { data: existingBooking } = await supabase
       .from("bookings")
@@ -75,6 +77,7 @@ const salonId =
     customer_name: customerName,
     phone: phone,
     email: email,
+    cancel_token: cancelToken,
     salon: salon,
     service: service,
     booking_time: time,
@@ -94,13 +97,15 @@ const salonId =
     "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    email,
-    salon,
-    service,
-    date: bookingDate,
-    time,
-    bookingId: data.id,
-  }),
+  email,
+  salon,
+  service,
+  date: bookingDate,
+  time,
+  durationMinutes: selectedServiceDuration,
+  bookingId: data.id,
+  cancelToken,
+}),
 });
 
     setConfirmedDate(bookingDate);
@@ -149,18 +154,25 @@ const salonId =
           <div>
   <label className="block mb-1 font-medium">Usluga</label>
   <select
-    value={selectedService}
-    onChange={(e) => setSelectedService(e.target.value)}
-    className="w-full border p-3 rounded-lg"
-    required
-  >
+  value={selectedService}
+  onChange={(e) => {
+    const selected = services.find(
+      (service) => `${service.name} - ${service.price}` === e.target.value
+    );
+
+    setSelectedService(e.target.value);
+    setSelectedServiceDuration(selected?.duration_minutes || 60);
+  }}
+  className="w-full border p-3 rounded-lg"
+  required
+>
     <option value="">Odaberite uslugu</option>
 
     {services.map((service) => (
-      <option key={service.id} value={`${service.name} - ${service.price}`}>
-        {service.name} - {service.price}
-      </option>
-    ))}
+  <option key={service.id} value={`${service.name} - ${service.price}`}>
+    {service.name} - {service.price} KM - {service.duration_minutes || 60} min
+  </option>
+))}
   </select>
 </div>
           <div>
