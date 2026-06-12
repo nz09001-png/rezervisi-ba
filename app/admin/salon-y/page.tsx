@@ -18,6 +18,7 @@ const [openingHours, setOpeningHours] = useState("");
 const [services, setServices] = useState<any[]>([]);
 const [serviceName, setServiceName] = useState("");
 const [servicePrice, setServicePrice] = useState("");
+const [serviceDuration, setServiceDuration] = useState("60");
 const [times, setTimes] = useState<any[]>([]);
 const [newTime, setNewTime] = useState("");
 
@@ -130,16 +131,17 @@ async function handleDeleteTime(id: number) {
 }
 
 async function handleAddService() {
-  if (!serviceName.trim() || !servicePrice.trim()) {
-    alert("Unesite naziv i cijenu usluge.");
-    return;
-  }
+  if (!serviceName.trim() || !servicePrice.trim() || !serviceDuration.trim()) {
+  alert("Unesite naziv, cijenu i trajanje usluge.");
+  return;
+}
 
   const { error } = await supabase.from("services").insert({
-    salon_id: 2,
-    name: serviceName,
-    price: servicePrice,
-  });
+  salon_id: 2,
+  name: serviceName,
+  price: servicePrice,
+  duration_minutes: Number(serviceDuration),
+});
 
   if (error) {
     alert("Greška pri dodavanju usluge.");
@@ -148,8 +150,9 @@ async function handleAddService() {
   }
 
   setServiceName("");
-  setServicePrice("");
-  fetchServices();
+setServicePrice("");
+setServiceDuration("60");
+fetchServices();
 }
 
 async function handleDeleteService(id: number) {
@@ -472,9 +475,12 @@ async function handleSalonInfoUpdate() {
         className="flex items-center justify-between rounded-xl bg-gray-50 p-3"
       >
         <div>
-          <p>{service.name}</p>
-          <p className="font-bold">{service.price}</p>
-        </div>
+  <p>{service.name}</p>
+  <p className="font-bold">{service.price} KM</p>
+  <p className="text-sm text-gray-500">
+    Trajanje: {service.duration_minutes || 60} min
+  </p>
+</div>
 
         <button
           onClick={() => handleDeleteService(service.id)}
@@ -501,6 +507,13 @@ async function handleSalonInfoUpdate() {
     onChange={(e) => setServicePrice(e.target.value)}
     className="mb-3 w-full rounded border p-3"
   />
+  <input
+  type="number"
+  placeholder="Trajanje u minutama, npr. 30"
+  value={serviceDuration}
+  onChange={(e) => setServiceDuration(e.target.value)}
+  className="mb-3 w-full rounded border p-3"
+/>
 
   <button
     onClick={handleAddService}

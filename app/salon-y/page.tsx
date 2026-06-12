@@ -153,14 +153,20 @@ useEffect(() => {
 
           <div className="mb-8 space-y-3">
   {services.map((service) => (
-    <div
-      key={service.id}
-      className="flex justify-between rounded-xl bg-gray-50 p-4"
-    >
-      <span>✂️ {service.name}</span>
-      <strong>{service.price}</strong>
+  <div
+    key={service.id}
+    className="flex justify-between rounded-xl bg-gray-50 p-4"
+  >
+    <div>
+      <p>✂️ {service.name}</p>
+      <p className="text-sm text-gray-500">
+        Trajanje: {service.duration_minutes || 60} min
+      </p>
     </div>
-  ))}
+
+    <strong>{service.price} KM</strong>
+  </div>
+))}
 </div>
 
           <h2 className="text-2xl font-bold mb-4">Slobodni termini</h2>
