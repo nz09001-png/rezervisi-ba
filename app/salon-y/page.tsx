@@ -143,6 +143,31 @@ useEffect(() => {
     {salonInfo?.opening_hours || "10:00 - 19:00"}
   </p>
 </div>
+<div className="mb-8">
+  <h2 className="mb-4 text-2xl font-bold">Lokacija</h2>
+
+  <iframe
+    src={`https://www.google.com/maps?q=${encodeURIComponent(
+      salonInfo?.address || ""
+    )}&output=embed`}
+    width="100%"
+    height="300"
+    style={{ border: 0 }}
+    loading="lazy"
+    className="rounded-xl"
+  />
+
+  <a
+    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+      salonInfo?.address || ""
+    )}`}
+    target="_blank"
+    rel="noopener noreferrer"
+    className="mt-4 inline-block rounded-xl bg-black px-5 py-3 font-semibold text-white"
+  >
+    Otvori u Google Maps
+  </a>
+</div>
 </div> 
             <span>⭐ 4.8 (98 recenzije)</span>
             <span>📍 Tuzla</span>
