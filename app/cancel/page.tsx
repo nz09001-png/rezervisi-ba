@@ -24,6 +24,19 @@ export default function CancelPage() {
 
     setLoading(true);
 
+    const { data: bookingData } = await supabase
+  .from("bookings")
+  .select("*")
+  .eq("id", bookingId)
+  .eq("cancel_token", token)
+  .single();
+
+  const { data: salonData } = await supabase
+  .from("salons")
+  .select("id")
+  .eq("salon_name", bookingData?.salon)
+  .single();
+    
     const { error } = await supabase
   .from("bookings")
   .delete()
@@ -36,6 +49,16 @@ export default function CancelPage() {
       setLoading(false);
       return;
     }
+
+    if (salonData?.id && bookingData) {
+  await supabase.from("admin_notifications").insert({
+    salon_id: salonData.id,
+    type: "booking_cancelled",
+    title: "Avbokning",
+    message: `${bookingData.customer_name} har avbokat ${bookingData.booking_time} den ${bookingData.booking_date}`,
+    is_read: false,
+  });
+}
 
     setCancelled(true);
     setLoading(false);

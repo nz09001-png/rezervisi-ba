@@ -11,6 +11,8 @@ function BookingContent() {
   const [services, setServices] = useState<any[]>([]);
 const [selectedService, setSelectedService] = useState("");
 const [selectedServiceDuration, setSelectedServiceDuration] = useState(60);
+const [barbers, setBarbers] = useState<any[]>([]);
+const [selectedBarber, setSelectedBarber] = useState("");
 
   const searchParams = useSearchParams();
 const salon = searchParams.get("salon") || "Salon X";
@@ -44,6 +46,27 @@ const salonId =
 
   fetchServices();
 }, [salonId]);
+useEffect(() => {
+  async function fetchBarbers() {
+    if (!salonId) return;
+
+    const { data, error } = await supabase
+      .from("barbers")
+      .select("*")
+      .eq("salon_id", salonId)
+      .eq("is_active", true)
+      .order("name", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setBarbers(data || []);
+  }
+
+  fetchBarbers();
+}, [salonId]);
 
   async function handleBooking(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -57,6 +80,21 @@ const salonId =
     const email = formData.get("email") as string;
     const cancelToken = crypto.randomUUID();
 
+    const { data: salonData, error: salonError } = await supabase
+  .from("salons")
+  .select("id, salon_name")
+  .eq("salon_name", salon)
+  .single();
+  
+  
+
+if (salonError || !salonData) {
+  alert("Kunde inte hitta salongen.");
+  console.error(salonError);
+  setLoading(false);
+  return;
+}
+    
     const { data: existingBooking } = await supabase
       .from("bookings")
       .select("*")
@@ -82,6 +120,7 @@ const salonId =
     service: service,
     booking_time: time,
     booking_date: bookingDate,
+    barber_name: selectedBarber,
   })
   .select()
   .single();
@@ -91,6 +130,15 @@ const salonId =
       setLoading(false);
       return;
     }
+
+await supabase.from("admin_notifications").insert({
+  salon_id: salonData.id,
+  type: "booking_created",
+  title: "Ny bokning",
+  message: `${customerName} har bokat ${time} den ${bookingDate} hos ${selectedBarber}`,
+  is_read: false,
+});
+
     await fetch("/api/send-email", {
   method: "POST",
   headers: {
@@ -174,6 +222,26 @@ const salonId =
   </option>
 ))}
   </select>
+  <div className="mt-4">
+  <label className="mb-2 block font-medium">
+    Odaberite frizera
+  </label>
+
+  <select
+    value={selectedBarber}
+    onChange={(e) => setSelectedBarber(e.target.value)}
+    className="w-full rounded-lg border p-3"
+    required
+  >
+    <option value="">Odaberite frizera</option>
+
+    {barbers.map((barber) => (
+      <option key={barber.id} value={barber.name}>
+        {barber.name}
+      </option>
+    ))}
+  </select>
+</div>
 </div>
           <div>
             <label className="block mb-1 font-medium">Ime i prezime</label>

@@ -25,6 +25,7 @@ const [servicePrice, setServicePrice] = useState("");
 const [serviceDuration, setServiceDuration] = useState("60");
 const [times, setTimes] = useState<any[]>([]);
 const [newTime, setNewTime] = useState("");
+const [notifications, setNotifications] = useState<any[]>([]);
 
   function handleLogin() {
   if (password.trim() === salon?.admin_password) {
@@ -94,6 +95,43 @@ async function fetchTimes() {
   setTimes(data || []);
   console.log("TIMES DATA:", data);
 }
+async function fetchNotifications() {
+  if (!salon?.id) return;
+
+  console.log("HÄMTAR NOTISER FÖR SALON ID:", salon.id);
+
+  const { data, error } = await supabase
+    .from("admin_notifications")
+    .select("*")
+    .eq("salon_id", salon.id)
+    .order("created_at", { ascending: false });
+
+  console.log("NOTISER DATA:", data);
+  console.log("NOTISER ERROR:", error);
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  setNotifications(data || []);
+}
+
+async function markNotificationAsRead(id: number) {
+  const { error } = await supabase
+    .from("admin_notifications")
+    .update({ is_read: true })
+    .eq("id", id);
+
+  if (error) {
+    console.error(error);
+    alert("Kunde inte markera notisen som läst.");
+    return;
+  }
+
+  fetchNotifications();
+}
+
 async function handleAddTime() {
   if (!newTime.trim()) {
     alert("Unesite vrijeme.");
@@ -276,13 +314,14 @@ useEffect(() => {
 }, [salonSlug]);
 
   useEffect(() => {
-  if (isLoggedIn) {
+  if (isLoggedIn && salon?.id) {
     fetchBookings();
     fetchSalonInfo();
     fetchServices();
     fetchTimes();
+    fetchNotifications();
   }
-}, [isLoggedIn]);
+}, [isLoggedIn, salon]);
 
 
 const today = new Date().toISOString().split("T")[0];
@@ -374,6 +413,43 @@ if (!isLoggedIn) {
   <h1 className="text-4xl font-bold">
   {salon?.salon_name} Admin ({filteredBookings.length})
 </h1>
+<div className="mb-8 mt-6 rounded-2xl bg-white p-6 shadow">
+  <h2 className="mb-4 text-2xl font-bold">
+    🔔 Notiser
+  </h2>
+
+  {notifications.length === 0 ? (
+    <p>Inga notiser.</p>
+  ) : (
+    <div className="space-y-3">
+      {notifications.map((notification) => (
+  <div
+    key={notification.id}
+    className="rounded-xl border p-4"
+  >
+    <p className="font-semibold">
+      {notification.title}
+    </p>
+
+    <p className="text-gray-600">
+      {notification.message}
+    </p>
+
+    {!notification.is_read && (
+      <button
+        onClick={() =>
+          markNotificationAsRead(notification.id)
+        }
+        className="mt-3 rounded-lg bg-black px-4 py-2 text-white"
+      >
+        ✓ Markera som läst
+      </button>
+    )}
+  </div>
+))}
+    </div>
+  )}
+</div>
   
 
   <button
@@ -635,6 +711,9 @@ if (!isLoggedIn) {
 </p>
         <p>
   <strong>Usluga:</strong> {booking.service || "Nije odabrano"}
+</p>
+<p>
+  <strong>Frizer:</strong> {booking.barber_name || "Nije odabran"}
 </p>
         <p>
           <strong>Salon:</strong> {booking.salon}
