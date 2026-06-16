@@ -55,7 +55,7 @@ export default function CancelPage() {
     salon_id: salonData.id,
     type: "booking_cancelled",
     title: "Avbokning",
-    message: `${bookingData.customer_name} har avbokat ${bookingData.booking_time} den ${bookingData.booking_date}`,
+    message: `${bookingData.customer_name} har avbokat ${bookingData.booking_time} den ${bookingData.booking_date} hos ${bookingData.barber_name}`,
     is_read: false,
   });
 }

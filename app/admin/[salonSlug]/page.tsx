@@ -26,6 +26,12 @@ const [serviceDuration, setServiceDuration] = useState("60");
 const [times, setTimes] = useState<any[]>([]);
 const [newTime, setNewTime] = useState("");
 const [notifications, setNotifications] = useState<any[]>([]);
+const [barbers, setBarbers] = useState<any[]>([]);
+const [newBarberName, setNewBarberName] = useState("");
+const [closedDays, setClosedDays] = useState<any[]>([]);
+const [closedDate, setClosedDate] = useState("");
+const [closedReason, setClosedReason] = useState("");
+const [closedEndDate, setClosedEndDate] = useState("");
 
   function handleLogin() {
   if (password.trim() === salon?.admin_password) {
@@ -94,6 +100,38 @@ async function fetchTimes() {
 
   setTimes(data || []);
   console.log("TIMES DATA:", data);
+}
+async function fetchBarbers() {
+  if (!salon?.id) return;
+
+  const { data, error } = await supabase
+    .from("barbers")
+    .select("*")
+    .eq("salon_id", salon.id)
+    .order("name", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  setBarbers(data || []);
+}
+async function fetchClosedDays() {
+  if (!salon?.id) return;
+
+  const { data, error } = await supabase
+    .from("closed_days")
+    .select("*")
+    .eq("salon_id", salon.id)
+    .order("date", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  setClosedDays(data || []);
 }
 async function fetchNotifications() {
   if (!salon?.id) return;
@@ -169,6 +207,112 @@ async function handleDeleteTime(id: number) {
   }
 
   fetchTimes();
+}
+
+
+
+
+  async function handleAddBarber() {
+  if (!newBarberName.trim()) {
+    alert("Unesite ime frizera.");
+    return;
+  }
+
+  const { error } = await supabase
+    .from("barbers")
+    .insert({
+      salon_id: salon?.id,
+      name: newBarberName,
+      is_active: true,
+    });
+
+  if (error) {
+    alert("Greška pri dodavanju frizera.");
+    console.error(error);
+    return;
+  }
+
+  setNewBarberName("");
+  fetchBarbers();
+}
+
+async function handleDeleteBarber(id: number) {
+  const confirmDelete = confirm("Da li ste sigurni da želite obrisati frizera?");
+
+  if (!confirmDelete) return;
+
+  const { error } = await supabase
+    .from("barbers")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    alert("Greška pri brisanju frizera.");
+    console.error(error);
+    return;
+  }
+
+  fetchBarbers();
+}
+
+async function handleAddClosedDay() {
+  if (!closedDate || !closedEndDate) {
+    alert("Odaberite početni i završni datum.");
+    return;
+  }
+
+  if (new Date(closedEndDate) < new Date(closedDate)) {
+    alert("Završni datum ne može biti prije početnog datuma.");
+    return;
+  }
+
+  const dates = [];
+  const currentDate = new Date(closedDate);
+  const endDate = new Date(closedEndDate);
+
+  while (currentDate <= endDate) {
+    dates.push({
+      salon_id: salon?.id,
+      date: currentDate.toISOString().split("T")[0],
+      reason: closedReason,
+    });
+
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  const { error } = await supabase
+    .from("closed_days")
+    .insert(dates);
+
+  if (error) {
+    alert("Greška pri dodavanju zatvorenih dana.");
+    console.error(error);
+    return;
+  }
+
+  setClosedDate("");
+  setClosedEndDate("");
+  setClosedReason("");
+
+  fetchClosedDays();
+}
+async function handleDeleteClosedDay(id: number) {
+  const confirmDelete = confirm("Da li ste sigurni da želite obrisati zatvoreni dan?");
+
+  if (!confirmDelete) return;
+
+  const { error } = await supabase
+    .from("closed_days")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    alert("Greška pri brisanju zatvorenog dana.");
+    console.error(error);
+    return;
+  }
+
+  fetchClosedDays();
 }
 
 async function handleAddService() {
@@ -319,6 +463,8 @@ useEffect(() => {
     fetchSalonInfo();
     fetchServices();
     fetchTimes();
+    fetchBarbers();
+    fetchClosedDays();
     fetchNotifications();
   }
 }, [isLoggedIn, salon]);
@@ -666,6 +812,106 @@ if (!isLoggedIn) {
     className="rounded bg-black px-4 py-2 text-white"
   >
     + Dodaj termin
+  </button>
+</div>
+
+<div className="mb-6 rounded-2xl bg-white p-4 shadow">
+  <h2 className="mb-4 text-xl font-bold">Frizeri</h2>
+  <div className="mb-6 rounded-2xl bg-white p-4 shadow">
+  <h2 className="mb-4 text-xl font-bold">
+    Zatvoreni dani
+  </h2>
+
+  <div className="mb-4 space-y-2">
+    {closedDays.map((day) => (
+      <div
+        key={day.id}
+        className="rounded-xl bg-gray-50 p-3"
+      >
+        <div className="flex items-center justify-between">
+  <div>
+    <p className="font-semibold">{day.date}</p>
+    <p className="text-sm text-gray-600">
+      {day.reason || "Bez razloga"}
+    </p>
+  </div>
+
+  <button
+    onClick={() => handleDeleteClosedDay(day.id)}
+    className="rounded bg-red-500 px-3 py-1 text-white"
+  >
+    Obriši
+  </button>
+</div>
+      </div>
+    ))}
+  </div>
+
+  <label className="mb-2 block font-medium">
+  Početni datum
+</label>
+  <input
+    type="date"
+    value={closedDate}
+    onChange={(e) => setClosedDate(e.target.value)}
+    className="mb-3 w-full rounded border p-3"
+  />
+  <label className="mb-2 block font-medium">
+  Završni datum
+</label>
+  <input
+  type="date"
+  value={closedEndDate}
+  onChange={(e) => setClosedEndDate(e.target.value)}
+  className="mb-3 w-full rounded border p-3"
+/>
+
+  <input
+    type="text"
+    placeholder="Razlog (npr. godišnji odmor)"
+    value={closedReason}
+    onChange={(e) => setClosedReason(e.target.value)}
+    className="mb-3 w-full rounded border p-3"
+  />
+
+  <button
+    onClick={handleAddClosedDay}
+    className="rounded bg-black px-4 py-2 text-white"
+  >
+    + Dodaj zatvoren dan
+  </button>
+</div>
+
+  <div className="mb-4 space-y-2">
+    {barbers.map((barber) => (
+      <div
+        key={barber.id}
+        className="flex items-center justify-between rounded-xl bg-gray-50 p-3"
+      >
+        <span>{barber.name}</span> 
+        <button
+  onClick={() => handleDeleteBarber(barber.id)}
+  className="rounded bg-red-500 px-3 py-1 text-white"
+>
+  Obriši
+</button>
+      </div>
+    ))}
+  </div>
+
+  <input
+    type="text"
+    placeholder="Ime frizera"
+    value={newBarberName}
+    onChange={(e) => setNewBarberName(e.target.value)}
+    className="mb-3 w-full rounded border p-3"
+  />
+
+  <button
+    onClick={handleAddBarber}
+    className="rounded bg-black px-4 py-2 text-white"
+  >
+    + Dodaj frizera
   </button>
 </div>
 

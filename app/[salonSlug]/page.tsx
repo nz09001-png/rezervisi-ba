@@ -15,6 +15,8 @@ export default function SalonPage() {
   const [selectedDate, setSelectedDate] = useState("");
   const [bookedTimes, setBookedTimes] = useState<string[]>([]);
 const [loadingTimes, setLoadingTimes] = useState(false);
+const [barbers, setBarbers] = useState<any[]>([]);
+const [closedDays, setClosedDays] = useState<any[]>([])
 
   useEffect(() => {
     async function fetchSalon() {
@@ -54,6 +56,46 @@ useEffect(() => {
   }
 
   fetchServices();
+}, [salon]);
+useEffect(() => {
+  async function fetchBarbers() {
+    if (!salon?.id) return;
+
+    const { data, error } = await supabase
+      .from("barbers")
+      .select("*")
+      .eq("salon_id", salon.id)
+      .eq("is_active", true)
+      .order("name", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setBarbers(data || []);
+  }
+
+  fetchBarbers();
+}, [salon]);
+useEffect(() => {
+  async function fetchClosedDays() {
+    if (!salon?.id) return;
+
+    const { data, error } = await supabase
+      .from("closed_days")
+      .select("*")
+      .eq("salon_id", salon.id);
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setClosedDays(data || []);
+  }
+
+  fetchClosedDays();
 }, [salon]);
 useEffect(() => {
   async function fetchTimes() {
@@ -107,10 +149,11 @@ useEffect(() => {
 if (!salon) {
   return <h1>Laddar salong...</h1>;
 }
-
-const availableTimes = times.filter(
-  (item) => !bookedTimes.includes(item.time)
+const selectedClosedDay = closedDays.find(
+  (day) => day.date === selectedDate
 );
+
+const availableTimes = times;
 
 return (
   <main className="min-h-screen bg-[#f7f3ee]">
@@ -184,10 +227,11 @@ return (
 
 <div className="mb-8 space-y-3">
   {services.map((service) => (
-    <div
-      key={service.id}
-      className="flex justify-between rounded-xl bg-gray-50 p-4"
-    >
+  <div
+    key={service.id}
+    className="rounded-xl bg-gray-50 p-4"
+  >
+    <div className="flex justify-between">
       <div>
         <p>✂️ {service.name}</p>
         <p className="text-sm text-gray-500">
@@ -197,7 +241,15 @@ return (
 
       <strong>{service.price} KM</strong>
     </div>
-  ))}
+
+    <p className="mt-3 text-sm text-gray-600">
+      Dostupni frizeri:{" "}
+      {barbers.length > 0
+        ? barbers.map((barber) => barber.name).join(", ")
+        : "Nema dodanih frizera"}
+    </p>
+  </div>
+))}
 </div>
 <h2 className="mb-4 text-2xl font-bold">Odaberi datum</h2>
 
@@ -207,6 +259,17 @@ return (
   onChange={(e) => setSelectedDate(e.target.value)}
   className="mb-8 w-full rounded-xl border p-4"
 />
+{selectedClosedDay && (
+  <div className="mb-8 rounded-xl bg-red-100 p-4 text-red-700">
+    <p className="font-semibold">
+      Salon je zatvoren na odabrani datum.
+    </p>
+
+    <p>
+      {selectedClosedDay.reason || "Nema navedenog razloga."}
+    </p>
+  </div>
+)}
 <h2 className="mb-4 text-2xl font-bold">Slobodni termini</h2>
 
 {!selectedDate && (
@@ -215,7 +278,7 @@ return (
   </p>
 )}
 
-{selectedDate && (
+{selectedDate && !selectedClosedDay && (
   <div className="grid grid-cols-3 gap-4">
     {availableTimes.map((item) => (
       <Link

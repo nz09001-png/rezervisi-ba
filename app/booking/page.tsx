@@ -13,6 +13,7 @@ const [selectedService, setSelectedService] = useState("");
 const [selectedServiceDuration, setSelectedServiceDuration] = useState(60);
 const [barbers, setBarbers] = useState<any[]>([]);
 const [selectedBarber, setSelectedBarber] = useState("");
+const [bookedBarbers, setBookedBarbers] = useState<string[]>([]);
 
   const searchParams = useSearchParams();
 const salon = searchParams.get("salon") || "Salon X";
@@ -68,6 +69,32 @@ useEffect(() => {
   fetchBarbers();
 }, [salonId]);
 
+useEffect(() => {
+  async function fetchBookedBarbers() {
+    if (!salon || !time || !dateFromUrl) return;
+
+    const { data, error } = await supabase
+      .from("bookings")
+      .select("barber_name")
+      .eq("salon", salon)
+      .eq("booking_time", time)
+      .eq("booking_date", dateFromUrl);
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setBookedBarbers(
+      data
+        ?.map((booking) => booking.barber_name)
+        .filter(Boolean) || []
+    );
+  }
+
+  fetchBookedBarbers();
+}, [salon, time, dateFromUrl]);
+
   async function handleBooking(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
@@ -101,6 +128,7 @@ if (salonError || !salonData) {
       .eq("salon", salon)
       .eq("booking_time", time)
       .eq("booking_date", bookingDate)
+      .eq("barber_name", selectedBarber)
       .maybeSingle();
 
     if (existingBooking) {
@@ -235,11 +263,19 @@ await supabase.from("admin_notifications").insert({
   >
     <option value="">Odaberite frizera</option>
 
-    {barbers.map((barber) => (
-      <option key={barber.id} value={barber.name}>
-        {barber.name}
-      </option>
-    ))}
+    {barbers.map((barber) => {
+  const isBooked = bookedBarbers.includes(barber.name);
+
+  return (
+    <option
+      key={barber.id}
+      value={barber.name}
+      disabled={isBooked}
+    >
+      {barber.name} {isBooked ? "- Zauzet u ovom terminu" : ""}
+    </option>
+  );
+})}
   </select>
 </div>
 </div>
