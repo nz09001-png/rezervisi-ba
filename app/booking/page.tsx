@@ -106,6 +106,25 @@ useEffect(() => {
     const service = selectedService;
     const email = formData.get("email") as string;
     const cancelToken = crypto.randomUUID();
+    let finalBarberName = selectedBarber;
+
+if (barbers.length === 0) {
+  finalBarberName = "Nije odabran";
+}
+
+if (selectedBarber === "Bilo koji frizer") {
+  const availableBarber = barbers.find(
+    (barber) => !bookedBarbers.includes(barber.name)
+  );
+
+  if (!availableBarber) {
+    alert("Nema dostupnih frizera u ovom terminu.");
+    setLoading(false);
+    return;
+  }
+
+  finalBarberName = availableBarber.name;
+}
 
     const { data: salonData, error: salonError } = await supabase
   .from("salons")
@@ -148,7 +167,7 @@ if (salonError || !salonData) {
     service: service,
     booking_time: time,
     booking_date: bookingDate,
-    barber_name: selectedBarber,
+    barber_name: finalBarberName,
   })
   .select()
   .single();
@@ -227,68 +246,76 @@ await supabase.from("admin_notifications").insert({
         </p>
 
         <form className="space-y-4" onSubmit={handleBooking}>
-          <div>
+        
+  <div>
   <label className="block mb-1 font-medium">Usluga</label>
-  <select
-  value={selectedService}
-  onChange={(e) => {
-    const selected = services.find(
-      (service) => `${service.name} - ${service.price}` === e.target.value
-    );
 
-    setSelectedService(e.target.value);
-    setSelectedServiceDuration(selected?.duration_minutes || 60);
-  }}
-  className="w-full border p-3 rounded-lg"
-  required
->
+  <select
+    value={selectedService}
+    onChange={(e) => {
+      const selected = services.find(
+        (service) => `${service.name} - ${service.price}` === e.target.value
+      );
+
+      setSelectedService(e.target.value);
+      setSelectedServiceDuration(selected?.duration_minutes || 60);
+    }}
+    className="w-full border p-3 rounded-lg"
+    required
+  >
     <option value="">Odaberite uslugu</option>
 
     {services.map((service) => (
-  <option key={service.id} value={`${service.name} - ${service.price}`}>
-    {service.name} - {service.price} KM - {service.duration_minutes || 60} min
-  </option>
-))}
+      <option key={service.id} value={`${service.name} - ${service.price}`}>
+        {service.name} - {service.price} KM - {service.duration_minutes || 60} min
+      </option>
+    ))}
   </select>
+</div>
+
+{barbers.length > 0 && (
   <div className="mt-4">
-  <label className="mb-2 block font-medium">
-    Odaberite frizera
-  </label>
+    <label className="mb-2 block font-medium">
+      Odaberite frizera
+    </label>
 
-  <select
-    value={selectedBarber}
-    onChange={(e) => setSelectedBarber(e.target.value)}
-    className="w-full rounded-lg border p-3"
-    required
-  >
-    <option value="">Odaberite frizera</option>
-
-    {barbers.map((barber) => {
-  const isBooked = bookedBarbers.includes(barber.name);
-
-  return (
-    <option
-      key={barber.id}
-      value={barber.name}
-      disabled={isBooked}
+    <select
+      value={selectedBarber}
+      onChange={(e) => setSelectedBarber(e.target.value)}
+      className="w-full rounded-lg border p-3"
+      required
     >
-      {barber.name} {isBooked ? "- Zauzet u ovom terminu" : ""}
-    </option>
-  );
-})}
-  </select>
+      <option value="">Odaberite frizera</option>
+<option value="Bilo koji frizer">Bilo koji frizer</option>
+
+      {barbers.map((barber) => {
+        const isBooked = bookedBarbers.includes(barber.name);
+
+        return (
+          <option
+            key={barber.id}
+            value={barber.name}
+            disabled={isBooked}
+          >
+            {barber.name} {isBooked ? "- Zauzet u ovom terminu" : ""}
+          </option>
+        );
+      })}
+    </select>
+  </div>
+)}
+
+<div>
+  <label className="block mb-1 font-medium">Ime i prezime</label>
+
+  <input
+    name="customer_name"
+    className="w-full border p-3 rounded-lg"
+    type="text"
+    placeholder="Ime i prezime"
+    required
+  />
 </div>
-</div>
-          <div>
-            <label className="block mb-1 font-medium">Ime i prezime</label>
-            <input
-              name="customer_name"
-              className="w-full border p-3 rounded-lg"
-              type="text"
-              placeholder="Ditt namn"
-              required
-            />
-          </div>
 
           <div>
             <label className="block mb-1 font-medium">Broj telefona</label>

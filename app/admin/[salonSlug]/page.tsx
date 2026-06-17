@@ -32,6 +32,7 @@ const [closedDays, setClosedDays] = useState<any[]>([]);
 const [closedDate, setClosedDate] = useState("");
 const [closedReason, setClosedReason] = useState("");
 const [closedEndDate, setClosedEndDate] = useState("");
+const [bookingTab, setBookingTab] = useState("aktivne");
 
   function handleLogin() {
   if (password.trim() === salon?.admin_password) {
@@ -507,6 +508,16 @@ const filteredBookings = bookings.filter((booking) => {
   return true;
 });
 
+const todayDate = new Date().toISOString().split("T")[0];
+
+const activeBookings = filteredBookings.filter(
+  (booking) => booking.booking_date >= todayDate
+);
+
+const completedBookings = filteredBookings.filter(
+  (booking) => booking.booking_date < todayDate
+);
+
 const todaysBookings = bookings.filter(
   (booking) => booking.booking_date === today
 );
@@ -925,8 +936,27 @@ if (!isLoggedIn) {
     className="rounded border p-3"
   />
 </div>
+       <div className="mb-6 flex gap-2">
+  <button
+    onClick={() => setBookingTab("aktivne")}
+    className={`rounded px-4 py-2 text-white ${
+      bookingTab === "aktivne" ? "bg-black" : "bg-gray-500"
+    }`}
+  >
+    Aktivne rezervacije ({activeBookings.length})
+  </button>
+
+  <button
+    onClick={() => setBookingTab("zavrsene")}
+    className={`rounded px-4 py-2 text-white ${
+      bookingTab === "zavrsene" ? "bg-black" : "bg-gray-500"
+    }`}
+  >
+    Završene rezervacije ({completedBookings.length})
+  </button>
+</div>
         <div className="grid gap-4">
-  {filteredBookings.map((booking) => (
+  {(bookingTab === "aktivne" ? activeBookings : completedBookings).map((booking) => (
     <div
       key={booking.id}
       className="rounded-2xl bg-white p-5 shadow"
