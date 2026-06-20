@@ -11,6 +11,8 @@ function TimesContent() {
   const serviceId = searchParams.get("serviceId");
   const [service, setService] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState("");
+  const [selectedTime, setSelectedTime] = useState("");
+  
 
   useEffect(() => {
   async function fetchService() {
@@ -70,8 +72,8 @@ function TimesContent() {
         <div className="flex flex-col items-center">
           <div
             style={{
-              width: "25px",
-              height: "25px",
+              width: "18px",
+              height: "18px",
               borderRadius: "9999px",
               display: "flex",
               alignItems: "center",
@@ -97,8 +99,8 @@ function TimesContent() {
         {index < 3 && (
   <div
     style={{
-      width: "55px",
-      height: "2px",
+      width: "15px",
+      height: "1px",
       backgroundColor: index === 0 ? "#611a1a" : "#d1d5db",
       marginBottom: "24px",
     }}
@@ -129,7 +131,7 @@ function TimesContent() {
         ].map((item) => (
           <div
             key={item.day}
-            className="min-h-[3600px] border-r border-gray-200 bg-white last:border-r-0"
+            className="min-h-[360px] border-r border-gray-200 bg-white last:border-r-0"
           >
             <div className="border-b border-gray-200 bg-white p-4 text-center">
               <p className="text-lg font-semibold text-[#611a1a]">
@@ -150,18 +152,55 @@ function TimesContent() {
                 ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"].map(
                   (time) => (
                     <button
-                      key={time}
-                      className="w-full rounded-lg border border-[#611a1a] bg-white py-2 text-sm font-bold text-[#611a1a] transition-all duration-200 hover:bg-[#611a1a] hover:text-white"
-                    >
-                      {time}
-                    </button>
+  key={time}
+  type="button"
+  onClick={() => setSelectedTime(`${item.day}-${time}`)}
+  style={{
+    backgroundColor:
+      selectedTime === `${item.day}-${time}`
+        ? "#611a1a"
+        : "#ffffff",
+    color:
+      selectedTime === `${item.day}-${time}`
+        ? "#ffffff"
+        : "#611a1a",
+    border: "1px solid #611a1a",
+  }}
+  className="w-full rounded-xl py-2 font-bold"
+>
+  {time}
+</button>
                   )
                 )
               )}
             </div>
           </div>
         ))}
-      </div>
+                  </div>
+
+      <div
+  style={{
+    display: "flex",
+    justifyContent: "flex-end",
+    width: "100%",
+    marginTop: "24px",
+  }}
+>
+  <button
+    type="button"
+    disabled={!selectedTime}
+    style={{
+      backgroundColor: selectedTime ? "#611a1a" : "#e5e7eb",
+      color: selectedTime ? "#ffffff" : "#9ca3af",
+      padding: "12px 40px",
+      borderRadius: "16px",
+      fontWeight: "700",
+    }}
+  >
+    Nastavi
+  </button>
+</div>
+
     </div>
   </main>
 );
