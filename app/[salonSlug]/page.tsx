@@ -227,30 +227,40 @@ return (
 
 <div className="mb-8 space-y-3">
   {services.map((service) => (
-  <div
-    key={service.id}
-    className="rounded-xl bg-gray-50 p-4"
-  >
-    <div className="flex justify-between">
+    <div
+      key={service.id}
+      className="flex items-center justify-between border-b border-gray-200 py-6"
+    >
       <div>
-        <p>✂️ {service.name}</p>
-        <p className="text-sm text-gray-500">
-          Trajanje: {service.duration_minutes || 60} min
+        <div className="flex items-center gap-3">
+          <p className="text-xl font-bold text-gray-900">
+            {service.name}
+          </p>
+
+          <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-bold text-gray-700">
+            {service.price} KM
+          </span>
+        </div>
+
+        <p className="mt-1 text-sm text-gray-500">
+          {service.duration_minutes || 60} min
         </p>
       </div>
 
-      <strong>{service.price} KM</strong>
+      <Link
+        href={`/times?salon=${encodeURIComponent(
+          salon.salon_name
+        )}&serviceId=${service.id}`}
+        className="rounded-full border border-green-400 px-6 py-2 font-semibold text-green-500 transition hover:bg-green-500 hover:text-white"
+      >
+        Boka
+      </Link>
     </div>
+  ))}
 
-    <p className="mt-3 text-sm text-gray-600">
-      Dostupni frizeri:{" "}
-      {barbers.length > 0
-        ? barbers.map((barber) => barber.name).join(", ")
-        : "Nema dodanih frizera"}
-    </p>
-  </div>
-))}
+  
 </div>
+
 <h2 className="mb-4 text-2xl font-bold">Odaberi datum</h2>
 
 <input
