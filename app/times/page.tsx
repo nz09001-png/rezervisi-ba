@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 function TimesContent() {
   const searchParams = useSearchParams();
-
+  const router = useRouter();
   const salon = searchParams.get("salon");
   const serviceId = searchParams.get("serviceId");
   const [service, setService] = useState<any>(null);
@@ -14,6 +14,13 @@ function TimesContent() {
   const [selectedTime, setSelectedTime] = useState("");
   
 
+  function handleContinue() {
+  if (!selectedTime) return;
+
+  router.push(
+    `/podaci?salon=${encodeURIComponent(salon || "")}&serviceId=${serviceId}&time=${encodeURIComponent(selectedTime)}`
+  );
+}
   useEffect(() => {
   async function fetchService() {
     if (!serviceId) return;
@@ -189,6 +196,7 @@ function TimesContent() {
   <button
     type="button"
     disabled={!selectedTime}
+    onClick={handleContinue}
     style={{
       backgroundColor: selectedTime ? "#611a1a" : "#e5e7eb",
       color: selectedTime ? "#ffffff" : "#9ca3af",
