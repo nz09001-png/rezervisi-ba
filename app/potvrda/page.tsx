@@ -125,47 +125,89 @@ useEffect(() => {
   </div>
 </div>
 
-        <div className="mx-auto max-w-xl rounded-3xl border border-[#611a1a] bg-white p-8 shadow-sm">
-  <h2 className="mb-4 text-xl font-bold">
-    Podaci korisnika
-  </h2>
+        <div className="mx-auto max-w-xl rounded-3xl border border-[#611a1a] bg-white p-6 shadow-sm">
+  <h2 className="mb-8 text-xl font-bold text-[#611a1a]">
+  Podaci korisnika
+</h2>
 
- <div style={{ display: "flex", gap: "16px", marginBottom: "12px" }}>
-  <span style={{ fontWeight: "700", color: "#611a1a", minWidth: "90px" }}>
-    Ime:
-  </span>
-  <span>{ime}</span>
+<div className="mx-auto" style={{ width: "290px" }}>
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "120px 1fr",
+      padding: "8px 0",
+      borderBottom: "1px solid #f1f1f1",
+      alignItems: "center",
+    }}
+  >
+    <span style={{ fontWeight: "700", color: "#611a1a", textAlign: "right", paddingRight: "20px" }}>
+      Ime:
+    </span>
+    <span>{ime}</span>
+  </div>
+
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "120px 1fr",
+      padding: "8px 0",
+      borderBottom: "1px solid #f1f1f1",
+      alignItems: "center",
+    }}
+  >
+    <span style={{ fontWeight: "700", color: "#611a1a", textAlign: "right", paddingRight: "20px" }}>
+      Prezime:
+    </span>
+    <span>{prezime}</span>
+  </div>
+
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "120px 1fr",
+      padding: "8px 0",
+      borderBottom: "1px solid #f1f1f1",
+      alignItems: "center",
+    }}
+  >
+    <span style={{ fontWeight: "700", color: "#611a1a", textAlign: "right", paddingRight: "20px" }}>
+      Telefon:
+    </span>
+    <span>{phoneCode} {phone}</span>
+  </div>
+
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "120px 1fr",
+      padding: "8px 0",
+      borderBottom: "1px solid #f1f1f1",
+      alignItems: "center",
+    }}
+  >
+    <span style={{ fontWeight: "700", color: "#611a1a", textAlign: "right", paddingRight: "20px" }}>
+      Email:
+    </span>
+    <span>{email}</span>
+  </div>
+
+  <div
+    style={{
+      display: "grid",
+      gridTemplateColumns: "120px 1fr",
+      padding: "8px 0",
+      borderBottom: "1px solid #f1f1f1",
+      alignItems: "center",
+    }}
+  >
+    <span style={{ fontWeight: "700", color: "#611a1a", textAlign: "right", paddingRight: "20px" }}>
+      Napomena:
+    </span>
+    <span>{napomena || "Nema napomene"}</span>
+  </div>
 </div>
 
-<div style={{ display: "flex", gap: "16px", marginBottom: "12px" }}>
-  <span style={{ fontWeight: "700", color: "#611a1a", minWidth: "90px" }}>
-    Prezime:
-  </span>
-  <span>{prezime}</span>
-</div>
-
-<div style={{ display: "flex", gap: "16px", marginBottom: "12px" }}>
-  <span style={{ fontWeight: "700", color: "#611a1a", minWidth: "90px" }}>
-    Telefon:
-  </span>
-  <span>{phoneCode} {phone}</span>
-</div>
-
-<div style={{ display: "flex", gap: "16px", marginBottom: "12px" }}>
-  <span style={{ fontWeight: "700", color: "#611a1a", minWidth: "90px" }}>
-    Email:
-  </span>
-  <span>{email}</span>
-</div>
-
-<div style={{ display: "flex", gap: "16px", marginBottom: "12px" }}>
-  <span style={{ fontWeight: "700", color: "#611a1a", minWidth: "90px" }}>
-    Napomena:
-  </span>
-  <span>{napomena || "Nema napomene"}</span>
-</div>
-
-  <div className="mt-10 flex justify-center">
+<div className="mt-10 flex justify-center">
     <button
       type="button"
       style={{
