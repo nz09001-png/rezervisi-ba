@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 export default function PodaciPage() {
 
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   const salon = searchParams.get("salon");
   const serviceId = searchParams.get("serviceId");
@@ -18,6 +19,21 @@ const [phoneCode, setPhoneCode] = useState("+387");
 const [phone, setPhone] = useState("");
 const [email, setEmail] = useState("");
 const [napomena, setNapomena] = useState("");
+const handleNext = () => {
+  const params = new URLSearchParams({
+    salon: salon || "",
+    serviceId: serviceId || "",
+    time: time || "",
+    ime,
+    prezime,
+    phoneCode,
+    phone,
+    email,
+    napomena,
+  });
+
+  router.push(`/potvrda?${params.toString()}`);
+};
 
 useEffect(() => {
   async function fetchService() {
@@ -160,10 +176,12 @@ useEffect(() => {
 </label>
 
     <input
-      type="text"
-      placeholder="Unesite prezime"
-      className="w-full rounded-xl border border-[#611a1a] p-3"
-    />
+  type="text"
+  value={prezime}
+  onChange={(e) => setPrezime(e.target.value)}
+  placeholder="Unesite prezime"
+  className="w-full rounded-xl border border-[#611a1a] p-3"
+/>
   </div>
 
 </div>
@@ -178,7 +196,8 @@ useEffect(() => {
 
   <div className="flex gap-3">
     <select
-  defaultValue="+387"
+  value={phoneCode}
+  onChange={(e) => setPhoneCode(e.target.value)}
   className="w-40 rounded-xl border border-[#611a1a] px-4 py-3"
 >
   <option value="+387">🇧🇦 +387</option>
@@ -195,10 +214,12 @@ useEffect(() => {
 </select>
 
     <input
-      type="tel"
-      placeholder="Unesite broj telefona"
-      className="w-full rounded-xl border border-gray-300 p-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
-    />
+  type="tel"
+  value={phone}
+  onChange={(e) => setPhone(e.target.value)}
+  placeholder="Unesite broj telefona"
+  className="w-full rounded-xl border border-gray-300 p-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
+/>
   </div>
 </div>
 
@@ -211,10 +232,12 @@ useEffect(() => {
 </label>
 
   <input
-    type="email"
-    placeholder="Unesite email adresu"
-    className="w-full rounded-xl border border-[#611a1a] p-3"
-  />
+  type="email"
+  value={email}
+  onChange={(e) => setEmail(e.target.value)}
+  placeholder="Unesite email adresu"
+  className="w-full rounded-xl border border-[#611a1a] p-3"
+/>
 </div>
 
 <div className="mb-6">
@@ -226,15 +249,18 @@ useEffect(() => {
 </label>
 
   <textarea
-    placeholder="Dodatne informacije..."
-    rows={4}
-    className="w-full rounded-xl border border-[#611a1a] p-3"
-  />
+  value={napomena}
+  onChange={(e) => setNapomena(e.target.value)}
+  placeholder="Dodatne informacije..."
+  rows={4}
+  className="w-full rounded-xl border border-[#611a1a] p-3"
+/>
 </div>
 
 <div className="mt-8 flex justify-end">
   <button
     type="button"
+    onClick={handleNext}
     style={{
       backgroundColor: "#611a1a",
       color: "white",
