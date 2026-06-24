@@ -42,16 +42,55 @@ useEffect(() => {
   return (
     <main className="min-h-screen bg-white px-8 py-6">
       <div className="mx-auto max-w-3xl">
-        <div className="mb-10">
-          <h1 className="text-3xl font-bold text-gray-950">
+        <div className="mb-6 flex items-end justify-between">
+          <h1
+  className="text-3xl font-bold text-gray-950"
+  style={{ marginLeft: "310px" }}
+>
             Potvrda rezervacije
           </h1>
+          <div
+  className="flex items-center gap-2"
+  style={{ marginRight: "170px" }}
+>
+  {[1, 2, 3, 4].map((step) => (
+    <div key={step} className="flex items-center gap-2">
+      <div
+        style={{
+          width: "18px",
+          height: "18px",
+          borderRadius: "9999px",
+          backgroundColor: "#611a1a",
+          color: "white",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "10px",
+          fontWeight: "bold",
+        }}
+      >
+        {step}
+      </div>
+
+      {step < 4 && (
+        <div
+          style={{
+            width: "20px",
+            height: "1px",
+            backgroundColor: "#611a1a",
+          }}
+        />
+      )}
+    </div>
+  ))}
+</div>
           <div className="mt-4 h-1.5 w-24 bg-[#611a1a]" />
         </div>
         
   <div
-  className="mx-auto mb-8 max-w-xl py-2"
+  className="mx-auto mb-2 max-w-xl py-2"
   style={{
+    marginTop: "0px",
     borderTop: "1px solid #611a1a",
     borderBottom: "1px solid #611a1a",
   }}
@@ -59,7 +98,7 @@ useEffect(() => {
   <div
     style={{
       borderBottom: "1px solid #611a1a",
-      padding: "12px 0",
+      padding: "4px 0",
     }}
   >
     <p className="text-sm font-bold text-[#611a1a]">
@@ -73,7 +112,7 @@ useEffect(() => {
   <div
     style={{
       borderBottom: "1px solid #611a1a",
-      padding: "12px 0",
+      padding: "4px 0",
     }}
   >
     <p className="text-sm font-bold text-[#611a1a]">
@@ -84,7 +123,7 @@ useEffect(() => {
     </p>
   </div>
 
-  <div style={{ padding: "12px 0" }}>
+  <div style={{ padding: "4px 0" }}>
     <p className="text-sm font-bold text-[#611a1a]">
       Vrijeme:
     </p>
@@ -93,55 +132,7 @@ useEffect(() => {
     </p>
   </div>
 </div>
-<div
-  className="mx-auto mb-6 flex max-w-xl justify-end"
-  style={{ transform: "translateX(200px)" }}
->
-  <div className="flex items-center gap-2">
-    {[
-      { nr: "1", label: "USLUGA" },
-      { nr: "2", label: "VRIJEME" },
-      { nr: "3", label: "PODACI" },
-      { nr: "4", label: "POTVRDA" },
-    ].map((step, index) => (
-      <div key={step.nr} className="flex items-center gap-3">
-        <div className="flex flex-col items-center">
-          <div
-            style={{
-              width: "16px",
-              height: "16px",
-              borderRadius: "9999px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "10px",
-              fontWeight: "bold",
-              backgroundColor: "#611a1a",
-              color: "white",
-            }}
-          >
-            {step.nr}
-          </div>
 
-          <p className="mt-1 text-[10px] font-semibold tracking-wide text-[#611a1a]">
-            {step.label}
-          </p>
-        </div>
-
-        {index < 3 && (
-          <div
-            style={{
-              width: "14px",
-              height: "1px",
-              backgroundColor: "#611a1a",
-              marginBottom: "22px",
-            }}
-          />
-        )}
-      </div>
-    ))}
-  </div>
-</div>
 
 
         <div
