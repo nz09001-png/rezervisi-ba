@@ -50,6 +50,12 @@ export async function POST(req: Request) {
   bookingId,
   cancelToken,
 } = await req.json();
+if (!email || !email.trim()) {
+  return NextResponse.json({
+    skipped: true,
+    message: "Email nije unesen, potvrda nije poslana.",
+  });
+}
 
     const cancelUrl = `http://localhost:3000/cancel?id=${bookingId}&token=${cancelToken}`;
 

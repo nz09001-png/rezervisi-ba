@@ -9,7 +9,8 @@ export default function PotvrdaPage() {
 
   const salon = searchParams.get("salon");
   const serviceId = searchParams.get("serviceId");
-  const time = searchParams.get("time");
+const date = searchParams.get("date");
+const time = searchParams.get("time");
   const ime = searchParams.get("ime");
   const prezime = searchParams.get("prezime");
   const phoneCode = searchParams.get("phoneCode");
@@ -17,6 +18,7 @@ export default function PotvrdaPage() {
   const email = searchParams.get("email");
   const napomena = searchParams.get("napomena");
   const [service, setService] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
 
 useEffect(() => {
   async function fetchService() {
@@ -38,6 +40,24 @@ useEffect(() => {
 
   fetchService();
 }, [serviceId]);
+async function handleConfirmBooking() {
+  setLoading(true);
+
+  console.log("Bokning ska sparas:", {
+    salon,
+    service,
+    date,
+    time,
+    ime,
+    prezime,
+    phoneCode,
+    phone,
+    email,
+    napomena,
+  });
+
+  setLoading(false);
+}
 
   return (
     <main className="min-h-screen bg-white px-8 py-6">
@@ -256,6 +276,8 @@ useEffect(() => {
 <div className="mt-10 flex justify-center">
     <button
       type="button"
+      onClick={handleConfirmBooking}
+      disabled={loading}
       style={{
         backgroundColor: "#611a1a",
         color: "white",
@@ -264,9 +286,9 @@ useEffect(() => {
         fontWeight: "bold",
       }}
     >
-      Potvrdi rezervaciju
+      {loading ? "Potvrđuje se..." : "Potvrdi rezervaciju"}
     </button>
-  </div>
+</div>
 </div>
       </div>
     </main>

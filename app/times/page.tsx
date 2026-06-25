@@ -18,7 +18,7 @@ function TimesContent() {
   if (!selectedTime) return;
 
   router.push(
-    `/podaci?salon=${encodeURIComponent(salon || "")}&serviceId=${serviceId}&time=${encodeURIComponent(selectedTime)}`
+    `/podaci?salon=${encodeURIComponent(salon || "")}&serviceId=${serviceId}&date=${encodeURIComponent(selectedDate)}&time=${encodeURIComponent(selectedTime)}`
   );
 }
   useEffect(() => {
@@ -161,7 +161,10 @@ function TimesContent() {
                     <button
   key={time}
   type="button"
-  onClick={() => setSelectedTime(`${item.day}-${time}`)}
+  onClick={() => {
+  setSelectedDate(item.date);
+  setSelectedTime(`${item.day}-${time}`);
+}}
   style={{
     backgroundColor:
       selectedTime === `${item.day}-${time}`

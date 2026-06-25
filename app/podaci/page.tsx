@@ -10,8 +10,9 @@ export default function PodaciPage() {
   const router = useRouter();
 
   const salon = searchParams.get("salon");
-  const serviceId = searchParams.get("serviceId");
-  const time = searchParams.get("time");
+const serviceId = searchParams.get("serviceId");
+const date = searchParams.get("date");
+const time = searchParams.get("time");
   const [service, setService] = useState<any>(null);
   const [ime, setIme] = useState("");
 const [prezime, setPrezime] = useState("");
@@ -20,17 +21,23 @@ const [phone, setPhone] = useState("");
 const [email, setEmail] = useState("");
 const [napomena, setNapomena] = useState("");
 const handleNext = () => {
+  if (!ime.trim() || !prezime.trim() || !phone.trim()) {
+    alert("Molimo unesite ime, prezime i broj telefona.");
+    return;
+  }
+
   const params = new URLSearchParams({
-    salon: salon || "",
-    serviceId: serviceId || "",
-    time: time || "",
-    ime,
-    prezime,
-    phoneCode,
-    phone,
-    email,
-    napomena,
-  });
+  salon: salon || "",
+  serviceId: serviceId || "",
+  date: date || "",
+  time: time || "",
+  ime,
+  prezime,
+  phoneCode,
+  phone,
+  email,
+  napomena,
+});
 
   router.push(`/potvrda?${params.toString()}`);
 };
@@ -217,10 +224,19 @@ useEffect(() => {
   type="tel"
   value={phone}
   onChange={(e) => setPhone(e.target.value)}
-  placeholder="Unesite broj telefona"
+  placeholder="Primjer: 061 234 567"
   className="w-full rounded-xl border border-gray-300 p-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
 />
   </div>
+  <p
+  style={{
+    fontSize: "13px",
+    color: "#666",
+    marginTop: "8px",
+  }}
+>
+  Unesite broj telefona kako biste primili potvrdu rezervacije i podsjetnike.
+</p>
 </div>
 
 <div className="mb-6">
@@ -228,14 +244,14 @@ useEffect(() => {
   style={{ color: "#611a1a" }}
   className="mb-2 block font-semibold"
 >
-  Email *
+  Email
 </label>
 
   <input
   type="email"
   value={email}
   onChange={(e) => setEmail(e.target.value)}
-  placeholder="Unesite email adresu"
+  placeholder= "Unesite email adresu ako želite primiti potvrdu i putem emaila."
   className="w-full rounded-xl border border-[#611a1a] p-3"
 />
 </div>
