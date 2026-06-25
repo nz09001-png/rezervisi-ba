@@ -44,14 +44,17 @@ useEffect(() => {
       <div className="mx-auto max-w-3xl">
         <div className="mb-6 flex items-end justify-between">
           <h1
-  className="text-3xl font-bold text-gray-950"
-  style={{ marginLeft: "310px" }}
+  className="text-3xl font-bold"
+  style={{
+    marginLeft: "310px",
+    color: "#611a1a",
+  }}
 >
             Potvrda rezervacije
           </h1>
           <div
   className="flex items-center gap-2"
-  style={{ marginRight: "170px" }}
+  style={{ marginRight: "195px" }}
 >
   {[1, 2, 3, 4].map((step) => (
     <div key={step} className="flex items-center gap-2">
@@ -101,9 +104,15 @@ useEffect(() => {
       padding: "4px 0",
     }}
   >
-    <p className="text-sm font-bold text-[#611a1a]">
-      Salon:
-    </p>
+    <p
+  style={{
+    color: "#611a1a",
+    fontWeight: "bold",
+    fontSize: "14px",
+  }}
+>
+  Salon:
+</p>
     <p className="font-semibold">
       {salon}
     </p>
@@ -115,18 +124,30 @@ useEffect(() => {
       padding: "4px 0",
     }}
   >
-    <p className="text-sm font-bold text-[#611a1a]">
-      Usluga:
-    </p>
+    <p
+  style={{
+    color: "#611a1a",
+    fontWeight: "bold",
+    fontSize: "14px",
+  }}
+>
+  Usluga:
+</p>
     <p className="font-semibold">
       {service ? `${service.name} - ${service.price} KM` : "Učitava se..."}
     </p>
   </div>
 
   <div style={{ padding: "4px 0" }}>
-    <p className="text-sm font-bold text-[#611a1a]">
-      Vrijeme:
-    </p>
+    <p
+  style={{
+    color: "#611a1a",
+    fontWeight: "bold",
+    fontSize: "14px",
+  }}
+>
+  Vrijeme:
+</p>
     <p className="font-semibold">
       {time}
     </p>
