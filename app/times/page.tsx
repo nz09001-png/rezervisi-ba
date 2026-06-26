@@ -128,14 +128,14 @@ function TimesContent() {
         }}
       >
         {[
-          { day: "Pon", date: "23" },
-          { day: "Uto", date: "24" },
-          { day: "Sri", date: "25" },
-          { day: "Čet", date: "26" },
-          { day: "Pet", date: "27" },
-          { day: "Sub", date: "28" },
-          { day: "Ned", date: "29" },
-        ].map((item) => (
+  { day: "Pon", label: "23", date: "2026-06-23" },
+  { day: "Uto", label: "24", date: "2026-06-24" },
+  { day: "Sri", label: "25", date: "2026-06-25" },
+  { day: "Čet", label: "26", date: "2026-06-26" },
+  { day: "Pet", label: "27", date: "2026-06-27" },
+  { day: "Sub", label: "28", date: "2026-06-28" },
+  { day: "Ned", label: "29", date: "2026-06-29" },
+].map((item) => (
           <div
             key={item.day}
             className="min-h-[360px] border-r border-gray-200 bg-white last:border-r-0"
@@ -146,7 +146,7 @@ function TimesContent() {
               </p>
 
               <p className="text-4xl font-bold text-[#611a1a]">
-                {item.date}
+                {item.label}
               </p>
             </div>
 
@@ -163,7 +163,7 @@ function TimesContent() {
   type="button"
   onClick={() => {
   setSelectedDate(item.date);
-  setSelectedTime(`${item.day}-${time}`);
+  setSelectedTime(time);
 }}
   style={{
     backgroundColor:

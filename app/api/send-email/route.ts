@@ -88,7 +88,7 @@ if (!email || !email.trim()) {
 
         <p>
           <a href="${cancelUrl}"
-             style="display:inline-block;background:#000;color:#fff;padding:12px 18px;border-radius:8px;text-decoration:none;">
+             style="display:inline-block;background:#611a1a;color:#fff;padding:12px 20px;border-radius:12px;text-decoration:none;">
             Otkaži rezervaciju
           </a>
         </p>
@@ -103,9 +103,14 @@ if (!email || !email.trim()) {
 
     return NextResponse.json(data);
   } catch (error) {
-    return NextResponse.json(
-      { error: "Greška pri slanju emaila" },
-      { status: 500 }
-    );
-  }
+  console.error("SEND EMAIL ERROR:", error);
+
+  return NextResponse.json(
+    {
+      error: "Greška pri slanju emaila",
+      details: String(error),
+    },
+    { status: 500 }
+  );
+}
 }

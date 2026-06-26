@@ -19,6 +19,7 @@ const time = searchParams.get("time");
   const napomena = searchParams.get("napomena");
   const [service, setService] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
 
 useEffect(() => {
   async function fetchService() {
@@ -41,6 +42,7 @@ useEffect(() => {
   fetchService();
 }, [serviceId]);
 async function handleConfirmBooking() {
+  if (confirmed) return;
   setLoading(true);
 
   console.log("Bokning ska sparas:", {
@@ -55,6 +57,53 @@ async function handleConfirmBooking() {
     email,
     napomena,
   });
+  const cancelToken = crypto.randomUUID();
+  const { data, error } = await supabase
+  .from("bookings")
+  .insert([
+    {
+      customer_name: `${ime} ${prezime}`,
+      phone: `${phoneCode} ${phone}`,
+      salon,
+      booking_time: time,
+      booking_date: date,
+      service: service?.name,
+      email: email || null,
+      cancel_token: cancelToken,
+    },
+  ])
+  .select()
+  .single();
+  if (error) {
+  console.error(error);
+  alert("Greška pri spremanju rezervacije.");
+  setLoading(false);
+  return;
+}
+if (email && email.trim()) {
+  const emailResponse = await fetch("/api/send-email", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email,
+      salon,
+      service: service?.name,
+      date,
+      time,
+      durationMinutes: service?.duration_minutes || 60,
+      bookingId: data.id,
+      cancelToken,
+    }),
+  });
+
+  const emailResult = await emailResponse.json();
+
+  console.log("Email-resultat:", emailResult);
+}
+setConfirmed(true);
+alert("Rezervacija je spremljena!");
 
   setLoading(false);
 }
@@ -277,7 +326,7 @@ async function handleConfirmBooking() {
     <button
       type="button"
       onClick={handleConfirmBooking}
-      disabled={loading}
+      disabled={loading || confirmed}
       style={{
         backgroundColor: "#611a1a",
         color: "white",
@@ -286,7 +335,11 @@ async function handleConfirmBooking() {
         fontWeight: "bold",
       }}
     >
-      {loading ? "Potvrđuje se..." : "Potvrdi rezervaciju"}
+      {confirmed
+  ? "Rezervacija potvrđena"
+  : loading
+  ? "Potvrđuje se..."
+  : "Potvrdi rezervaciju"}
     </button>
 </div>
 </div>
