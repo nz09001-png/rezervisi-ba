@@ -18,8 +18,9 @@ const time = searchParams.get("time");
   const email = searchParams.get("email");
   const napomena = searchParams.get("napomena");
   const [service, setService] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [confirmed, setConfirmed] = useState(false);
+const [loading, setLoading] = useState(false);
+const [confirmed, setConfirmed] = useState(false);
+const [timeTaken, setTimeTaken] = useState(false);
 
 useEffect(() => {
   async function fetchService() {
@@ -43,6 +44,8 @@ useEffect(() => {
 }, [serviceId]);
 async function handleConfirmBooking() {
   if (confirmed) return;
+
+  setTimeTaken(false);
   setLoading(true);
 
   console.log("Bokning ska sparas:", {
@@ -58,6 +61,26 @@ async function handleConfirmBooking() {
     napomena,
   });
   const cancelToken = crypto.randomUUID();
+  const { data: existingBooking, error: existingBookingError } = await supabase
+  .from("bookings")
+  .select("id")
+  .eq("salon", salon)
+  .eq("booking_date", date)
+  .eq("booking_time", time)
+  .maybeSingle();
+
+if (existingBookingError) {
+  console.error(existingBookingError);
+  alert("Greška pri provjeri termina.");
+  setLoading(false);
+  return;
+}
+
+if (existingBooking) {
+  setTimeTaken(true);
+  setLoading(false);
+  return;
+}
   const { data, error } = await supabase
   .from("bookings")
   .insert([
@@ -322,6 +345,40 @@ alert("Rezervacija je spremljena!");
   </div>
 </div>
 
+{timeTaken && (
+  <div
+    className="mx-auto mt-8 max-w-md rounded-2xl p-5 text-center"
+    style={{
+      border: "2px solid #611a1a",
+      backgroundColor: "#fff7f7",
+    }}
+  >
+    <p
+      className="mb-2 text-lg font-bold"
+      style={{ color: "#611a1a" }}
+    >
+      ⚠ Termin je upravo rezervisan
+    </p>
+
+    <p className="mb-5 text-sm text-gray-700">
+      Molimo odaberite drugi termin.
+    </p>
+
+    <button
+      type="button"
+      onClick={() => window.history.back()}
+      style={{
+        backgroundColor: "#611a1a",
+        color: "white",
+        padding: "10px 32px",
+        borderRadius: "12px",
+        fontWeight: "bold",
+      }}
+    >
+      Nazad
+    </button>
+  </div>
+)}
 <div className="mt-10 flex justify-center">
     <button
       type="button"
