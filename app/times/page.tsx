@@ -12,6 +12,8 @@ function TimesContent() {
   const [service, setService] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
+  const [bookedTimes, setBookedTimes] = useState<any[]>([]);
+  const [weekOffset, setWeekOffset] = useState(0);
   
 
   function handleContinue() {
@@ -41,8 +43,75 @@ function TimesContent() {
 
   fetchService();
 }, [serviceId]);
+useEffect(() => {
+  async function fetchBookedTimes() {
+    if (!salon) return;
 
-  return (
+    const { data, error } = await supabase
+      .from("bookings")
+      .select("booking_date, booking_time")
+      .eq("salon", salon);
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setBookedTimes(data || []);
+    console.log("Bokade tider:", data);
+  }
+
+  fetchBookedTimes();
+}, [salon]);
+
+  const today = new Date();
+
+const monday = new Date(today);
+const day = monday.getDay();
+const diff = day === 0 ? -6 : 1 - day;
+
+monday.setDate(today.getDate() + diff + weekOffset * 7);
+
+const weekDays = Array.from({ length: 7 }).map((_, index) => {
+  const date = new Date(monday);
+  date.setDate(monday.getDate() + index);
+
+  const dayNames = ["Ned", "Pon", "Uto", "Sri", "Čet", "Pet", "Sub"];
+
+  return {
+    day: dayNames[date.getDay()],
+    label: String(date.getDate()),
+    date: date.toISOString().split("T")[0],
+  };
+});
+const monthNames = [
+  "jan",
+  "feb",
+  "mar",
+  "apr",
+  "maj",
+  "jun",
+  "jul",
+  "aug",
+  "sep",
+  "okt",
+  "nov",
+  "dec",
+];
+
+const startDate = weekDays[0];
+const endDate = weekDays[6];
+
+const startMonth = monthNames[new Date(startDate.date).getMonth()];
+const endMonth = monthNames[new Date(endDate.date).getMonth()];
+
+const weekTitle =
+  startMonth === endMonth
+    ? `${startDate.label}–${endDate.label} ${startMonth}`
+    : `${startDate.label} ${startMonth} – ${endDate.label} ${endMonth}`;
+    const todayOnly = new Date();
+todayOnly.setHours(0, 0, 0, 0);
+return (
   <main className="min-h-screen bg-white px-8 py-6">
     <div className="mx-auto max-w-7xl">
       {service && (
@@ -62,11 +131,44 @@ function TimesContent() {
 
       <div className="mb-10 flex items-end justify-between gap-8">
   <div>
-    <h1 className="text-2xl font-bold text-gray-950">
-      Odaberi termin
-    </h1>
-    <div className="mt-4 h-1.5 w-24 bg-[#611a1a]" />
-  </div>
+  <h1 className="text-2xl font-bold text-gray-950">
+    Odaberi termin
+  </h1>
+
+  <div
+  className="mt-3 flex items-center gap-6"
+  style={{
+    color: "#611a1a",
+    marginLeft: "45px",
+  }}
+>
+  {weekOffset > 0 && (
+    <button
+      type="button"
+      onClick={() => setWeekOffset((prev) => Math.max(0, prev - 1))}
+      style={{ color: "#611a1a" }}
+      className="text-2xl font-bold"
+    >
+      ←
+    </button>
+  )}
+
+  <span className="text-lg font-bold">
+    {weekTitle}
+  </span>
+
+  <button
+    type="button"
+    onClick={() => setWeekOffset((prev) => prev + 1)}
+    style={{ color: "#611a1a" }}
+    className="text-2xl font-bold"
+  >
+    →
+  </button>
+</div>
+
+  <div className="mt-4 h-1.5 w-24 bg-[#611a1a]" />
+</div>
 
   <div className="flex items-center gap-2">
     {[
@@ -127,15 +229,13 @@ function TimesContent() {
           backgroundColor: "#ffffff",
         }}
       >
-        {[
-  { day: "Pon", label: "23", date: "2026-06-23" },
-  { day: "Uto", label: "24", date: "2026-06-24" },
-  { day: "Sri", label: "25", date: "2026-06-25" },
-  { day: "Čet", label: "26", date: "2026-06-26" },
-  { day: "Pet", label: "27", date: "2026-06-27" },
-  { day: "Sub", label: "28", date: "2026-06-28" },
-  { day: "Ned", label: "29", date: "2026-06-29" },
-].map((item) => (
+        {weekDays.map((item) => {
+  const itemDate = new Date(item.date);
+  itemDate.setHours(0, 0, 0, 0);
+
+  const isPastDay = itemDate < todayOnly;
+
+  return (
           <div
             key={item.day}
             className="min-h-[360px] border-r border-gray-200 bg-white last:border-r-0"
@@ -151,41 +251,55 @@ function TimesContent() {
             </div>
 
             <div className="space-y-3 p-4">
-              {item.day === "Ned" ? (
-                <p className="pt-10 text-center text-lg font-medium italic text-[#611a1a]">
-                  Nema termina
-                </p>
-              ) : (
-                ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"].map(
-                  (time) => (
-                    <button
-  key={time}
-  type="button"
-  onClick={() => {
-  setSelectedDate(item.date);
-  setSelectedTime(time);
+              {isPastDay ? (
+  <p className="pt-10 text-center text-lg font-medium italic text-gray-400">
+    Dan je prošao
+  </p>
+) : item.day === "Ned" ? (
+  <p className="pt-10 text-center text-lg font-medium italic text-[#611a1a]">
+    Nema termina
+  </p>
+) : (
+                ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"].map((time) => {
+  const isBooked = bookedTimes.some(
+    (booking) =>
+      booking.booking_date === item.date &&
+      booking.booking_time === time
+  );
+  if (isBooked) return null;
+
+  return (
+    <button
+      key={time}
+      type="button"
+      onClick={() => {
+
+        setSelectedDate(item.date);
+        setSelectedTime(time);
+      }}
+      style={{
+  backgroundColor:
+    selectedTime === time && selectedDate === item.date
+      ? "#611a1a"
+      : "#ffffff",
+  color:
+    selectedTime === time && selectedDate === item.date
+      ? "#ffffff"
+      : "#611a1a",
+  border: "1px solid #611a1a",
+  cursor: "pointer",
 }}
-  style={{
-    backgroundColor:
-      selectedTime === `${item.day}-${time}`
-        ? "#611a1a"
-        : "#ffffff",
-    color:
-      selectedTime === `${item.day}-${time}`
-        ? "#ffffff"
-        : "#611a1a",
-    border: "1px solid #611a1a",
-  }}
-  className="w-full rounded-xl py-2 font-bold"
->
-  {time}
-</button>
-                  )
-                )
+      className="w-full rounded-xl py-2 font-bold"
+    >
+      {isBooked ? "Zauzeto" : time}
+    </button>
+  );
+})
               )}
             </div>
           </div>
-        ))}
+          );
+})}
                   </div>
 
       <div
