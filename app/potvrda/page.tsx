@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 export default function PotvrdaPage() {
   const searchParams = useSearchParams();
+const router = useRouter();
 
   const salon = searchParams.get("salon");
   const serviceId = searchParams.get("serviceId");
@@ -126,9 +127,14 @@ if (email && email.trim()) {
   console.log("Email-resultat:", emailResult);
 }
 setConfirmed(true);
-alert("Rezervacija je spremljena!");
 
-  setLoading(false);
+router.push(
+  `/uspjesno?salon=${encodeURIComponent(salon || "")}&service=${encodeURIComponent(
+    service?.name || ""
+  )}&date=${encodeURIComponent(date || "")}&time=${encodeURIComponent(
+    time || ""
+  )}&email=${encodeURIComponent(email || "")}`
+);
 }
 
   return (
@@ -366,7 +372,9 @@ alert("Rezervacija je spremljena!");
 
     <button
       type="button"
-      onClick={() => window.history.back()}
+      onClick={() => {
+  window.history.go(-2);
+}}
       style={{
         backgroundColor: "#611a1a",
         color: "white",
@@ -379,7 +387,8 @@ alert("Rezervacija je spremljena!");
     </button>
   </div>
 )}
-<div className="mt-10 flex justify-center">
+{!timeTaken && (
+  <div className="mt-10 flex justify-center">
     <button
       type="button"
       onClick={handleConfirmBooking}
@@ -398,7 +407,8 @@ alert("Rezervacija je spremljena!");
   ? "Potvrđuje se..."
   : "Potvrdi rezervaciju"}
     </button>
-</div>
+  </div>
+)}
 </div>
       </div>
     </main>
