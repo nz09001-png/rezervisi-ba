@@ -11,69 +11,118 @@ export default function UspjesnoPage() {
   const date = searchParams.get("date");
   const time = searchParams.get("time");
   const email = searchParams.get("email");
+  const ime = searchParams.get("ime");
+const prezime = searchParams.get("prezime");
+
+const formattedDate = date
+  ? `${date.split("-")[2]}.${date.split("-")[1]}.${date.split("-")[0]}.`
+  : "";
 
   return (
-    <main className="min-h-screen bg-white px-8 py-10">
-      <div className="mx-auto max-w-xl rounded-3xl bg-white p-8 text-center shadow-sm border-2 border-[#611a1a]">
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#611a1a] text-3xl text-white">
-          ✓
-        </div>
-
-        <h1 className="mb-3 text-3xl font-bold text-[#611a1a]">
-          Rezervacija uspješna
-        </h1>
-
-        <p className="mb-8 text-gray-700">
-          Vaš termin je uspješno rezervisan.
-        </p>
-
-        <div className="mb-8 text-left">
-          <div className="border-b py-3">
-            <p className="text-sm font-bold text-[#611a1a]">Salon</p>
-            <p className="font-semibold">{salon}</p>
-          </div>
-
-          <div className="border-b py-3">
-            <p className="text-sm font-bold text-[#611a1a]">Usluga</p>
-            <p className="font-semibold">{service}</p>
-          </div>
-
-          <div className="border-b py-3">
-            <p className="text-sm font-bold text-[#611a1a]">Datum</p>
-            <p className="font-semibold">{date}</p>
-          </div>
-
-          <div className="border-b py-3">
-            <p className="text-sm font-bold text-[#611a1a]">Vrijeme</p>
-            <p className="font-semibold">{time}</p>
-          </div>
-        </div>
-
-        {email && email.trim() && (
-          <p className="rounded-2xl bg-[#fff7f7] p-4 text-sm text-[#611a1a]">
-            Potvrda rezervacije je poslana na email.
-          </p>
-        )}
-        {salonSlug && (
-  <div className="mt-6">
-    <button
-      type="button"
-      onClick={() => {
-        window.location.href = `/${salonSlug}`;
-      }}
+  <main
+    style={{
+      minHeight: "100vh",
+      backgroundColor: "#611a1a",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      padding: "24px",
+    }}
+  >
+    <div
       style={{
-        backgroundColor: "#611a1a",
-        color: "white",
-        padding: "14px 40px",
-        borderRadius: "16px",
-        fontWeight: "bold",
+        width: "100%",
+        maxWidth: "420px",
+        backgroundColor: "white",
+        borderRadius: "28px",
+        padding: "28px",
+        textAlign: "center",
+        boxShadow: "0 20px 40px rgba(0,0,0,0.25)",
       }}
     >
-      Povratak na salon
-    </button>
-  </div>
-)}
+      <div
+        style={{
+          width: "56px",
+          height: "56px",
+          borderRadius: "999px",
+          backgroundColor: "#611a1a",
+          color: "white",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "28px",
+          fontWeight: "bold",
+          margin: "0 auto 16px",
+        }}
+      >
+        ✓
       </div>
-    </main>
-  );
+
+      <h1 style={{ color: "#611a1a", fontSize: "28px", fontWeight: "bold", marginBottom: "8px" }}>
+        Rezervacija potvrđena
+      </h1>
+
+      <p style={{ color: "#666", fontSize: "14px", marginBottom: "20px" }}>
+        Vaš termin je uspješno rezervisan.
+      </p>
+
+      <div
+  style={{
+    borderTop: "1px solid #e5e5e5",
+    borderBottom: "1px solid #e5e5e5",
+    padding: "16px 0",
+    textAlign: "left",
+    marginBottom: "20px",
+  }}
+>
+  <p>
+    <strong style={{ color: "#611a1a" }}>Klijent:</strong> {ime} {prezime}
+  </p>
+
+  <p>
+    <strong style={{ color: "#611a1a" }}>Salon:</strong> {salon}
+  </p>
+
+  <p>
+    <strong style={{ color: "#611a1a" }}>Usluga:</strong> {service}
+  </p>
+
+  <p>
+    <strong style={{ color: "#611a1a" }}>Datum:</strong> {formattedDate}
+  </p>
+
+  <p>
+    <strong style={{ color: "#611a1a" }}>Vrijeme:</strong> {time}
+  </p>
+</div>
+
+      {email && email.trim() && (
+        <p style={{ color: "#611a1a", fontSize: "14px", marginBottom: "20px" }}>
+          Potvrda rezervacije je poslana na email.
+        </p>
+      )}
+
+      {salonSlug && (
+        <button
+          type="button"
+          onClick={() => {
+            window.location.href = `/${salonSlug}`;
+          }}
+          style={{
+            width: "100%",
+            backgroundColor: "#611a1a",
+            color: "white",
+            padding: "14px",
+            borderRadius: "16px",
+            fontWeight: "bold",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          Povratak na salon
+        </button>
+      )}
+    </div>
+  </main>
+);
 }

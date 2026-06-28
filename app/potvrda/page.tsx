@@ -13,6 +13,9 @@ const router = useRouter();
   console.log("salonSlug:", salonSlug);
   const serviceId = searchParams.get("serviceId");
 const date = searchParams.get("date");
+const formattedDate = date
+  ? `${date.split("-")[2]}.${date.split("-")[1]}.${date.split("-")[0]}.`
+  : "";
 const time = searchParams.get("time");
   const ime = searchParams.get("ime");
   const prezime = searchParams.get("prezime");
@@ -135,7 +138,11 @@ router.push(
     salonSlug || ""
   )}&service=${encodeURIComponent(service?.name || "")}&date=${encodeURIComponent(
     date || ""
-  )}&time=${encodeURIComponent(time || "")}&email=${encodeURIComponent(email || "")}`
+  )}&time=${encodeURIComponent(time || "")}&ime=${encodeURIComponent(
+    ime || ""
+  )}&prezime=${encodeURIComponent(
+    prezime || ""
+  )}&email=${encodeURIComponent(email || "")}`
 );
 }
 
@@ -150,7 +157,7 @@ router.push(
     color: "#611a1a",
   }}
 >
-            Potvrda rezervacije
+            Pregled rezervacije
           </h1>
           <div
   className="flex items-center gap-2"
@@ -230,6 +237,7 @@ router.push(
     fontWeight: "bold",
     fontSize: "14px",
   }}
+  
 >
   Usluga:
 </p>
@@ -238,16 +246,36 @@ router.push(
     </p>
   </div>
 
+    <div
+    style={{
+      borderBottom: "1px solid #611a1a",
+      padding: "4px 0",
+    }}
+  >
+    <p
+      style={{
+        color: "#611a1a",
+        fontWeight: "bold",
+        fontSize: "14px",
+      }}
+    >
+      Datum:
+    </p>
+    <p className="font-semibold">
+  {formattedDate}
+</p>
+  </div>
+
   <div style={{ padding: "4px 0" }}>
     <p
-  style={{
-    color: "#611a1a",
-    fontWeight: "bold",
-    fontSize: "14px",
-  }}
->
-  Vrijeme:
-</p>
+      style={{
+        color: "#611a1a",
+        fontWeight: "bold",
+        fontSize: "14px",
+      }}
+    >
+      Vrijeme:
+    </p>
     <p className="font-semibold">
       {time}
     </p>
@@ -406,8 +434,8 @@ router.push(
       {confirmed
   ? "Rezervacija potvrđena"
   : loading
-  ? "Potvrđuje se..."
-  : "Potvrdi rezervaciju"}
+  ? "Rezerviše se..."
+  : "Završi rezervaciju"}
     </button>
   </div>
 )}
