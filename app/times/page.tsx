@@ -8,7 +8,8 @@ function TimesContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const salon = searchParams.get("salon");
-  const serviceId = searchParams.get("serviceId");
+const salonSlug = searchParams.get("salonSlug");
+const serviceId = searchParams.get("serviceId");
   const [service, setService] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
@@ -20,8 +21,12 @@ function TimesContent() {
   if (!selectedTime) return;
 
   router.push(
-    `/podaci?salon=${encodeURIComponent(salon || "")}&serviceId=${serviceId}&date=${encodeURIComponent(selectedDate)}&time=${encodeURIComponent(selectedTime)}`
-  );
+  `/podaci?salon=${encodeURIComponent(salon || "")}&salonSlug=${encodeURIComponent(
+    salonSlug || ""
+  )}&serviceId=${serviceId}&date=${encodeURIComponent(
+    selectedDate
+  )}&time=${encodeURIComponent(selectedTime)}`
+);
 }
   useEffect(() => {
   async function fetchService() {

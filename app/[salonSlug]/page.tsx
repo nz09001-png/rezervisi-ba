@@ -248,13 +248,15 @@ return (
       </div>
 
       <Link
-        href={`/times?salon=${encodeURIComponent(
-          salon.salon_name
-        )}&serviceId=${service.id}`}
-        className="rounded-full border border-green-400 px-6 py-2 font-semibold text-green-500 transition hover:bg-green-500 hover:text-white"
-      >
-        Boka
-      </Link>
+  href={`/times?salon=${encodeURIComponent(
+    salon.salon_name
+  )}&salonSlug=${encodeURIComponent(
+    salonSlug
+  )}&serviceId=${service.id}`}
+  className="rounded-full border border-green-400 px-6 py-2 font-semibold text-green-500 transition hover:bg-green-500 hover:text-white"
+>
+  Boka
+</Link>
     </div>
   ))}
 

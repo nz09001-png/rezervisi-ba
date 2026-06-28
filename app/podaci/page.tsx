@@ -10,6 +10,7 @@ export default function PodaciPage() {
   const router = useRouter();
 
   const salon = searchParams.get("salon");
+const salonSlug = searchParams.get("salonSlug");
 const serviceId = searchParams.get("serviceId");
 const date = searchParams.get("date");
 const time = searchParams.get("time");
@@ -28,6 +29,7 @@ const handleNext = () => {
 
   const params = new URLSearchParams({
   salon: salon || "",
+  salonSlug: salonSlug || "",
   serviceId: serviceId || "",
   date: date || "",
   time: time || "",

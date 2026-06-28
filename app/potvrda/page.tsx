@@ -9,6 +9,8 @@ export default function PotvrdaPage() {
 const router = useRouter();
 
   const salon = searchParams.get("salon");
+  const salonSlug = searchParams.get("salonSlug");
+  console.log("salonSlug:", salonSlug);
   const serviceId = searchParams.get("serviceId");
 const date = searchParams.get("date");
 const time = searchParams.get("time");
@@ -129,11 +131,11 @@ if (email && email.trim()) {
 setConfirmed(true);
 
 router.push(
-  `/uspjesno?salon=${encodeURIComponent(salon || "")}&service=${encodeURIComponent(
-    service?.name || ""
-  )}&date=${encodeURIComponent(date || "")}&time=${encodeURIComponent(
-    time || ""
-  )}&email=${encodeURIComponent(email || "")}`
+  `/uspjesno?salon=${encodeURIComponent(salon || "")}&salonSlug=${encodeURIComponent(
+    salonSlug || ""
+  )}&service=${encodeURIComponent(service?.name || "")}&date=${encodeURIComponent(
+    date || ""
+  )}&time=${encodeURIComponent(time || "")}&email=${encodeURIComponent(email || "")}`
 );
 }
 

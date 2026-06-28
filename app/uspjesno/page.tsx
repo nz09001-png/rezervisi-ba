@@ -1,12 +1,12 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 export default function UspjesnoPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
 
   const salon = searchParams.get("salon");
+  const salonSlug = searchParams.get("salonSlug");
   const service = searchParams.get("service");
   const date = searchParams.get("date");
   const time = searchParams.get("time");
@@ -54,6 +54,25 @@ export default function UspjesnoPage() {
             Potvrda rezervacije je poslana na email.
           </p>
         )}
+        {salonSlug && (
+  <div className="mt-6">
+    <button
+      type="button"
+      onClick={() => {
+        window.location.href = `/${salonSlug}`;
+      }}
+      style={{
+        backgroundColor: "#611a1a",
+        color: "white",
+        padding: "14px 40px",
+        borderRadius: "16px",
+        fontWeight: "bold",
+      }}
+    >
+      Povratak na salon
+    </button>
+  </div>
+)}
       </div>
     </main>
   );
