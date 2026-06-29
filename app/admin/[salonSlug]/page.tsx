@@ -15,6 +15,8 @@ const [salon, setSalon] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [filter, setFilter] = useState("all");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [galleryImages, setGalleryImages] = useState<any[]>([]);
+const [galleryFile, setGalleryFile] = useState<File | null>(null);
   const [description, setDescription] = useState("");
 const [phone, setPhone] = useState("");
 const [address, setAddress] = useState("");
@@ -133,6 +135,22 @@ async function fetchClosedDays() {
   }
 
   setClosedDays(data || []);
+}
+async function fetchGalleryImages() {
+  if (!salon?.id) return;
+
+  const { data, error } = await supabase
+    .from("salon_images")
+    .select("*")
+    .eq("salon_id", salon.id)
+    .order("id", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  setGalleryImages(data || []);
 }
 async function fetchNotifications() {
   if (!salon?.id) return;
@@ -380,7 +398,66 @@ async function handleDeleteService(id: number) {
     fetchBookings();
   }
 
-async function handleImageUpload() {
+async function handleGalleryImageUpload() {
+  if (!galleryFile) {
+    alert("Prvo odaberite sliku za galeriju.");
+    return;
+  }
+
+  const fileName = `gallery-${salon?.id}-${Date.now()}-${galleryFile.name}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("salon-images")
+    .upload(fileName, galleryFile);
+
+  if (uploadError) {
+    alert("Greška pri učitavanju slike u galeriju.");
+    console.error(uploadError);
+    return;
+  }
+
+  const { data } = supabase.storage
+    .from("salon-images")
+    .getPublicUrl(fileName);
+
+  const imageUrl = data.publicUrl;
+
+  const { error: insertError } = await supabase
+    .from("salon_images")
+    .insert({
+      salon_id: salon?.id,
+      image_url: imageUrl,
+    });
+
+  if (insertError) {
+    alert("Slika je učitana, ali nije spremljena u galeriju.");
+    console.error(insertError);
+    return;
+  }
+
+  setGalleryFile(null);
+  fetchGalleryImages();
+  alert("Slika je dodana u galeriju.");
+}
+async function handleDeleteGalleryImage(id: number) {
+  const confirmDelete = confirm("Da li ste sigurni da želite obrisati sliku iz galerije?");
+
+  if (!confirmDelete) return;
+
+  const { error } = await supabase
+    .from("salon_images")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    alert("Greška pri brisanju slike iz galerije.");
+    console.error(error);
+    return;
+  }
+
+  fetchGalleryImages();
+}
+  async function handleImageUpload() {
   if (!selectedFile) {
     alert("Prvo odaberite sliku.");
     return;
@@ -466,7 +543,8 @@ useEffect(() => {
     fetchTimes();
     fetchBarbers();
     fetchClosedDays();
-    fetchNotifications();
+fetchNotifications();
+fetchGalleryImages();
   }
 }, [isLoggedIn, salon]);
 
@@ -685,6 +763,60 @@ if (!isLoggedIn) {
 >
   Sačuvaj sliku
 </button>
+</div>
+<div className="mb-6 rounded-2xl bg-white p-4 shadow">
+  <h2 className="mb-4 text-xl font-bold">Galerija slika</h2>
+
+  <input
+    type="file"
+    accept="image/*"
+    onChange={(e) => {
+      if (e.target.files && e.target.files[0]) {
+        setGalleryFile(e.target.files[0]);
+      }
+    }}
+    className="block"
+  />
+
+  <button
+    onClick={handleGalleryImageUpload}
+    style={{ backgroundColor: "#611a1a" }}
+    className="mt-4 rounded px-4 py-2 text-white"
+  >
+    + Dodaj sliku u galeriju
+  </button>
+
+  <div
+  style={{
+    marginTop: "24px",
+    display: "grid",
+    gridTemplateColumns: "repeat(4, 1fr)",
+    gap: "12px",
+  }}
+>
+    {galleryImages.map((image) => (
+      <div key={image.id} className="rounded-xl bg-gray-50 p-3">
+        <img
+  src={image.image_url}
+  alt="Slika galerije"
+  style={{
+    width: "100%",
+    height: "120px",
+    objectFit: "cover",
+    borderRadius: "12px",
+    display: "block",
+  }}
+/>
+
+        <button
+          onClick={() => handleDeleteGalleryImage(image.id)}
+          className="w-full rounded bg-red-500 px-3 py-2 text-white"
+        >
+          Obriši
+        </button>
+      </div>
+    ))}
+  </div>
 </div>
 
   
