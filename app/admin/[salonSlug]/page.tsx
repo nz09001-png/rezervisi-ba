@@ -21,6 +21,7 @@ const [galleryFile, setGalleryFile] = useState<File | null>(null);
 const [phone, setPhone] = useState("");
 const [address, setAddress] = useState("");
 const [openingHours, setOpeningHours] = useState("");
+const [heroPosition, setHeroPosition] = useState("center");
 const [services, setServices] = useState<any[]>([]);
 const [serviceName, setServiceName] = useState("");
 const [servicePrice, setServicePrice] = useState("");
@@ -61,7 +62,7 @@ const [bookingTab, setBookingTab] = useState("aktivne");
   async function fetchSalonInfo() {
   const { data, error } = await supabase
     .from("salons")
-    .select("description, phone, address, opening_hours")
+    .select("description, phone, address, opening_hours, hero_position")
     .eq("id", salon?.id)
     .single();
 
@@ -74,6 +75,7 @@ const [bookingTab, setBookingTab] = useState("aktivne");
   setPhone(data.phone || "");
   setAddress(data.address || "");
   setOpeningHours(data.opening_hours || "");
+  setHeroPosition(data.hero_position || "center");
 }
 async function fetchServices() {
   const { data, error } = await supabase
@@ -500,11 +502,12 @@ async function handleSalonInfoUpdate() {
   const { error } = await supabase
     .from("salons")
     .update({
-      description: description,
-      phone: phone,
-      address: address,
-      opening_hours: openingHours,
-    })
+  description: description,
+  phone: phone,
+  address: address,
+  opening_hours: openingHours,
+  hero_position: heroPosition,
+})
     .eq("id", salon?.id)
 
   if (error) {
@@ -757,6 +760,33 @@ if (!isLoggedIn) {
     }}
     className="block"
   />
+  <div className="mt-4">
+  <label className="mb-2 block font-medium">
+    Pozicija slike
+  </label>
+
+  <div className="flex gap-2">
+    {["top", "center", "bottom"].map((position) => (
+      <button
+        key={position}
+        type="button"
+        onClick={() => setHeroPosition(position)}
+        style={{
+          backgroundColor:
+            heroPosition === position ? "#611a1a" : "#e5e7eb",
+          color: heroPosition === position ? "white" : "black",
+        }}
+        className="rounded px-4 py-2 font-semibold"
+      >
+        {position === "top"
+          ? "Top"
+          : position === "center"
+          ? "Center"
+          : "Bottom"}
+      </button>
+    ))}
+  </div>
+</div>
   <button
   onClick={handleImageUpload}
   className="mt-4 rounded bg-black px-4 py-2 text-white"

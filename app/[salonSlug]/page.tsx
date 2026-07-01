@@ -197,18 +197,39 @@ function previousGalleryImages() {
 
 return (
   <main className="min-h-screen bg-[#f7f3ee]">
-    <section
-  className="h-72 bg-cover bg-center"
-  style={{
-    backgroundImage: `url(${
+    <div style={{ position: "relative" }}>
+  <img
+    src={
       salon.image_url ||
       "https://images.unsplash.com/photo-1599351431202-1e0f0137899a?auto=format&fit=crop&w=1200&q=80"
-    })`,
-  }}
-></section>
+    }
+    alt={salon.salon_name}
+    style={{
+  width: "100%",
+  height: "360px",
+  objectFit: "cover",
+  objectPosition: salon.hero_position || "center",
+  display: "block",
+  position: "relative",
+  zIndex: 1,
+}}
+  />
 
-    <section className="mx-auto -mt-12 max-w-4xl px-4 py-10 md:px-8">
-      <div className="rounded-3xl bg-white p-6 shadow-xl md:p-10">
+  <section
+  className="mx-auto max-w-5xl px-4 pb-10 md:px-8"
+  style={{
+    marginTop: "-20px",
+    position: "relative",
+    zIndex: 5,
+  }}
+>
+    <div
+  className="rounded-3xl bg-white p-6 shadow-2xl md:p-10"
+  style={{
+    position: "relative",
+    zIndex: 10,
+  }}
+>
         <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-gray-500">
           Sarajevo
         </p>
@@ -599,8 +620,9 @@ return (
   </div>
 )}
 
-      </div>
+            </div>
     </section>
+  </div>
   </main>
 );
 }
