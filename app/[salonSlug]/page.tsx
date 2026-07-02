@@ -196,7 +196,10 @@ function previousGalleryImages() {
 }
 
 return (
-  <main className="min-h-screen bg-[#f7f3ee]">
+  <main
+  className="min-h-screen"
+  style={{ backgroundColor: "#f7f3ee" }}
+>
     <div style={{ position: "relative" }}>
   <img
     src={
@@ -216,61 +219,131 @@ return (
   />
 
   <section
-  className="mx-auto max-w-5xl px-4 pb-10 md:px-8"
+  className="px-4 pb-10 md:px-8"
   style={{
-    marginTop: "-20px",
+    maxWidth: "1000px",
+    marginLeft: "auto",
+    marginRight: "auto",
+    marginTop: "-60px",
     position: "relative",
     zIndex: 5,
   }}
 >
     <div
-  className="rounded-3xl bg-white p-6 shadow-2xl md:p-10"
+  className="rounded-3xl bg-white p-5 shadow-2xl md:p-8"
   style={{
     position: "relative",
     zIndex: 10,
   }}
 >
-        <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-gray-500">
-          Sarajevo
-        </p>
+        <p className="mb-2 text-base font-semibold uppercase tracking-widest text-gray-500">
+  Sarajevo
+</p>
 
-        <h1 className="mb-4 text-5xl font-bold">
+        <h1 className="mb-3 text-3xl font-bold">
           {salon.salon_name}
         </h1>
 
-        <p className="mb-6 text-gray-600">
-          {salon.description}
+        <p className="mb-3 text-gray-600">
+  {salon.description}
+</p>
+
+        <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: "16px",
+    marginBottom: "18px",
+  }}
+>
+  <div
+    style={{
+      border: "1px solid #d1d5db",
+      borderRadius: "16px",
+      padding: "14px",
+      backgroundColor: "#ffffff",
+    }}
+  >
+    <div style={{ display: "flex", gap: "0px", alignItems: "flex-start" }}>
+      
+
+      <div>
+        <p
+          style={{
+            color: "#611a1a",
+            fontSize: "18px",
+            fontWeight: "700",
+            marginBottom: "4px",
+          }}
+        >
+          Adresa
         </p>
 
-        <div className="mb-8 grid gap-4 md:grid-cols-3">
-  <div
-    className="rounded-xl bg-white p-4 shadow-sm"
-    style={{ borderTop: "4px solid #611a1a" }}
-  >
-    <p style={{ color: "#611a1a" }} className="text-sm font-semibold">
-      Adresa
-    </p>
-    <p className="font-semibold">{salon.address}</p>
+        <p style={{ color: "#111827", fontWeight: "700", lineHeight: "1.4" }}>
+          {salon.address}
+        </p>
+      </div>
+    </div>
   </div>
 
   <div
-    className="rounded-xl bg-white p-4 shadow-sm"
-    style={{ borderTop: "4px solid #611a1a" }}
+    style={{
+      border: "1px solid #d1d5db",
+      borderRadius: "16px",
+      padding: "14px",
+      backgroundColor: "#ffffff",
+    }}
   >
-    <p style={{ color: "#611a1a" }} className="text-sm font-semibold">
-      Telefon
-    </p>
-    <p className="font-semibold">{salon.phone}</p>
+    <div style={{ display: "flex", gap: "0px", alignItems: "flex-start" }}>
+      
+
+      <div>
+        <p
+          style={{
+            color: "#611a1a",
+            fontSize: "18px",
+            fontWeight: "700",
+            marginBottom: "4px",
+          }}
+        >
+          Telefon
+        </p>
+
+        <p style={{ color: "#111827", fontWeight: "700", lineHeight: "1.4" }}>
+          {salon.phone}
+        </p>
+      </div>
+    </div>
   </div>
 
   <div
-    className="rounded-xl bg-white p-4 shadow-sm"
-    style={{ borderTop: "4px solid #611a1a" }}
+    style={{
+      border: "1px solid #d1d5db",
+      borderRadius: "16px",
+      padding: "14px",
+      backgroundColor: "#ffffff",
+    }}
   >
-    <p style={{ color: "#611a1a" }} className="text-sm font-semibold">
-      Radno vrijeme
-    </p>
-    <p className="font-semibold">{salon.opening_hours}</p>
+    <div style={{ display: "flex", gap: "0px", alignItems: "flex-start" }}>
+      
+
+      <div>
+        <p
+          style={{
+            color: "#611a1a",
+            fontSize: "18px",
+            fontWeight: "700",
+            marginBottom: "4px",
+          }}
+        >
+          Radno vrijeme
+        </p>
+
+        <p style={{ color: "#111827", fontWeight: "700", lineHeight: "1.4" }}>
+          {salon.opening_hours}
+        </p>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -280,7 +353,7 @@ return (
       style={{
         color: "#611a1a",
         marginBottom: "20px",
-        fontSize: "30px",
+        fontSize: "26px",
         fontWeight: "800",
       }}
     >
@@ -326,7 +399,7 @@ return (
           border: "none",
           backgroundColor: "#611a1a",
           color: "white",
-          fontSize: "30px",
+          fontSize: "26px",
           fontWeight: "700",
           cursor: "pointer",
         }}
@@ -461,33 +534,87 @@ return (
     </p>
   </div>
 )}
-        <div className="mb-8">
-  <h2 className="mb-4 text-2xl font-bold">Lokacija</h2>
+        <div style={{ marginBottom: "40px" }}>
+  <h2
+    style={{
+      color: "#611a1a",
+      fontSize: "28px",
+      fontWeight: "800",
+      marginBottom: "16px",
+    }}
+  >
+    Lokacija
+  </h2>
 
-  <iframe
-    src={`https://www.google.com/maps?q=${encodeURIComponent(
-      salon.address || ""
-    )}&output=embed`}
-    width="100%"
-    height="300"
-    style={{ border: 0 }}
-    loading="lazy"
-    className="rounded-xl"
-  />
+  <div
+    style={{
+      border: "1px solid #d1d5db",
+      borderRadius: "20px",
+      overflow: "hidden",
+      backgroundColor: "white",
+    }}
+  >
+    <iframe
+      src={`https://www.google.com/maps?q=${encodeURIComponent(
+        salon.address || ""
+      )}&output=embed`}
+      width="100%"
+      height="220"
+      style={{ border: 0, display: "block" }}
+      loading="lazy"
+    />
 
-  <a
-  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    salon.address || ""
-  )}`}
-  target="_blank"
-  rel="noopener noreferrer"
-  style={{
-    backgroundColor: "#611a1a",
-  }}
-  className="mt-4 inline-block rounded-xl px-5 py-3 font-semibold text-white"
->
-  Otvori u Google Maps
-</a>
+    <div
+      style={{
+        padding: "16px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: "16px",
+      }}
+    >
+      <div>
+        <p
+          style={{
+            color: "#6b7280",
+            fontSize: "14px",
+            fontWeight: "600",
+            marginBottom: "4px",
+          }}
+        >
+          Adresa
+        </p>
+
+        <p
+          style={{
+            color: "#111827",
+            fontWeight: "700",
+          }}
+        >
+          {salon.address}
+        </p>
+      </div>
+
+      <a
+        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+          salon.address || ""
+        )}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          backgroundColor: "#611a1a",
+          color: "white",
+          padding: "10px 16px",
+          borderRadius: "12px",
+          fontWeight: "700",
+          textDecoration: "none",
+          whiteSpace: "nowrap",
+        }}
+      >
+        Otvori u Google Maps
+      </a>
+    </div>
+  </div>
 </div>
 
 <h2
@@ -506,9 +633,9 @@ return (
     <div
       key={service.id}
       style={{
-        border: "1px solid #e5e7eb",
+        border: "1px solid #d1d5db",
         borderRadius: "20px",
-        padding: "24px",
+        padding: "12px 22px",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
@@ -521,7 +648,7 @@ return (
             fontSize: "22px",
             fontWeight: "700",
             color: "#111827",
-            marginBottom: "8px",
+            marginBottom: "10px",
           }}
         >
           {service.name}
@@ -535,24 +662,23 @@ return (
           }}
         >
           <span
-            style={{
-              backgroundColor: "#f3f4f6",
-              padding: "6px 12px",
-              borderRadius: "999px",
-              fontWeight: "600",
-            }}
-          >
-            {service.price} KM
-          </span>
+  style={{
+    color: "#111827",
+    fontWeight: "700",
+    fontSize: "16px",
+  }}
+>
+  {service.price} KM
+</span>
 
           <span
-            style={{
-              color: "#6b7280",
-              fontWeight: "500",
-            }}
-          >
-            {service.duration_minutes || 60} min
-          </span>
+  style={{
+    color: "#6b7280",
+    fontWeight: "500",
+  }}
+>
+  • {service.duration_minutes || 60} min
+</span>
         </div>
       </div>
 
@@ -563,62 +689,21 @@ return (
           salonSlug
         )}&serviceId=${service.id}`}
         style={{
-          backgroundColor: "#611a1a",
-          padding: "14px 32px",
-          borderRadius: "12px",
-          color: "white",
-          fontWeight: "700",
-          textDecoration: "none",
-        }}
+  backgroundColor: "#611a1a",
+  padding: "9px 20px",
+  borderRadius: "12px",
+  color: "white",
+  fontWeight: "700",
+  textDecoration: "none",
+}}
       >
-        Boka
+        Rezerviši
       </Link>
     </div>
   ))}
 </div>
 
-<h2 className="mb-4 text-2xl font-bold">Odaberi datum</h2>
 
-<input
-  type="date"
-  value={selectedDate}
-  onChange={(e) => setSelectedDate(e.target.value)}
-  className="mb-8 w-full rounded-xl border p-4"
-/>
-{selectedClosedDay && (
-  <div className="mb-8 rounded-xl bg-red-100 p-4 text-red-700">
-    <p className="font-semibold">
-      Salon je zatvoren na odabrani datum.
-    </p>
-
-    <p>
-      {selectedClosedDay.reason || "Nema navedenog razloga."}
-    </p>
-  </div>
-)}
-<h2 className="mb-4 text-2xl font-bold">Slobodni termini</h2>
-
-{!selectedDate && (
-  <p className="mb-4 text-gray-600">
-    Prvo odaberi datum.
-  </p>
-)}
-
-{selectedDate && !selectedClosedDay && (
-  <div className="grid grid-cols-3 gap-4">
-    {availableTimes.map((item) => (
-      <Link
-        key={item.id}
-        href={`/booking?salon=${encodeURIComponent(
-          salon.salon_name
-        )}&time=${item.time}&date=${selectedDate}`}
-        className="rounded-xl bg-black p-4 text-center font-semibold text-white"
-      >
-        {item.time}
-      </Link>
-    ))}
-  </div>
-)}
 
             </div>
     </section>

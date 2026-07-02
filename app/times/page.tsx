@@ -120,19 +120,20 @@ return (
   <main className="min-h-screen bg-white px-8 py-6">
     <div className="mx-auto max-w-7xl">
       {service && (
-        <div className="mb-6 flex w-fit items-center gap-4 rounded-2xl bg-gray-50 px-5 py-2">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#611a1a] text-2xl text-white">
-            
-          </div>
+  <div
+  className="mb-4 inline-block rounded-xl border px-5 py-3"
+  style={{
+    backgroundColor: "rgba(97, 26, 26, 0.03)",
+    border: "1px solid rgba(97, 26, 26, 0.15)",
+  }}
+>
+    <p className="font-bold">{service.name}</p>
 
-          <div>
-            <p className="text-1xl font-bold">{service.name}</p>
-            <p className="text-gray-600">
-              {service.price} KM • {service.duration_minutes || 60} min
-            </p>
-          </div>
-        </div>
-      )}
+    <p className="text-gray-600">
+      {service.price} KM • {service.duration_minutes || 60} min
+    </p>
+  </div>
+)}
 
       <div className="mb-10 flex items-end justify-between gap-8">
   <div>
@@ -243,9 +244,18 @@ return (
   return (
           <div
             key={item.day}
-            className="min-h-[360px] border-r border-gray-200 bg-white last:border-r-0"
+            className="min-h-[360px] bg-white"
+style={{
+  borderRight: "1px solid rgba(97, 26, 26, 0.25)",
+}}
           >
-            <div className="border-b border-gray-200 bg-white p-4 text-center">
+            <div
+  className="p-4 text-center"
+  style={{
+    borderBottom: "1px solid rgba(97, 26, 26, 0.25)",
+    backgroundColor: "rgba(97, 26, 26, 0.03)",
+  }}
+>
               <p className="text-lg font-semibold text-[#611a1a]">
                 {item.day}
               </p>
