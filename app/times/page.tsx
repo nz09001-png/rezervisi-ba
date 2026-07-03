@@ -3,6 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import Link from "next/link";
 
 function TimesContent() {
   const searchParams = useSearchParams();
@@ -118,10 +119,23 @@ const weekTitle =
 todayOnly.setHours(0, 0, 0, 0);
 return (
   <main className="min-h-screen bg-white px-8 py-6">
+    <Link
+  href={`/${salonSlug}`}
+  style={{
+    color: "#611a1a",
+    textDecoration: "none",
+    fontWeight: "700",
+    display: "inline-block",
+    marginBottom: "16px",
+  }}
+>
+  ← Nazad
+</Link>
     <div className="mx-auto max-w-7xl">
+      
       {service && (
   <div
-  className="mb-4 inline-block rounded-xl border px-5 py-3"
+  className="mb-8 inline-block rounded-xl border px-5 py-3"
   style={{
     backgroundColor: "rgba(97, 26, 26, 0.03)",
     border: "1px solid rgba(97, 26, 26, 0.15)",
@@ -285,29 +299,41 @@ style={{
 
   return (
     <button
-      key={time}
-      type="button"
-      onClick={() => {
-
-        setSelectedDate(item.date);
-        setSelectedTime(time);
-      }}
-      style={{
-  backgroundColor:
-    selectedTime === time && selectedDate === item.date
-      ? "#611a1a"
-      : "#ffffff",
-  color:
-    selectedTime === time && selectedDate === item.date
-      ? "#ffffff"
-      : "#611a1a",
-  border: "1px solid #611a1a",
-  cursor: "pointer",
-}}
-      className="w-full rounded-xl py-2 font-bold"
-    >
-      {isBooked ? "Zauzeto" : time}
-    </button>
+  key={time}
+  type="button"
+  onClick={() => {
+    setSelectedDate(item.date);
+    setSelectedTime(time);
+  }}
+  style={{
+    backgroundColor:
+      selectedTime === time && selectedDate === item.date
+        ? "#611a1a"
+        : "#ffffff",
+    color:
+      selectedTime === time && selectedDate === item.date
+        ? "#ffffff"
+        : "#611a1a",
+    border: "1px solid #611a1a",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+  }}
+  onMouseEnter={(e) => {
+    if (!(selectedTime === time && selectedDate === item.date)) {
+      e.currentTarget.style.backgroundColor = "#611a1a";
+      e.currentTarget.style.color = "#ffffff";
+    }
+  }}
+  onMouseLeave={(e) => {
+    if (!(selectedTime === time && selectedDate === item.date)) {
+      e.currentTarget.style.backgroundColor = "#ffffff";
+      e.currentTarget.style.color = "#611a1a";
+    }
+  }}
+  className="w-full rounded-xl py-2 font-bold"
+>
+  {isBooked ? "Zauzeto" : time}
+</button>
   );
 })
               )}
