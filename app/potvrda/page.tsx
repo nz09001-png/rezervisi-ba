@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import Link from "next/link";
 
 export default function PotvrdaPage() {
   const searchParams = useSearchParams();
@@ -148,8 +149,26 @@ router.push(
 
   return (
     <main className="min-h-screen bg-white px-8 py-6">
+      <Link
+  href={`/podaci?salon=${encodeURIComponent(
+    salon || ""
+  )}&salonSlug=${encodeURIComponent(
+    salonSlug || ""
+  )}&serviceId=${serviceId}&date=${encodeURIComponent(
+    date || ""
+  )}&time=${encodeURIComponent(time || "")}`}
+  style={{
+    color: "#611a1a",
+    textDecoration: "none",
+    fontWeight: "700",
+    display: "inline-block",
+    marginBottom: "16px",
+  }}
+>
+  ← Nazad
+</Link>
       <div className="mx-auto max-w-3xl">
-        <div className="mb-6 flex items-end justify-between">
+        <div className="mb-12 flex items-end justify-between">
           <h1
   className="text-3xl font-bold"
   style={{
@@ -161,17 +180,26 @@ router.push(
           </h1>
           <div
   className="flex items-center gap-2"
-  style={{ marginRight: "195px" }}
+  style={{
+    marginRight: "100px",
+    marginTop: "-75px",
+  }}
 >
-  {[1, 2, 3, 4].map((step) => (
-    <div key={step} className="flex items-center gap-2">
+  {[
+  { nr: "1", label: "USLUGA" },
+  { nr: "2", label: "VRIJEME" },
+  { nr: "3", label: "PODACI" },
+  { nr: "4", label: "POTVRDA" },
+].map((step, index) => (
+  <div key={step.nr} className="flex items-center gap-4">
+    <div className="flex flex-col items-center">
       <div
         style={{
           width: "18px",
           height: "18px",
           borderRadius: "9999px",
           backgroundColor: "#611a1a",
-          color: "white",
+          color: "#ffffff",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -179,107 +207,59 @@ router.push(
           fontWeight: "bold",
         }}
       >
-        {step}
+        {step.nr}
       </div>
 
-      {step < 4 && (
-        <div
-          style={{
-            width: "20px",
-            height: "1px",
-            backgroundColor: "#611a1a",
-          }}
-        />
-      )}
+      <p
+        style={{
+          marginTop: "4px",
+          fontSize: "11px",
+          fontWeight: "600",
+          color: "#611a1a",
+        }}
+      >
+        {step.label}
+      </p>
     </div>
-  ))}
+
+    {index < 3 && (
+      <div
+        style={{
+          width: "15px",
+          height: "1px",
+          backgroundColor: "#611a1a",
+          marginBottom: "24px",
+        }}
+      />
+    )}
+  </div>
+))}
 </div>
           <div className="mt-4 h-1.5 w-24 bg-[#611a1a]" />
         </div>
         
   <div
-  className="mx-auto mb-2 max-w-xl py-2"
+  className="mb-6 inline-block rounded-xl border px-5 py-3"
   style={{
-    marginTop: "0px",
-    borderTop: "1px solid #611a1a",
-    borderBottom: "1px solid #611a1a",
-  }}
+  backgroundColor: "rgba(97, 26, 26, 0.03)",
+  border: "1px solid rgba(97, 26, 26, 0.15)",
+  marginLeft: "310px",
+  marginTop: "10px",
+}}
 >
-  <div
-    style={{
-      borderBottom: "1px solid #611a1a",
-      padding: "4px 0",
-    }}
-  >
-    <p
-  style={{
-    color: "#611a1a",
-    fontWeight: "bold",
-    fontSize: "14px",
-  }}
->
-  Salon:
-</p>
-    <p className="font-semibold">
-      {salon}
-    </p>
-  </div>
+  <p className="font-bold">
+    {salon}
+  </p>
 
-  <div
-    style={{
-      borderBottom: "1px solid #611a1a",
-      padding: "4px 0",
-    }}
-  >
-    <p
-  style={{
-    color: "#611a1a",
-    fontWeight: "bold",
-    fontSize: "14px",
-  }}
-  
->
-  Usluga:
-</p>
-    <p className="font-semibold">
-      {service ? `${service.name} - ${service.price} KM` : "Učitava se..."}
-    </p>
-  </div>
+  <p className="text-gray-600">
+    {service
+      ? `${service.name} • ${service.price} KM • ${service.duration_minutes || 60} min`
+      : "Učitava se..."}
+  </p>
 
-    <div
-    style={{
-      borderBottom: "1px solid #611a1a",
-      padding: "4px 0",
-    }}
-  >
-    <p
-      style={{
-        color: "#611a1a",
-        fontWeight: "bold",
-        fontSize: "14px",
-      }}
-    >
-      Datum:
-    </p>
-    <p className="font-semibold">
-  {formattedDate}
-</p>
-  </div>
-
-  <div style={{ padding: "4px 0" }}>
-    <p
-      style={{
-        color: "#611a1a",
-        fontWeight: "bold",
-        fontSize: "14px",
-      }}
-    >
-      Vrijeme:
-    </p>
-    <p className="font-semibold">
-      {time}
-    </p>
-  </div>
+  <p className="mt-1 text-sm font-medium text-[#611a1a]">
+    {formattedDate} • {time}
+  </p>
 </div>
 
 
