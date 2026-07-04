@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import Link from "next/link";
 
 export default function PodaciPage() {
 
@@ -67,10 +68,31 @@ useEffect(() => {
 
   return (
     <main className="min-h-screen bg-white px-8 py-6">
+      <Link
+  href={`/times?salon=${encodeURIComponent(
+    salon || ""
+  )}&salonSlug=${encodeURIComponent(
+    salonSlug || ""
+  )}&serviceId=${serviceId}`}
+  style={{
+    color: "#611a1a",
+    textDecoration: "none",
+    fontWeight: "700",
+    display: "inline-block",
+    marginBottom: "16px",
+  }}
+>
+  ← Nazad
+</Link>
   <div className="mx-auto max-w-4xl">
     
 
-        <div className="mb-10 flex items-end justify-between">
+        <div
+  className="flex items-end justify-between"
+  style={{
+    marginBottom: "16px",
+  }}
+>
 
   <div>
     <h1 className="text-3xl font-bold text-gray-950">
@@ -133,28 +155,26 @@ useEffect(() => {
 
 </div>
 
-        <div className="mx-auto mb-8 max-w-3xl rounded-2xl bg-gray-50 px-6 py-4">
-  <div className="mb-2">
-    <span className="font-bold text-[#611a1a]">
-      Salon:
-    </span>{" "}
-    {salon}
-  </div>
+        <div
+  className="mb-4 inline-block rounded-xl border px-5 py-3"
+  style={{
+    backgroundColor: "rgba(97, 26, 26, 0.03)",
+    border: "1px solid rgba(97, 26, 26, 0.15)",
+  }}
+>
+  <p className="font-bold">
+    {service ? service.name : "Učitava se..."}
+  </p>
 
-  <div className="mb-2">
-    <span className="font-bold text-[#611a1a]">
-      Usluga:
-    </span>{" "}
-    {service ? `${service.name} - ${service.price} KM` : "Učitava se..."}
-  </div>
+  <p className="text-gray-600">
+    {service ? `${service.price} KM • ${service.duration_minutes || 60} min` : ""}
+  </p>
 
-  <div>
-    <span className="font-bold text-[#611a1a]">
-      Vrijeme:
-    </span>{" "}
+  <p className="mt-1 text-sm text-[#611a1a] font-medium">
     {time}
-  </div>
+  </p>
 </div>
+
 
         <div className="mx-auto max-w-3xl rounded-3xl border border-[#611a1a] bg-white p-8 shadow-sm">
         <div className="mb-6 grid grid-cols-2 gap-6">
