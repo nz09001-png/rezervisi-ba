@@ -236,22 +236,24 @@ return (
     zIndex: 10,
   }}
 >
-        <p className="mb-2 text-base font-semibold uppercase tracking-widest text-gray-500">
-  Sarajevo
-</p>
+       <div className="mb-6">
+  <p className="mb-2 text-sm font-bold uppercase tracking-[0.25em] text-gray-500">
+    Frizerski salon
+  </p>
 
-        <h1 className="mb-3 text-3xl font-bold">
-          {salon.salon_name}
-        </h1>
+  <h1 className="mb-3 text-3xl font-extrabold tracking-tight text-gray-950 md:text-4xl">
+    {salon.salon_name}
+  </h1>
 
-        <p className="mb-3 text-gray-600">
-  {salon.description}
-</p>
+  <p className="max-w-2xl text-base leading-relaxed text-gray-600">
+    {salon.description}
+  </p>
+</div>
 
         <div
   style={{
     display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
     gap: "16px",
     marginBottom: "18px",
   }}
@@ -260,7 +262,7 @@ return (
     style={{
       border: "1px solid #d1d5db",
       borderRadius: "16px",
-      padding: "14px",
+      padding: "12px 16px",
       backgroundColor: "#ffffff",
     }}
   >
@@ -271,7 +273,7 @@ return (
         <p
           style={{
             color: "#611a1a",
-            fontSize: "18px",
+            fontSize: "16px",
             fontWeight: "700",
             marginBottom: "4px",
           }}
@@ -290,7 +292,7 @@ return (
     style={{
       border: "1px solid #d1d5db",
       borderRadius: "16px",
-      padding: "14px",
+      padding: "12px 16px",
       backgroundColor: "#ffffff",
     }}
   >
@@ -301,7 +303,7 @@ return (
         <p
           style={{
             color: "#611a1a",
-            fontSize: "18px",
+            fontSize: "16px",
             fontWeight: "700",
             marginBottom: "4px",
           }}
@@ -320,7 +322,7 @@ return (
     style={{
       border: "1px solid #d1d5db",
       borderRadius: "16px",
-      padding: "14px",
+      padding: "12px 16px",
       backgroundColor: "#ffffff",
     }}
   >
@@ -331,7 +333,7 @@ return (
         <p
           style={{
             color: "#611a1a",
-            fontSize: "18px",
+            fontSize: "16px",
             fontWeight: "700",
             marginBottom: "4px",
           }}
@@ -347,6 +349,68 @@ return (
   </div>
 </div>
 
+<div style={{ marginBottom: "40px" }}>
+  <h2
+    style={{
+      color: "#611a1a",
+      fontSize: "28px",
+      fontWeight: "600",
+      marginBottom: "16px",
+    }}
+  >
+    Lokacija
+  </h2>
+
+  <div
+    style={{
+      border: "1px solid #d1d5db",
+      borderRadius: "20px",
+      overflow: "hidden",
+      backgroundColor: "white",
+    }}
+  >
+    <iframe
+      src={`https://www.google.com/maps?q=${encodeURIComponent(
+        salon.address || ""
+      )}&output=embed`}
+      width="100%"
+      height="160"
+      style={{ border: 0, display: "block" }}
+      loading="lazy"
+    />
+
+    <div
+      style={{
+        padding: "16px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: "16px",
+      }}
+    >
+      
+
+      <a
+        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+          salon.address || ""
+        )}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          backgroundColor: "#611a1a",
+          color: "white",
+          padding: "10px 16px",
+          borderRadius: "12px",
+          fontWeight: "700",
+          textDecoration: "none",
+          whiteSpace: "nowrap",
+        }}
+      >
+        Otvori u Google Maps
+      </a>
+    </div>
+  </div>
+</div>
 {salonImages.length > 0 && (
   <div style={{ marginBottom: "48px", width: "100%" }}>
     <h2
@@ -354,7 +418,7 @@ return (
         color: "#611a1a",
         marginBottom: "20px",
         fontSize: "26px",
-        fontWeight: "800",
+        fontWeight: "600",
       }}
     >
       Galerija
@@ -375,7 +439,7 @@ return (
     onClick={() => setSelectedImageIndex(galleryIndex + index)}
     style={{
       width: "100%",
-      height: "320px",
+      height: "260px",
       borderRadius: "20px",
       backgroundImage: `url(${image.image_url})`,
       backgroundSize: "cover",
@@ -534,94 +598,13 @@ return (
     </p>
   </div>
 )}
-        <div style={{ marginBottom: "40px" }}>
-  <h2
-    style={{
-      color: "#611a1a",
-      fontSize: "28px",
-      fontWeight: "800",
-      marginBottom: "16px",
-    }}
-  >
-    Lokacija
-  </h2>
-
-  <div
-    style={{
-      border: "1px solid #d1d5db",
-      borderRadius: "20px",
-      overflow: "hidden",
-      backgroundColor: "white",
-    }}
-  >
-    <iframe
-      src={`https://www.google.com/maps?q=${encodeURIComponent(
-        salon.address || ""
-      )}&output=embed`}
-      width="100%"
-      height="220"
-      style={{ border: 0, display: "block" }}
-      loading="lazy"
-    />
-
-    <div
-      style={{
-        padding: "16px",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        gap: "16px",
-      }}
-    >
-      <div>
-        <p
-          style={{
-            color: "#6b7280",
-            fontSize: "14px",
-            fontWeight: "600",
-            marginBottom: "4px",
-          }}
-        >
-          Adresa
-        </p>
-
-        <p
-          style={{
-            color: "#111827",
-            fontWeight: "700",
-          }}
-        >
-          {salon.address}
-        </p>
-      </div>
-
-      <a
-        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-          salon.address || ""
-        )}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          backgroundColor: "#611a1a",
-          color: "white",
-          padding: "10px 16px",
-          borderRadius: "12px",
-          fontWeight: "700",
-          textDecoration: "none",
-          whiteSpace: "nowrap",
-        }}
-      >
-        Otvori u Google Maps
-      </a>
-    </div>
-  </div>
-</div>
+        
 
 <h2
   style={{
     color: "#611a1a",
-    fontSize: "30px",
-    fontWeight: "700",
+    fontSize: "28px",
+    fontWeight: "600",
     marginBottom: "24px",
   }}
 >
@@ -635,7 +618,7 @@ return (
       style={{
         border: "1px solid #d1d5db",
         borderRadius: "20px",
-        padding: "12px 22px",
+        padding: "16px 22px",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
@@ -648,7 +631,7 @@ return (
             fontSize: "22px",
             fontWeight: "700",
             color: "#111827",
-            marginBottom: "10px",
+            marginBottom: "6px",
           }}
         >
           {service.name}
@@ -690,7 +673,7 @@ return (
         )}&serviceId=${service.id}`}
         style={{
   backgroundColor: "#611a1a",
-  padding: "9px 20px",
+  padding: "8px 18px",
   borderRadius: "12px",
   color: "white",
   fontWeight: "700",
