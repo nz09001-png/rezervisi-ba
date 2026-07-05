@@ -36,6 +36,8 @@ const [closedDate, setClosedDate] = useState("");
 const [closedReason, setClosedReason] = useState("");
 const [closedEndDate, setClosedEndDate] = useState("");
 const [bookingTab, setBookingTab] = useState("aktivne");
+const [showNotifications, setShowNotifications] = useState(false);
+const [showSettings, setShowSettings] = useState(false);
 
   function handleLogin() {
   if (password.trim() === salon?.admin_password) {
@@ -647,11 +649,18 @@ if (!isLoggedIn) {
   return (
     <main className="min-h-screen bg-[#f7f3ee] p-8">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-8 flex items-center justify-between">
-  <h1 className="text-4xl font-bold">
-  {salon?.salon_name} Admin ({filteredBookings.length})
-</h1>
-<div className="mb-8 mt-6 rounded-2xl bg-white p-6 shadow">
+        <div className="mb-8 flex items-start justify-between">
+  <div>
+    <h1 className="text-4xl font-bold">
+      {salon?.salon_name} Admin
+    </h1>
+
+    <p className="mt-2 text-gray-600">
+      Administrera bokningar, tjänster, frisörer och salongsinformation.
+    </p>
+  </div>
+{showNotifications && (
+  <div className="mb-8 mt-6 rounded-2xl bg-white p-6 shadow">
   <h2 className="mb-4 text-2xl font-bold">
     🔔 Notiser
   </h2>
@@ -688,6 +697,7 @@ if (!isLoggedIn) {
     </div>
   )}
 </div>
+)}
   
 
   <button
@@ -707,6 +717,14 @@ if (!isLoggedIn) {
     <p className="text-sm text-gray-500">Ukupno rezervacija</p>
     <p className="text-3xl font-bold">{filteredBookings.length}</p>
   </div>
+</div>
+<div className="mb-6">
+  <button
+    onClick={() => setShowNotifications(!showNotifications)}
+    className="rounded bg-black px-4 py-2 text-white"
+  >
+    🔔 Notiser
+  </button>
 </div>
 
   <div className="mb-6 flex flex-wrap gap-2">
@@ -746,7 +764,17 @@ if (!isLoggedIn) {
     Sve
   </button>
 </div>
-<div className="mb-6 rounded-2xl bg-white p-4 shadow">
+<div className="mb-6">
+  <button
+    onClick={() => setShowSettings(!showSettings)}
+    className="rounded bg-black px-4 py-2 text-white"
+  >
+    ⚙️ Inställningar
+  </button>
+</div>
+{showSettings && (
+  <>
+    <div className="mb-6 rounded-2xl bg-white p-4 shadow">
   <label className="mb-2 block font-medium">Profilna slika</label>
 
   <input
@@ -1087,6 +1115,8 @@ if (!isLoggedIn) {
     + Dodaj frizera
   </button>
 </div>
+  </>
+)}
 
 <div className="mb-6 rounded-2xl bg-white p-4 shadow">
   <label className="mb-2 block font-medium">Odaberite datum</label>
