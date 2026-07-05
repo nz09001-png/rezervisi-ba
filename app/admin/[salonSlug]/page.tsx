@@ -38,6 +38,9 @@ const [closedEndDate, setClosedEndDate] = useState("");
 const [bookingTab, setBookingTab] = useState("aktivne");
 const [showNotifications, setShowNotifications] = useState(false);
 const [showSettings, setShowSettings] = useState(false);
+const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+const [selectedSettings, setSelectedSettings] = useState<string[]>([]);
+const [activeSetting, setActiveSetting] = useState("");
 
   function handleLogin() {
   if (password.trim() === salon?.admin_password) {
@@ -45,6 +48,16 @@ const [showSettings, setShowSettings] = useState(false);
   } else {
     alert("Pogrešna lozinka");
   }
+}
+
+function toggleSetting(setting: string) {
+  setSelectedSettings((prev) =>
+    prev.includes(setting)
+      ? prev.filter((item) => item !== setting)
+      : [...prev, setting]
+  );
+
+  setShowSettingsMenu(false);
 }
 
   async function fetchBookings() {
@@ -700,12 +713,84 @@ if (!isLoggedIn) {
 )}
   
 
+  <div className="flex gap-3">
+  <div className="relative">
+  <button
+    onClick={() => setShowSettingsMenu(!showSettingsMenu)}
+    className="rounded bg-black px-4 py-2 text-white"
+  >
+    ⚙️ Postavke
+    {selectedSettings.length > 0 && ` (${selectedSettings.length})`}
+  </button>
+
+  {showSettingsMenu && (
+    <div className="absolute right-0 z-50 mt-2 w-64 rounded-2xl bg-white p-2 shadow">
+      <button
+        onClick={() => toggleSetting("hero")}
+        className="block w-full rounded p-3 text-left hover:bg-gray-100"
+      >
+        {selectedSettings.includes("hero") ? "✓ " : ""}Naslovna slika
+      </button>
+
+      <button
+        onClick={() => toggleSetting("gallery")}
+        className="block w-full rounded p-3 text-left hover:bg-gray-100"
+      >
+        {selectedSettings.includes("gallery") ? "✓ " : ""}Galerija
+      </button>
+
+      <button
+        onClick={() => toggleSetting("info")}
+        className="block w-full rounded p-3 text-left hover:bg-gray-100"
+      >
+        {selectedSettings.includes("info") ? "✓ " : ""}Informacije o salonu
+      </button>
+
+      <button
+        onClick={() => toggleSetting("services")}
+        className="block w-full rounded p-3 text-left hover:bg-gray-100"
+      >
+        {selectedSettings.includes("services") ? "✓ " : ""}Usluge
+      </button>
+
+      <button
+        onClick={() => toggleSetting("times")}
+        className="block w-full rounded p-3 text-left hover:bg-gray-100"
+      >
+        {selectedSettings.includes("times") ? "✓ " : ""}Termini
+      </button>
+
+      <button
+        onClick={() => toggleSetting("barbers")}
+        className="block w-full rounded p-3 text-left hover:bg-gray-100"
+      >
+        {selectedSettings.includes("barbers") ? "✓ " : ""}Frizeri
+      </button>
+
+      <button
+        onClick={() => toggleSetting("closed")}
+        className="block w-full rounded p-3 text-left hover:bg-gray-100"
+      >
+        {selectedSettings.includes("closed") ? "✓ " : ""}Zatvoreni dani
+      </button>
+    </div>
+  )}
+</div>
+
+  <button
+    onClick={() => setShowNotifications(!showNotifications)}
+    className="rounded bg-black px-4 py-2 text-white"
+  >
+    🔔 Notifikacije
+  </button>
+
   <button
     onClick={() => setIsLoggedIn(false)}
     className="rounded bg-black px-4 py-2 text-white"
   >
     Odjavi se
   </button>
+</div>
 </div>
 <div className="mb-6 grid grid-cols-2 gap-4">
   <div className="rounded-2xl bg-white p-4 shadow">
@@ -717,14 +802,6 @@ if (!isLoggedIn) {
     <p className="text-sm text-gray-500">Ukupno rezervacija</p>
     <p className="text-3xl font-bold">{filteredBookings.length}</p>
   </div>
-</div>
-<div className="mb-6">
-  <button
-    onClick={() => setShowNotifications(!showNotifications)}
-    className="rounded bg-black px-4 py-2 text-white"
-  >
-    🔔 Notiser
-  </button>
 </div>
 
   <div className="mb-6 flex flex-wrap gap-2">
@@ -764,17 +841,69 @@ if (!isLoggedIn) {
     Sve
   </button>
 </div>
-<div className="mb-6">
-  <button
-    onClick={() => setShowSettings(!showSettings)}
-    className="rounded bg-black px-4 py-2 text-white"
-  >
-    ⚙️ Inställningar
-  </button>
-</div>
-{showSettings && (
+
+{selectedSettings.length > 0 && (
   <>
-    <div className="mb-6 rounded-2xl bg-white p-4 shadow">
+  <div className="mb-6 rounded-2xl bg-white p-4 shadow">
+  <h2 className="mb-4 text-xl font-semibold">
+    ⚙️ Postavke
+  </h2>
+
+  <div className="space-y-2">
+    <button
+      onClick={() => setActiveSetting("hero")}
+      className="block w-full rounded border p-3 text-left"
+    >
+      Naslovna slika
+    </button>
+
+    <button
+      onClick={() => setActiveSetting("gallery")}
+      className="block w-full rounded border p-3 text-left"
+    >
+      Galerija
+    </button>
+
+    <button
+      onClick={() => setActiveSetting("info")}
+      className="block w-full rounded border p-3 text-left"
+    >
+      Informacije o salonu
+    </button>
+
+    <button
+      onClick={() => setActiveSetting("services")}
+      className={`block w-full rounded border p-3 text-left ${
+  activeSetting === "services" ? "bg-black text-white" : ""
+}`}
+    >
+      Usluge
+    </button>
+
+    <button
+      onClick={() => setActiveSetting("times")}
+      className="block w-full rounded border p-3 text-left"
+    >
+      Termini
+    </button>
+
+    <button
+      onClick={() => setActiveSetting("barbers")}
+      className="block w-full rounded border p-3 text-left"
+    >
+      Frizeri
+    </button>
+
+    <button
+      onClick={() => setActiveSetting("closed")}
+      className="block w-full rounded border p-3 text-left"
+    >
+      Zatvoreni dani
+    </button>
+  </div>
+</div>
+    {selectedSettings.includes("hero") && (
+  <div className="mb-6 rounded-2xl bg-white p-4 shadow">
   <label className="mb-2 block font-medium">Profilna slika</label>
 
   <input
@@ -822,7 +951,9 @@ if (!isLoggedIn) {
   Sačuvaj sliku
 </button>
 </div>
-<div className="mb-6 rounded-2xl bg-white p-4 shadow">
+)}
+{selectedSettings.includes("gallery") && (
+  <div className="mb-6 rounded-2xl bg-white p-4 shadow">
   <h2 className="mb-4 text-xl font-bold">Galerija slika</h2>
 
   <input
@@ -874,12 +1005,14 @@ if (!isLoggedIn) {
         </button>
       </div>
     ))}
-  </div>
+    </div>
 </div>
+)}
 
   
 
-<div className="mb-6 rounded-2xl bg-white p-4 shadow">
+{selectedSettings.includes("info") && (
+  <div className="mb-6 rounded-2xl bg-white p-4 shadow">
   <h2 className="mb-4 text-xl font-bold">Informacije o salonu</h2>
 
   <label className="mb-2 block font-medium">Opis</label>
@@ -915,14 +1048,16 @@ if (!isLoggedIn) {
   />
 
   <button
-    onClick={handleSalonInfoUpdate}
-    className="rounded bg-black px-4 py-2 text-white"
-  >
-    Sačuvaj informacije
-  </button>
+  onClick={handleSalonInfoUpdate}
+  className="rounded bg-black px-4 py-2 text-white"
+>
+  Sačuvaj informacije
+</button>
 </div>
+)}
 
-<div className="mb-6 rounded-2xl bg-white p-4 shadow">
+{selectedSettings.includes("services") && (
+  <div className="mb-6 rounded-2xl bg-white p-4 shadow">
   <h2 className="mb-4 text-xl font-bold">Usluge</h2>
 
   <div className="mb-4 space-y-2">
@@ -979,7 +1114,9 @@ if (!isLoggedIn) {
     + Dodaj uslugu
   </button>
 </div>
-<div className="mb-6 rounded-2xl bg-white p-4 shadow">
+)}
+{selectedSettings.includes("times") && (
+  <div className="mb-6 rounded-2xl bg-white p-4 shadow">
   <h2 className="mb-4 text-xl font-bold">Termini</h2>
 
   <div className="mb-4 space-y-2">
@@ -1009,12 +1146,13 @@ if (!isLoggedIn) {
   />
 
   <button
-    onClick={handleAddTime}
-    className="rounded bg-black px-4 py-2 text-white"
-  >
-    + Dodaj termin
-  </button>
+  onClick={handleAddTime}
+  className="rounded bg-black px-4 py-2 text-white"
+>
+  + Dodaj termin
+</button>
 </div>
+)}
 
 <div className="mb-6 rounded-2xl bg-white p-4 shadow">
   <h2 className="mb-4 text-xl font-bold">Frizeri</h2>
