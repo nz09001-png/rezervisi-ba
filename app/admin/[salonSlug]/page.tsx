@@ -37,10 +37,9 @@ const [closedReason, setClosedReason] = useState("");
 const [closedEndDate, setClosedEndDate] = useState("");
 const [bookingTab, setBookingTab] = useState("aktivne");
 const [showNotifications, setShowNotifications] = useState(false);
-const [showSettings, setShowSettings] = useState(false);
 const [showSettingsMenu, setShowSettingsMenu] = useState(false);
 const [selectedSettings, setSelectedSettings] = useState<string[]>([]);
-const [activeSetting, setActiveSetting] = useState("");
+
 
   function handleLogin() {
   if (password.trim() === salon?.admin_password) {
@@ -844,64 +843,7 @@ if (!isLoggedIn) {
 
 {selectedSettings.length > 0 && (
   <>
-  <div className="mb-6 rounded-2xl bg-white p-4 shadow">
-  <h2 className="mb-4 text-xl font-semibold">
-    ⚙️ Postavke
-  </h2>
-
-  <div className="space-y-2">
-    <button
-      onClick={() => setActiveSetting("hero")}
-      className="block w-full rounded border p-3 text-left"
-    >
-      Naslovna slika
-    </button>
-
-    <button
-      onClick={() => setActiveSetting("gallery")}
-      className="block w-full rounded border p-3 text-left"
-    >
-      Galerija
-    </button>
-
-    <button
-      onClick={() => setActiveSetting("info")}
-      className="block w-full rounded border p-3 text-left"
-    >
-      Informacije o salonu
-    </button>
-
-    <button
-      onClick={() => setActiveSetting("services")}
-      className={`block w-full rounded border p-3 text-left ${
-  activeSetting === "services" ? "bg-black text-white" : ""
-}`}
-    >
-      Usluge
-    </button>
-
-    <button
-      onClick={() => setActiveSetting("times")}
-      className="block w-full rounded border p-3 text-left"
-    >
-      Termini
-    </button>
-
-    <button
-      onClick={() => setActiveSetting("barbers")}
-      className="block w-full rounded border p-3 text-left"
-    >
-      Frizeri
-    </button>
-
-    <button
-      onClick={() => setActiveSetting("closed")}
-      className="block w-full rounded border p-3 text-left"
-    >
-      Zatvoreni dani
-    </button>
-  </div>
-</div>
+  
     {selectedSettings.includes("hero") && (
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
   <label className="mb-2 block font-medium">Profilna slika</label>
@@ -1154,105 +1096,104 @@ if (!isLoggedIn) {
 </div>
 )}
 
-<div className="mb-6 rounded-2xl bg-white p-4 shadow">
-  <h2 className="mb-4 text-xl font-bold">Frizeri</h2>
+{selectedSettings.includes("closed") && (
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
-  <h2 className="mb-4 text-xl font-bold">
-    Zatvoreni dani
-  </h2>
+    <h2 className="mb-4 text-xl font-bold">Zatvoreni dani</h2>
 
-  <div className="mb-4 space-y-2">
-    {closedDays.map((day) => (
-      <div
-        key={day.id}
-        className="rounded-xl bg-gray-50 p-3"
-      >
-        <div className="flex items-center justify-between">
-  <div>
-    <p className="font-semibold">{day.date}</p>
-    <p className="text-sm text-gray-600">
-      {day.reason || "Bez razloga"}
-    </p>
+    <div className="mb-4 space-y-2">
+      {closedDays.map((day) => (
+        <div key={day.id} className="rounded-xl bg-gray-50 p-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="font-semibold">{day.date}</p>
+              <p className="text-sm text-gray-600">
+                {day.reason || "Bez razloga"}
+              </p>
+            </div>
+
+            <button
+              onClick={() => handleDeleteClosedDay(day.id)}
+              className="rounded bg-red-500 px-3 py-1 text-white"
+            >
+              Obriši
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <label className="mb-2 block font-medium">Početni datum</label>
+    <input
+      type="date"
+      value={closedDate}
+      onChange={(e) => setClosedDate(e.target.value)}
+      className="mb-3 w-full rounded border p-3"
+    />
+
+    <label className="mb-2 block font-medium">Završni datum</label>
+    <input
+      type="date"
+      value={closedEndDate}
+      onChange={(e) => setClosedEndDate(e.target.value)}
+      className="mb-3 w-full rounded border p-3"
+    />
+
+    <input
+      type="text"
+      placeholder="Razlog (npr. godišnji odmor)"
+      value={closedReason}
+      onChange={(e) => setClosedReason(e.target.value)}
+      className="mb-3 w-full rounded border p-3"
+    />
+
+    <button
+      onClick={handleAddClosedDay}
+      className="rounded bg-black px-4 py-2 text-white"
+    >
+      + Dodaj zatvoren dan
+    </button>
   </div>
+)}
 
-  <button
-    onClick={() => handleDeleteClosedDay(day.id)}
-    className="rounded bg-red-500 px-3 py-1 text-white"
-  >
-    Obriši
-  </button>
-</div>
-      </div>
-    ))}
+{selectedSettings.includes("barbers") && (
+  <div className="mb-6 rounded-2xl bg-white p-4 shadow">
+    <h2 className="mb-4 text-xl font-bold">Frizeri</h2>
+
+    <div className="mb-4 space-y-2">
+      {barbers.map((barber) => (
+        <div
+          key={barber.id}
+          className="flex items-center justify-between rounded-xl bg-gray-50 p-3"
+        >
+          <span>{barber.name}</span>
+
+          <button
+            onClick={() => handleDeleteBarber(barber.id)}
+            className="rounded bg-red-500 px-3 py-1 text-white"
+          >
+            Obriši
+          </button>
+        </div>
+      ))}
+    </div>
+
+    <input
+      type="text"
+      placeholder="Ime frizera"
+      value={newBarberName}
+      onChange={(e) => setNewBarberName(e.target.value)}
+      className="mb-3 w-full rounded border p-3"
+    />
+
+    <button
+      onClick={handleAddBarber}
+      className="rounded bg-black px-4 py-2 text-white"
+    >
+      + Dodaj frizera
+    </button>
   </div>
+)}
 
-  <label className="mb-2 block font-medium">
-  Početni datum
-</label>
-  <input
-    type="date"
-    value={closedDate}
-    onChange={(e) => setClosedDate(e.target.value)}
-    className="mb-3 w-full rounded border p-3"
-  />
-  <label className="mb-2 block font-medium">
-  Završni datum
-</label>
-  <input
-  type="date"
-  value={closedEndDate}
-  onChange={(e) => setClosedEndDate(e.target.value)}
-  className="mb-3 w-full rounded border p-3"
-/>
-
-  <input
-    type="text"
-    placeholder="Razlog (npr. godišnji odmor)"
-    value={closedReason}
-    onChange={(e) => setClosedReason(e.target.value)}
-    className="mb-3 w-full rounded border p-3"
-  />
-
-  <button
-    onClick={handleAddClosedDay}
-    className="rounded bg-black px-4 py-2 text-white"
-  >
-    + Dodaj zatvoren dan
-  </button>
-</div>
-
-  <div className="mb-4 space-y-2">
-    {barbers.map((barber) => (
-      <div
-        key={barber.id}
-        className="flex items-center justify-between rounded-xl bg-gray-50 p-3"
-      >
-        <span>{barber.name}</span> 
-        <button
-  onClick={() => handleDeleteBarber(barber.id)}
-  className="rounded bg-red-500 px-3 py-1 text-white"
->
-  Obriši
-</button>
-      </div>
-    ))}
-  </div>
-
-  <input
-    type="text"
-    placeholder="Ime frizera"
-    value={newBarberName}
-    onChange={(e) => setNewBarberName(e.target.value)}
-    className="mb-3 w-full rounded border p-3"
-  />
-
-  <button
-    onClick={handleAddBarber}
-    className="rounded bg-black px-4 py-2 text-white"
-  >
-    + Dodaj frizera
-  </button>
-</div>
   </>
 )}
 
