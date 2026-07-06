@@ -712,11 +712,11 @@ if (!isLoggedIn) {
 )}
   
 
-  <div className="flex gap-3">
+  <div className="flex items-center gap-3">
   <div className="relative">
   <button
     onClick={() => setShowSettingsMenu(!showSettingsMenu)}
-    className="rounded bg-black px-4 py-2 text-white"
+    className="h-12 rounded-xl bg-black px-5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
   >
     ⚙️ Postavke
     {selectedSettings.length > 0 && ` (${selectedSettings.length})`}
@@ -778,35 +778,45 @@ if (!isLoggedIn) {
 
   <button
     onClick={() => setShowNotifications(!showNotifications)}
-    className="rounded bg-black px-4 py-2 text-white"
+    className="h-12 rounded-xl bg-black px-5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
   >
     🔔 Notifikacije
   </button>
 
   <button
     onClick={() => setIsLoggedIn(false)}
-    className="rounded bg-black px-4 py-2 text-white"
+    className="h-12 rounded-xl bg-black px-5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
   >
     Odjavi se
   </button>
 </div>
 </div>
-<div className="mb-6 grid grid-cols-2 gap-4">
-  <div className="rounded-2xl bg-white p-4 shadow">
-    <p className="text-sm text-gray-500">Današnje rezervacije</p>
-    <p className="text-3xl font-bold">{todaysBookings.length}</p>
+<div className="mb-8 grid grid-cols-2 gap-6">
+  <div className="rounded-3xl bg-white p-6 shadow">
+    <p className="text-sm font-medium text-gray-500">
+      Današnje rezervacije
+    </p>
+
+    <p className="mt-3 text-5xl font-semibold">
+      {todaysBookings.length}
+    </p>
   </div>
 
-  <div className="rounded-2xl bg-white p-4 shadow">
-    <p className="text-sm text-gray-500">Ukupno rezervacija</p>
-    <p className="text-3xl font-bold">{filteredBookings.length}</p>
+  <div className="rounded-3xl bg-white p-6 shadow">
+    <p className="text-sm font-medium text-gray-500">
+      Ukupno rezervacija
+    </p>
+
+    <p className="mt-3 text-5xl font-semibold">
+      {filteredBookings.length}
+    </p>
   </div>
 </div>
 
-  <div className="mb-6 flex flex-wrap gap-2">
+  <div className="mb-8 flex flex-wrap items-center gap-3">
   <button
     onClick={() => setFilter("today")}
-    className={`rounded px-4 py-2 text-white ${
+    className={`rounded-xl px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:opacity-90 ${
       filter === "today" ? "bg-black" : "bg-gray-500"
     }`}
   >
@@ -815,7 +825,7 @@ if (!isLoggedIn) {
 
   <button
     onClick={() => setFilter("week")}
-    className={`rounded px-4 py-2 text-white ${
+    className={`rounded-xl px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:opacity-90 ${
       filter === "week" ? "bg-black" : "bg-gray-500"
     }`}
   >
@@ -824,7 +834,7 @@ if (!isLoggedIn) {
 
   <button
     onClick={() => setFilter("month")}
-    className={`rounded px-4 py-2 text-white ${
+    className={`rounded-xl px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:opacity-90 ${
       filter === "month" ? "bg-black" : "bg-gray-500"
     }`}
   >
@@ -833,12 +843,25 @@ if (!isLoggedIn) {
 
   <button
     onClick={() => setFilter("all")}
-    className={`rounded px-4 py-2 text-white ${
+    className={`rounded-xl px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:opacity-90 ${
       filter === "all" ? "bg-black" : "bg-gray-500"
     }`}
   >
     Sve
   </button>
+
+  <div className="ml-4 flex items-center gap-3">
+    <span className="text-sm font-medium text-gray-600">
+      Datum:
+    </span>
+
+    <input
+      type="date"
+      value={selectedDate}
+      onChange={(e) => setSelectedDate(e.target.value)}
+      className="rounded-xl border bg-white px-4 py-3"
+    />
+  </div>
 </div>
 
 {selectedSettings.length > 0 && (
@@ -1197,20 +1220,11 @@ if (!isLoggedIn) {
   </>
 )}
 
-<div className="mb-6 rounded-2xl bg-white p-4 shadow">
-  <label className="mb-2 block font-medium">Odaberite datum</label>
 
-  <input
-    type="date"
-    value={selectedDate}
-    onChange={(e) => setSelectedDate(e.target.value)}
-    className="rounded border p-3"
-  />
-</div>
-       <div className="mb-6 flex gap-2">
+       <div className="mb-6 flex gap-3">
   <button
     onClick={() => setBookingTab("aktivne")}
-    className={`rounded px-4 py-2 text-white ${
+    className={`rounded-xl px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:opacity-90 ${
       bookingTab === "aktivne" ? "bg-black" : "bg-gray-500"
     }`}
   >
@@ -1219,7 +1233,7 @@ if (!isLoggedIn) {
 
   <button
     onClick={() => setBookingTab("zavrsene")}
-    className={`rounded px-4 py-2 text-white ${
+    className={`rounded-xl px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:opacity-90 ${
       bookingTab === "zavrsene" ? "bg-black" : "bg-gray-500"
     }`}
   >
@@ -1229,24 +1243,29 @@ if (!isLoggedIn) {
         <div className="grid gap-4">
   {(bookingTab === "aktivne" ? activeBookings : completedBookings).map((booking) => (
     <div
-      key={booking.id}
-      className="rounded-2xl bg-white p-5 shadow"
-    >
-      <div className="mb-3 flex items-center justify-between">
-        <div>
-          <p className="text-2xl font-bold">{booking.booking_time}</p>
-          <p className="text-sm text-gray-500">{booking.booking_date}</p>
-        </div>
+  key={booking.id}
+  className="rounded-3xl bg-white p-7 shadow"
+>
+      <div className="mb-4 flex items-start justify-between">
+  <div>
+    <p className="text-4xl font-semibold">
+      {booking.booking_time}
+    </p>
 
-        <button
-          onClick={() => handleDelete(booking.id)}
-          className="rounded bg-red-500 px-3 py-1 text-white"
-        >
-          Obriši
-        </button>
-      </div>
+    <p className="mt-1 text-sm text-gray-500">
+      {booking.booking_date}
+    </p>
+  </div>
 
-      <div className="space-y-1">
+  <button
+    onClick={() => handleDelete(booking.id)}
+    className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white"
+  >
+    Obriši
+  </button>
+</div>
+
+      <div className="mt-5 space-y-3">
         <p>
           <strong>Ime i prezime:</strong> {booking.customer_name}
         </p>
