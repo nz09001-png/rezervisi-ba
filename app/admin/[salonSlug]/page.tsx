@@ -1244,49 +1244,49 @@ if (!isLoggedIn) {
   {(bookingTab === "aktivne" ? activeBookings : completedBookings).map((booking) => (
     <div
   key={booking.id}
-  className="rounded-3xl bg-white p-7 shadow"
+  className="rounded-3xl bg-white p-6 shadow"
 >
-      <div className="mb-4 flex items-start justify-between">
-  <div>
-    <p className="text-4xl font-semibold">
-      {booking.booking_time}
-    </p>
+  <div className="mb-5 flex items-start justify-between">
+    <div>
+      <p className="flex items-center gap-3">
+  <span className="text-3xl font-semibold">
+    {booking.booking_time}
+  </span>
 
-    <p className="mt-1 text-sm text-gray-500">
-      {booking.booking_date}
-    </p>
+  <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-600">
+    {booking.booking_date}
+  </span>
+</p>
+    </div>
+
+    <button
+      onClick={() => handleDelete(booking.id)}
+      className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white"
+    >
+      Obriši
+    </button>
   </div>
 
-  <button
-    onClick={() => handleDelete(booking.id)}
-    className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white"
-  >
-    Obriši
-  </button>
-</div>
+  <div className="space-y-2">
+  <p className="text-xl font-semibold">
+    {booking.customer_name}
+  </p>
 
-      <div className="mt-5 space-y-3">
-        <p>
-          <strong>Ime i prezime:</strong> {booking.customer_name}
-        </p>
-        <p>
-          <strong>Telefon:</strong> {booking.phone}
-        </p>
-        <p>
-  <strong>Email:</strong> {booking.email || "Nije uneseno"}
-</p>
-        <p>
-  <strong>Usluga:</strong> {booking.service || "Nije odabrano"}
-</p>
-<p>
-  <strong>Frizer:</strong> {booking.barber_name || "Nije odabran"}
-</p>
-        <p>
-          <strong>Salon:</strong> {booking.salon}
-        </p>
-      </div>
-    </div>
-  ))}
+  <p className="text-base font-medium text-gray-600">
+    {booking.service || "Nije odabrano"} •{" "}
+    {booking.barber_name || "Bilo koji frizer"}
+  </p>
+
+  <p>
+    <strong>Telefon:</strong> {booking.phone}
+  </p>
+
+  <p>
+    <strong>Email:</strong> {booking.email || "Nije uneseno"}
+  </p>
+</div>
+</div>
+))}
 </div>
       </div>
     </main>
