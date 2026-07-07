@@ -5,16 +5,20 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Cropper from "react-easy-crop";
 
+function createImage(url: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.addEventListener("load", () => resolve(image));
+    image.addEventListener("error", (error) => reject(error));
+    image.src = url;
+  });
+}
+
 async function getCroppedImage(
   imageSrc: string,
   croppedAreaPixels: any
 ): Promise<Blob> {
-  const image = new Image();
-  image.src = imageSrc;
-
-  await new Promise((resolve) => {
-    image.onload = resolve;
-  });
+  const image = await createImage(imageSrc);
 
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -38,14 +42,19 @@ async function getCroppedImage(
     croppedAreaPixels.height
   );
 
-  return new Promise((resolve) => {
-    canvas.toBlob((blob) => {
-      if (!blob) {
-        throw new Error("Greška pri obradi slike");
-      }
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error("Greška pri obradi slike"));
+          return;
+        }
 
-      resolve(blob);
-    }, "image/jpeg");
+        resolve(blob);
+      },
+      "image/jpeg",
+      0.95
+    );
   });
 }
 export default function AdminPage() {
@@ -528,10 +537,19 @@ async function handleDeleteGalleryImage(id: number) {
   }
 
   const fileName = `salon-x-${Date.now()}-${selectedFile.name}`;
+  if (!imagePreview || !croppedAreaPixels) {
+  alert("Prvo odaberite područje slike.");
+  return;
+}
+
+const croppedBlob = await getCroppedImage(
+  imagePreview,
+  croppedAreaPixels
+);
 
   const { error: uploadError } = await supabase.storage
     .from("salon-images")
-    .upload(fileName, selectedFile);
+    .upload(fileName, croppedBlob);
 
   if (uploadError) {
     alert("Greška pri učitavanju slike.");
@@ -559,6 +577,11 @@ async function handleDeleteGalleryImage(id: number) {
   
 
   alert("Slika je uspješno spremljena.");
+  setImagePreview(null);
+setSelectedFile(null);
+setZoom(1);
+setCrop({ x: 0, y: 0 });
+setCroppedAreaPixels(null);
 }
 async function handleSalonInfoUpdate() {
   const { error } = await supabase
@@ -953,21 +976,38 @@ style={{
   <div className="mb-6 rounded-3xl bg-white p-6 shadow">
   <label className="mb-2 block font-medium">Profilna slika</label>
 
-  <input
-  
-    type="file"
-    accept="image/*"
-    onChange={(e) => {
-  if (e.target.files && e.target.files[0]) {
-    const file = e.target.files[0];
+<input
+  id="hero-image-upload"
+  type="file"
+  accept="image/*"
+  onChange={(e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
 
-    setSelectedFile(file);
-    setImagePreview(URL.createObjectURL(file));
-  }
-}}
-    className="block"
-  />
-  {imagePreview && (
+      setSelectedFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  }}
+  style={{ display: "none" }}
+/>
+
+<label
+  htmlFor="hero-image-upload"
+  style={{
+    display: "inline-flex",
+    cursor: "pointer",
+    alignItems: "center",
+    borderRadius: "12px",
+    backgroundColor: "#611a1a",
+    padding: "12px 20px",
+    fontWeight: 500,
+    color: "white",
+  }}
+>
+   Izaberi profilnu sliku
+</label>
+
+{imagePreview && (
   <div className="mt-4">
     <div className="relative h-72 w-full overflow-hidden rounded-2xl bg-gray-100">
       <Cropper
@@ -984,33 +1024,6 @@ style={{
     </div>
   </div>
 )}
-  <div className="mt-4">
-  <label className="mb-2 block font-medium">
-    Pozicija slike
-  </label>
-
-  <div className="flex gap-2">
-    {["top", "center", "bottom"].map((position) => (
-      <button
-        key={position}
-        type="button"
-        onClick={() => setHeroPosition(position)}
-        style={{
-          backgroundColor:
-            heroPosition === position ? "#611a1a" : "#e5e7eb",
-          color: heroPosition === position ? "white" : "black",
-        }}
-        className="rounded px-4 py-2 font-semibold"
-      >
-        {position === "top"
-          ? "Top"
-          : position === "center"
-          ? "Center"
-          : "Bottom"}
-      </button>
-    ))}
-  </div>
-</div>
   <button
   onClick={handleImageUpload}
   className="mt-4 rounded bg-black px-4 py-2 text-white"
@@ -1024,15 +1037,42 @@ style={{
   <h2 className="mb-4 text-xl font-bold">Galerija slika</h2>
 
   <input
-    type="file"
-    accept="image/*"
-    onChange={(e) => {
-      if (e.target.files && e.target.files[0]) {
-        setGalleryFile(e.target.files[0]);
-      }
-    }}
-    className="block"
-  />
+  id="hero-image-upload"
+  type="file"
+  accept="image/*"
+  onChange={(e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+
+      setSelectedFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  }}
+  style={{ display: "none" }}
+/>
+
+<label
+  htmlFor="hero-image-upload"
+  style={{
+    display: "inline-flex",
+    cursor: "pointer",
+    alignItems: "center",
+    borderRadius: "12px",
+    backgroundColor: "#611a1a",
+    padding: "12px 20px",
+    fontWeight: 500,
+    color: "white",
+  }}
+>
+  🖼️ Izaberi profilnu sliku
+</label>
+
+<label
+  htmlFor="hero-image-upload"
+  className="inline-flex cursor-pointer items-center rounded-xl bg-[#611a1a] px-5 py-3 font-medium text-white transition hover:opacity-90"
+>
+  🖼️ Izaberi profilnu sliku
+</label>
   {imagePreview && (
   <div className="mt-4">
     <div className="relative h-72 w-full overflow-hidden rounded-2xl bg-gray-100">
