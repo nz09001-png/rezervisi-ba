@@ -3,7 +3,51 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import Cropper from "react-easy-crop";
 
+async function getCroppedImage(
+  imageSrc: string,
+  croppedAreaPixels: any
+): Promise<Blob> {
+  const image = new Image();
+  image.src = imageSrc;
+
+  await new Promise((resolve) => {
+    image.onload = resolve;
+  });
+
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
+  if (!ctx) {
+    throw new Error("Canvas nije podržan");
+  }
+
+  canvas.width = croppedAreaPixels.width;
+  canvas.height = croppedAreaPixels.height;
+
+  ctx.drawImage(
+    image,
+    croppedAreaPixels.x,
+    croppedAreaPixels.y,
+    croppedAreaPixels.width,
+    croppedAreaPixels.height,
+    0,
+    0,
+    croppedAreaPixels.width,
+    croppedAreaPixels.height
+  );
+
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        throw new Error("Greška pri obradi slike");
+      }
+
+      resolve(blob);
+    }, "image/jpeg");
+  });
+}
 export default function AdminPage() {
     const params = useParams();
 const salonSlug = params.salonSlug as string;
@@ -15,6 +59,10 @@ const [salon, setSalon] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [filter, setFilter] = useState("all");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+const [crop, setCrop] = useState({ x: 0, y: 0 });
+const [zoom, setZoom] = useState(1);
+const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
   const [galleryImages, setGalleryImages] = useState<any[]>([]);
 const [galleryFile, setGalleryFile] = useState<File | null>(null);
   const [description, setDescription] = useState("");
@@ -713,7 +761,7 @@ if (!isLoggedIn) {
   
 
   <div className="flex items-center gap-3">
-  <div className="relative">
+  <div style={{ position: "relative", display: "inline-block" }}>
   <button
     onClick={() => setShowSettingsMenu(!showSettingsMenu)}
     className="h-12 rounded-xl bg-black px-5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
@@ -723,57 +771,91 @@ if (!isLoggedIn) {
   </button>
 
   {showSettingsMenu && (
-    <div className="absolute right-0 z-50 mt-2 w-64 rounded-2xl bg-white p-2 shadow">
-      <button
-        onClick={() => toggleSetting("hero")}
-        className="block w-full rounded p-3 text-left hover:bg-gray-100"
-      >
-        {selectedSettings.includes("hero") ? "✓ " : ""}Naslovna slika
-      </button>
+  <div
+  className="z-50 rounded-2xl bg-white p-2 shadow"
+  style={{
+    position: "absolute",
+    top: "100%",
+    left: 0,
+    marginTop: "8px",
+    width: "180px",
+  }}
+>
+    <button
+      onClick={() => toggleSetting("hero")}
+      className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-100"
+style={{
+  padding: "8px 12px",
+}}
+    >
+      <span className="mr-2 w-4">
+  {selectedSettings.includes("hero") ? "✓  " : ""}
+</span>
 
-      <button
-        onClick={() => toggleSetting("gallery")}
-        className="block w-full rounded p-3 text-left hover:bg-gray-100"
-      >
-        {selectedSettings.includes("gallery") ? "✓ " : ""}Galerija
-      </button>
+<span>Naslovna slika</span>
+    </button>
 
-      <button
-        onClick={() => toggleSetting("info")}
-        className="block w-full rounded p-3 text-left hover:bg-gray-100"
-      >
-        {selectedSettings.includes("info") ? "✓ " : ""}Informacije o salonu
-      </button>
+    <button
+      onClick={() => toggleSetting("gallery")}
+     className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-100"
+style={{
+  padding: "8px 12px",
+}}
+    >
+      {selectedSettings.includes("gallery") ? "✓  " : ""}Galerija
+    </button>
 
-      <button
-        onClick={() => toggleSetting("services")}
-        className="block w-full rounded p-3 text-left hover:bg-gray-100"
-      >
-        {selectedSettings.includes("services") ? "✓ " : ""}Usluge
-      </button>
+    <button
+      onClick={() => toggleSetting("info")}
+      className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-100"
+style={{
+  padding: "8px 12px",
+}}
+    >
+      {selectedSettings.includes("info") ? "✓  " : ""}Informacije o salonu
+    </button>
 
-      <button
-        onClick={() => toggleSetting("times")}
-        className="block w-full rounded p-3 text-left hover:bg-gray-100"
-      >
-        {selectedSettings.includes("times") ? "✓ " : ""}Termini
-      </button>
+    <button
+      onClick={() => toggleSetting("services")}
+      className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-100"
+style={{
+  padding: "8px 12px",
+}}
+    >
+      {selectedSettings.includes("services") ? "✓  " : ""}Usluge
+    </button>
 
-      <button
-        onClick={() => toggleSetting("barbers")}
-        className="block w-full rounded p-3 text-left hover:bg-gray-100"
-      >
-        {selectedSettings.includes("barbers") ? "✓ " : ""}Frizeri
-      </button>
+    <button
+      onClick={() => toggleSetting("times")}
+      className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-100"
+style={{
+  padding: "8px 12px",
+}}
+    >
+      {selectedSettings.includes("times") ? "✓  " : ""}Termini
+    </button>
 
-      <button
-        onClick={() => toggleSetting("closed")}
-        className="block w-full rounded p-3 text-left hover:bg-gray-100"
-      >
-        {selectedSettings.includes("closed") ? "✓ " : ""}Zatvoreni dani
-      </button>
-    </div>
-  )}
+    <button
+      onClick={() => toggleSetting("barbers")}
+      className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-100"
+style={{
+  padding: "8px 12px",
+}}
+    >
+      {selectedSettings.includes("barbers") ? "✓  " : ""}Frizeri
+    </button>
+
+    <button
+      onClick={() => toggleSetting("closed")}
+      className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-100"
+style={{
+  padding: "8px 12px",
+}}
+    >
+      {selectedSettings.includes("closed") ? "✓  " : ""}Zatvoreni dani
+    </button>
+  </div>
+)}
 </div>
 
   <button
@@ -868,7 +950,7 @@ if (!isLoggedIn) {
   <>
   
     {selectedSettings.includes("hero") && (
-  <div className="mb-6 rounded-2xl bg-white p-4 shadow">
+  <div className="mb-6 rounded-3xl bg-white p-6 shadow">
   <label className="mb-2 block font-medium">Profilna slika</label>
 
   <input
@@ -876,12 +958,32 @@ if (!isLoggedIn) {
     type="file"
     accept="image/*"
     onChange={(e) => {
-      if (e.target.files && e.target.files[0]) {
-        setSelectedFile(e.target.files[0]);
-      }
-    }}
+  if (e.target.files && e.target.files[0]) {
+    const file = e.target.files[0];
+
+    setSelectedFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  }
+}}
     className="block"
   />
+  {imagePreview && (
+  <div className="mt-4">
+    <div className="relative h-72 w-full overflow-hidden rounded-2xl bg-gray-100">
+      <Cropper
+        image={imagePreview}
+        crop={crop}
+        zoom={zoom}
+        aspect={16 / 9}
+        onCropChange={setCrop}
+        onZoomChange={setZoom}
+        onCropComplete={(_, croppedAreaPixels) => {
+          setCroppedAreaPixels(croppedAreaPixels);
+        }}
+      />
+    </div>
+  </div>
+)}
   <div className="mt-4">
   <label className="mb-2 block font-medium">
     Pozicija slike
@@ -931,6 +1033,39 @@ if (!isLoggedIn) {
     }}
     className="block"
   />
+  {imagePreview && (
+  <div className="mt-4">
+    <div className="relative h-72 w-full overflow-hidden rounded-2xl bg-gray-100">
+      <Cropper
+        image={imagePreview}
+        crop={crop}
+        zoom={zoom}
+        aspect={16 / 9}
+        onCropChange={setCrop}
+        onZoomChange={setZoom}
+        onCropComplete={(_, croppedAreaPixels) => {
+          setCroppedAreaPixels(croppedAreaPixels);
+        }}
+      />
+    </div>
+
+    <div className="mt-4">
+      <label className="mb-2 block font-medium">
+        Zoom
+      </label>
+
+      <input
+        type="range"
+        min={1}
+        max={3}
+        step={0.1}
+        value={zoom}
+        onChange={(e) => setZoom(Number(e.target.value))}
+        className="w-full"
+      />
+    </div>
+  </div>
+)}
 
   <button
     onClick={handleGalleryImageUpload}
@@ -1248,26 +1383,21 @@ if (!isLoggedIn) {
 >
   <div className="mb-5 flex items-start justify-between">
     <div>
-      <p className="flex items-center gap-3">
-  <span className="text-3xl font-semibold">
-    {booking.booking_time}
+      <p className="text-2xl font-semibold">
+  {booking.booking_time}
+
+  <span className="inline-block px-6 text-gray-400">
+    •
   </span>
 
-  <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-600">
-    {booking.booking_date}
-  </span>
+  {booking.booking_date}
 </p>
     </div>
 
-    <button
-      onClick={() => handleDelete(booking.id)}
-      className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white"
-    >
-      Obriši
-    </button>
+    
   </div>
 
-  <div className="space-y-2">
+  <div className="space-y-1">
   <p className="text-xl font-semibold">
     {booking.customer_name}
   </p>
@@ -1282,11 +1412,27 @@ if (!isLoggedIn) {
   </p>
 
   <p>
-    <strong>Email:</strong> {booking.email || "Nije uneseno"}
-  </p>
+  <strong>Email:</strong> {booking.email || "Nije uneseno"}
+</p>
 </div>
+
+<div
+  style={{
+    textAlign: "right",
+    marginTop: "-40px",
+  }}
+>
+  <button
+    onClick={() => handleDelete(booking.id)}
+    className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white"
+  >
+    Obriši
+  </button>
+</div>
+
 </div>
 ))}
+
 </div>
       </div>
     </main>
