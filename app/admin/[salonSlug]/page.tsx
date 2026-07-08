@@ -1006,6 +1006,17 @@ style={{
 >
    Izaberi profilnu sliku
 </label>
+{selectedFile && (
+  <p
+    style={{
+      marginTop: "12px",
+      color: "#555",
+      fontSize: "15px",
+    }}
+  >
+    Odabrana slika: <strong>{selectedFile.name}</strong>
+  </p>
+)}
 
 {imagePreview && (
   <div className="mt-4">
@@ -1024,12 +1035,30 @@ style={{
     </div>
   </div>
 )}
-  <button
-  onClick={handleImageUpload}
-  className="mt-4 rounded bg-black px-4 py-2 text-white"
+  {selectedFile && (
+  <div className="mt-4 flex gap-3">
+    <button
+      onClick={handleImageUpload}
+      className="rounded-xl bg-black px-5 py-3 font-medium text-white transition hover:opacity-90"
+    >
+      Sačuvaj sliku
+    </button>
+
+    <button
+  type="button"
+  onClick={() => {
+    setImagePreview(null);
+    setSelectedFile(null);
+    setZoom(1);
+    setCrop({ x: 0, y: 0 });
+    setCroppedAreaPixels(null);
+  }}
+  className="rounded-xl border border-gray-300 bg-white px-5 py-3 font-medium text-black transition hover:bg-gray-100"
 >
-  Sačuvaj sliku
+  Otkaži
 </button>
+  </div>
+)}
 </div>
 )}
 {selectedSettings.includes("gallery") && (
