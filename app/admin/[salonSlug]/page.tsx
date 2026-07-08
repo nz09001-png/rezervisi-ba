@@ -577,7 +577,17 @@ const croppedBlob = await getCroppedImage(
   
 
   alert("Slika je uspješno spremljena.");
-  setImagePreview(null);
+
+setSalon((prevSalon: any) =>
+  prevSalon
+    ? {
+        ...prevSalon,
+        image_url: imageUrl,
+      }
+    : prevSalon
+);
+
+setImagePreview(null);
 setSelectedFile(null);
 setZoom(1);
 setCrop({ x: 0, y: 0 });
@@ -975,6 +985,13 @@ style={{
     {selectedSettings.includes("hero") && (
   <div className="mb-6 rounded-3xl bg-white p-6 shadow">
   <label className="mb-2 block font-medium">Profilna slika</label>
+  {salon?.image_url && (
+  <img
+    src={salon.image_url}
+    alt="Profilna slika"
+    className="mb-4 h-36 w-full max-w-md rounded-2xl object-cover"
+  />
+)}
 
 <input
   id="hero-image-upload"
