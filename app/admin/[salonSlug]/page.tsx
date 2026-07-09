@@ -508,9 +508,11 @@ async function handleGalleryImageUpload() {
     return;
   }
 
-  setGalleryFile(null);
-  fetchGalleryImages();
   alert("Slika je dodana u galeriju.");
+
+setGalleryFile(null);
+
+fetchGalleryImages();
 }
 async function handleDeleteGalleryImage(id: number) {
   const confirmDelete = confirm("Da li ste sigurni da želite obrisati sliku iz galerije?");
@@ -1083,22 +1085,21 @@ style={{
   <h2 className="mb-4 text-xl font-bold">Galerija slika</h2>
 
   <input
-  id="hero-image-upload"
+  id="gallery-image-upload"
   type="file"
   accept="image/*"
   onChange={(e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
 
-      setSelectedFile(file);
-      setImagePreview(URL.createObjectURL(file));
+      setGalleryFile(file);
     }
   }}
   style={{ display: "none" }}
 />
 
 <label
-  htmlFor="hero-image-upload"
+  htmlFor="gallery-image-upload"
   style={{
     display: "inline-flex",
     cursor: "pointer",
@@ -1110,56 +1111,24 @@ style={{
     color: "white",
   }}
 >
-  🖼️ Izaberi profilnu sliku
+  Izaberi sliku za galeriju
 </label>
 
-<label
-  htmlFor="hero-image-upload"
-  className="inline-flex cursor-pointer items-center rounded-xl bg-[#611a1a] px-5 py-3 font-medium text-white transition hover:opacity-90"
->
-  🖼️ Izaberi profilnu sliku
-</label>
-  {imagePreview && (
-  <div className="mt-4">
-    <div className="relative h-72 w-full overflow-hidden rounded-2xl bg-gray-100">
-      <Cropper
-        image={imagePreview}
-        crop={crop}
-        zoom={zoom}
-        aspect={16 / 9}
-        onCropChange={setCrop}
-        onZoomChange={setZoom}
-        onCropComplete={(_, croppedAreaPixels) => {
-          setCroppedAreaPixels(croppedAreaPixels);
-        }}
-      />
-    </div>
-
-    <div className="mt-4">
-      <label className="mb-2 block font-medium">
-        Zoom
-      </label>
-
-      <input
-        type="range"
-        min={1}
-        max={3}
-        step={0.1}
-        value={zoom}
-        onChange={(e) => setZoom(Number(e.target.value))}
-        className="w-full"
-      />
-    </div>
-  </div>
+{galleryFile && (
+  <p className="mt-3 text-sm text-gray-600">
+    Odabrana slika: <strong>{galleryFile.name}</strong>
+  </p>
 )}
 
+  {galleryFile && (
   <button
     onClick={handleGalleryImageUpload}
     style={{ backgroundColor: "#611a1a" }}
     className="mt-4 rounded px-4 py-2 text-white"
   >
-    + Dodaj sliku u galeriju
+    Sačuvaj u galeriju
   </button>
+)}
 
   <div
   style={{
