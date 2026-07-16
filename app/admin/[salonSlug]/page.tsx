@@ -1083,6 +1083,9 @@ style={{
 {selectedSettings.includes("gallery") && (
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
   <h2 className="mb-4 text-xl font-bold">Galerija slika</h2>
+  <p className="mb-6 text-sm text-gray-500">
+  Dodajte slike koje će se prikazivati na stranici salona.
+</p>
 
   <input
   id="gallery-image-upload"
@@ -1139,13 +1142,16 @@ style={{
   }}
 >
     {galleryImages.map((image) => (
-      <div key={image.id} className="rounded-xl bg-gray-50 p-3">
+      <div
+  key={image.id}
+  className="rounded-2xl bg-white p-4 shadow"
+>
         <img
   src={image.image_url}
   alt="Slika galerije"
   style={{
     width: "100%",
-    height: "120px",
+    height: "150px",
     objectFit: "cover",
     borderRadius: "12px",
     display: "block",
@@ -1154,7 +1160,8 @@ style={{
 
         <button
           onClick={() => handleDeleteGalleryImage(image.id)}
-          className="w-full rounded bg-red-500 px-3 py-2 text-white"
+          className="mt-4 w-full rounded-xl px-3 py-2 font-medium text-white transition hover:opacity-90"
+style={{ backgroundColor: "#611a1a" }}
         >
           Obriši
         </button>
