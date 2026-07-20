@@ -636,33 +636,61 @@ return (
         >
           {service.name}
         </h3>
+        {service.description && (
+  <p
+    style={{
+      color: "#6b7280",
+      fontSize: "15px",
+      marginBottom: "10px",
+      lineHeight: "1.5",
+    }}
+  >
+    {service.description}
+  </p>
+)}
 
         <div
-          style={{
-            display: "flex",
-            gap: "12px",
-            alignItems: "center",
-          }}
-        >
-          <span
   style={{
-    color: "#111827",
-    fontWeight: "700",
-    fontSize: "16px",
+    display: "flex",
+    gap: "12px",
+    alignItems: "center",
+    flexWrap: "wrap",
   }}
 >
-  {service.price} KM
-</span>
+  {service.price && (
+    <span
+      style={{
+        color: "#111827",
+        fontWeight: "700",
+        fontSize: "16px",
+      }}
+    >
+      {service.price} BAM
+    </span>
+  )}
 
-          <span
-  style={{
-    color: "#6b7280",
-    fontWeight: "500",
-  }}
->
-  • {service.duration_minutes || 60} min
-</span>
-        </div>
+  {service.price && service.duration_minutes && (
+    <span
+      style={{
+        color: "#6b7280",
+        fontWeight: "500",
+      }}
+    >
+      •
+    </span>
+  )}
+
+  {service.duration_minutes && (
+    <span
+      style={{
+        color: "#6b7280",
+        fontWeight: "500",
+      }}
+    >
+      {service.duration_minutes} min
+    </span>
+  )}
+</div>
       </div>
 
       <Link

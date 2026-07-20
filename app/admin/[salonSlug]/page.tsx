@@ -81,6 +81,7 @@ const [openingHours, setOpeningHours] = useState("");
 const [heroPosition, setHeroPosition] = useState("center");
 const [services, setServices] = useState<any[]>([]);
 const [serviceName, setServiceName] = useState("");
+const [serviceDescription, setServiceDescription] = useState("");
 const [servicePrice, setServicePrice] = useState("");
 const [serviceDuration, setServiceDuration] = useState("60");
 const [times, setTimes] = useState<any[]>([]);
@@ -408,27 +409,30 @@ async function handleDeleteClosedDay(id: number) {
 }
 
 async function handleAddService() {
-  if (!serviceName.trim() || !servicePrice.trim() || !serviceDuration.trim()) {
-  alert("Unesite naziv, cijenu i trajanje usluge.");
+  if (!serviceName.trim()) {
+  alert("Unesite naziv usluge.");
   return;
 }
 
   const { error } = await supabase.from("services").insert({
   salon_id: salon?.id,
-  name: serviceName,
-  price: servicePrice,
-  duration_minutes: Number(serviceDuration),
+  name: serviceName.trim(),
+  description: serviceDescription.trim() || null,
+  price: servicePrice.trim() || null,
+  duration_minutes: serviceDuration.trim()
+    ? Number(serviceDuration)
+    : null,
 });
 
   if (error) {
-    alert("Greška pri dodavanju usluge.");
-    console.error(error);
-    return;
-  }
+  alert(JSON.stringify(error));
+  return;
+}
 
   setServiceName("");
+setServiceDescription("");
 setServicePrice("");
-setServiceDuration("60");
+setServiceDuration("");
 fetchServices();
 }
   
@@ -1176,12 +1180,15 @@ style={{ backgroundColor: "#611a1a" }}
 {selectedSettings.includes("info") && (
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
   <h2 className="mb-4 text-xl font-bold">Informacije o salonu</h2>
+  <p className="mb-6 text-sm text-gray-500">
+  Ovdje možete urediti osnovne informacije koje će biti prikazane na stranici salona.
+</p>
 
   <label className="mb-2 block font-medium">Opis</label>
   <textarea
     value={description}
     onChange={(e) => setDescription(e.target.value)}
-    className="mb-4 w-full rounded border p-3"
+    className="mb-6 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
     rows={3}
   />
 
@@ -1211,7 +1218,8 @@ style={{ backgroundColor: "#611a1a" }}
 
   <button
   onClick={handleSalonInfoUpdate}
-  className="rounded bg-black px-4 py-2 text-white"
+  className="rounded-xl px-5 py-3 font-medium text-white transition hover:opacity-90"
+  style={{ backgroundColor: "#611a1a" }}
 >
   Sačuvaj informacije
 </button>
@@ -1221,6 +1229,9 @@ style={{ backgroundColor: "#611a1a" }}
 {selectedSettings.includes("services") && (
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
   <h2 className="mb-4 text-xl font-bold">Usluge</h2>
+  <p className="mb-6 text-sm text-gray-500">
+  Dodajte i uredite usluge koje nudite u svom salonu.
+</p>
 
   <div className="mb-4 space-y-2">
     {services.map((service) => (
@@ -1230,10 +1241,24 @@ style={{ backgroundColor: "#611a1a" }}
   >
     <div>
   <p>{service.name}</p>
-  <p className="font-bold">{service.price} KM</p>
-  <p className="text-sm text-gray-500">
-    Trajanje: {service.duration_minutes || 60} min
-  </p>
+
+  {service.description && (
+    <p className="mt-1 text-sm text-gray-500">
+      {service.description}
+    </p>
+  )}
+
+  {service.price && (
+    <p className="font-bold">
+      {service.price} BAM
+    </p>
+  )}
+
+  {service.duration_minutes && (
+    <p className="text-sm text-gray-500">
+      Trajanje: {service.duration_minutes} min
+    </p>
+  )}
 </div>
 
     <button
@@ -1253,6 +1278,13 @@ style={{ backgroundColor: "#611a1a" }}
     onChange={(e) => setServiceName(e.target.value)}
     className="mb-3 w-full rounded border p-3"
   />
+  <textarea
+  placeholder="Opis usluge (nije obavezno)"
+  value={serviceDescription}
+  onChange={(e) => setServiceDescription(e.target.value)}
+  className="mb-4 w-full rounded border p-3"
+  rows={3}
+/>
 
   <input
     type="text"

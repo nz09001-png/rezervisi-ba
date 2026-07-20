@@ -14,8 +14,9 @@ const serviceId = searchParams.get("serviceId");
   const [service, setService] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
-  const [bookedTimes, setBookedTimes] = useState<any[]>([]);
-  const [weekOffset, setWeekOffset] = useState(0);
+const [bookedTimes, setBookedTimes] = useState<any[]>([]);
+const [availableTimes, setAvailableTimes] = useState<any[]>([]);
+const [weekOffset, setWeekOffset] = useState(0);
   
 
   function handleContinue() {
@@ -49,6 +50,37 @@ const serviceId = searchParams.get("serviceId");
 
   fetchService();
 }, [serviceId]);
+useEffect(() => {
+  async function fetchAvailableTimes() {
+    if (!salonSlug) return;
+
+    const { data: salonData, error: salonError } = await supabase
+      .from("salons")
+      .select("id")
+      .eq("slug", salonSlug)
+      .single();
+
+    if (salonError) {
+      console.error(salonError);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("available_times")
+      .select("*")
+      .eq("salon_id", salonData.id)
+      .order("time", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setAvailableTimes(data || []);
+  }
+
+  fetchAvailableTimes();
+}, [salonSlug]);
 useEffect(() => {
   async function fetchBookedTimes() {
     if (!salon) return;
@@ -289,7 +321,8 @@ style={{
     Nema termina
   </p>
 ) : (
-                ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"].map((time) => {
+                availableTimes.map((slot) => {
+  const time = slot.time;
   const isBooked = bookedTimes.some(
     (booking) =>
       booking.booking_date === item.date &&
