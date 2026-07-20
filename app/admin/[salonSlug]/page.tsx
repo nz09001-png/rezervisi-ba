@@ -85,7 +85,22 @@ const [serviceDescription, setServiceDescription] = useState("");
 const [servicePrice, setServicePrice] = useState("");
 const [serviceDuration, setServiceDuration] = useState("60");
 const [times, setTimes] = useState<any[]>([]);
+const [generatedTimes, setGeneratedTimes] = useState<any[]>([]);
 const [newTime, setNewTime] = useState("");
+const [startTime, setStartTime] = useState("09:00");
+const [endTime, setEndTime] = useState("17:00");
+const [intervalMinutes, setIntervalMinutes] = useState("30");
+const [selectedDays, setSelectedDays] = useState([
+  "Pon",
+  "Uto",
+  "Sri",
+  "Čet",
+  "Pet",
+]);
+const [scheduleStartDate, setScheduleStartDate] = useState("");
+const [scheduleEndDate, setScheduleEndDate] = useState("");
+const [specialDate, setSpecialDate] = useState("");
+const [specialTime, setSpecialTime] = useState("");
 const [notifications, setNotifications] = useState<any[]>([]);
 const [barbers, setBarbers] = useState<any[]>([]);
 const [newBarberName, setNewBarberName] = useState("");
@@ -704,6 +719,41 @@ const todaysBookings = bookings.filter(
   (booking) => booking.booking_date === today
 );
 
+function handleGenerateTimes() {
+  if (!scheduleStartDate || !scheduleEndDate) {
+    alert("Odaberite početni i završni datum.");
+    return;
+  }
+
+  const startDate = new Date(`${scheduleStartDate}T00:00:00`);
+  const endDate = new Date(`${scheduleEndDate}T00:00:00`);
+
+  if (startDate > endDate) {
+    alert("Početni datum ne može biti nakon završnog datuma.");
+    return;
+  }
+
+  const generatedDates = [];
+  const currentDate = new Date(startDate);
+
+  const dayNames = ["Ned", "Pon", "Uto", "Sri", "Čet", "Pet", "Sub"];
+
+while (currentDate <= endDate) {
+  const currentDayName = dayNames[currentDate.getDay()];
+
+  if (selectedDays.includes(currentDayName)) {
+    generatedDates.push({
+      date: currentDate.toISOString().split("T")[0],
+    });
+  }
+
+  currentDate.setDate(currentDate.getDate() + 1);
+}
+
+  setGeneratedTimes(generatedDates);
+
+  console.log("Generisani datumi:", generatedDates);
+}
 if (!isLoggedIn) {
   return (
       <main className="min-h-screen flex items-center justify-center bg-[#f7f3ee]">
@@ -1331,20 +1381,192 @@ style={{ backgroundColor: "#611a1a" }}
     ))}
   </div>
 
-  <input
-    type="text"
-    placeholder="Vrijeme, npr. 09:30"
-    value={newTime}
-    onChange={(e) => setNewTime(e.target.value)}
-    className="mb-3 w-full rounded border p-3"
-  />
+  <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+  <h3 className="text-lg font-bold">Standardni termini</h3>
 
-  <button
-  onClick={handleAddTime}
-  className="rounded bg-black px-4 py-2 text-white"
+  <p className="mt-1 text-sm text-gray-500">
+    Odaberite radno vrijeme, interval i dane u sedmici.
+  </p>
+
+  <div className="mt-4 grid gap-4 md:grid-cols-2">
+  <div>
+    <label className="mb-1 block text-sm font-semibold">
+      Od datuma
+    </label>
+
+    <input
+      type="date"
+      value={scheduleStartDate}
+      onChange={(e) => setScheduleStartDate(e.target.value)}
+      className="w-full rounded-xl border border-gray-300 bg-white p-3"
+    />
+  </div>
+
+  <div>
+    <label className="mb-1 block text-sm font-semibold">
+      Do datuma
+    </label>
+
+    <input
+      type="date"
+      value={scheduleEndDate}
+      onChange={(e) => setScheduleEndDate(e.target.value)}
+      className="w-full rounded-xl border border-gray-300 bg-white p-3"
+    />
+  </div>
+</div>
+
+<div className="mt-4 grid gap-4 md:grid-cols-3">
+  <div>
+    <label className="mb-1 block text-sm font-semibold">
+      Od
+    </label>
+
+    <input
+      type="time"
+      value={startTime}
+      onChange={(e) => setStartTime(e.target.value)}
+      className="w-full rounded-xl border border-gray-300 bg-white p-3"
+    />
+  </div>
+
+  <div>
+    <label className="mb-1 block text-sm font-semibold">
+      Do
+    </label>
+
+    <input
+      type="time"
+      value={endTime}
+      onChange={(e) => setEndTime(e.target.value)}
+      className="w-full rounded-xl border border-gray-300 bg-white p-3"
+    />
+  </div>
+
+  <div>
+    <label className="mb-1 block text-sm font-semibold">
+      Interval
+    </label>
+
+    <select
+      value={intervalMinutes}
+      onChange={(e) => setIntervalMinutes(e.target.value)}
+      className="w-full rounded-xl border border-gray-300 bg-white p-3"
+    >
+      <option value="15">15 min</option>
+      <option value="30">30 min</option>
+      <option value="45">45 min</option>
+      <option value="60">60 min</option>
+    </select>
+  </div>
+</div>
+
+  <div className="mt-4">
+    <p className="mb-2 text-sm font-semibold">
+      Dani
+    </p>
+
+    <div className="flex flex-wrap gap-2">
+      {["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"].map((day) => {
+        const isSelected = selectedDays.includes(day);
+
+        return (
+          <button
+            key={day}
+            type="button"
+            onClick={() => {
+              setSelectedDays((currentDays) =>
+                currentDays.includes(day)
+                  ? currentDays.filter((selectedDay) => selectedDay !== day)
+                  : [...currentDays, day]
+              );
+            }}
+            className={`rounded-xl px-4 py-2 text-sm font-semibold ${
+              isSelected
+                ? "bg-black text-white"
+                : "border border-gray-300 bg-white text-gray-700"
+            }`}
+          >
+            {day}
+          </button>
+        );
+      })}
+    </div>
+  </div>
+
+  <div
+  style={{
+    display: "flex",
+    justifyContent: "flex-end",
+    width: "100%",
+    marginTop: "20px",
+  }}
 >
-  + Dodaj termin
-</button>
+  <button
+    type="button"
+    onClick={handleGenerateTimes}
+    className="rounded-xl bg-black px-5 py-3 font-semibold text-white"
+  >
+    Generiši termine
+  </button>
+</div>
+{generatedTimes.length > 0 && (
+  <p className="mt-3 text-sm text-gray-600">
+    Generisano datuma: {generatedTimes.length}
+  </p>
+)}
+</div>
+<div className="mt-6 rounded-2xl border border-gray-200 bg-gray-50 p-4">
+  <h3 className="text-lg font-bold">Posebni termini</h3>
+
+  <p className="mt-1 text-sm text-gray-500">
+    Dodajte ili uklonite pojedinačne termine za određene datume.
+  </p>
+
+  <div className="mt-4 grid gap-4 md:grid-cols-2">
+    <div>
+      <label className="mb-1 block text-sm font-semibold">
+        Datum
+      </label>
+
+      <input
+        type="date"
+        value={specialDate}
+        onChange={(e) => setSpecialDate(e.target.value)}
+        className="w-full rounded-xl border border-gray-300 bg-white p-3"
+      />
+    </div>
+
+    <div>
+      <label className="mb-1 block text-sm font-semibold">
+        Vrijeme
+      </label>
+
+      <input
+        type="time"
+        value={specialTime}
+        onChange={(e) => setSpecialTime(e.target.value)}
+        className="w-full rounded-xl border border-gray-300 bg-white p-3"
+      />
+    </div>
+  </div>
+
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "flex-end",
+      width: "100%",
+      marginTop: "20px",
+    }}
+  >
+    <button
+      type="button"
+      className="rounded-xl bg-black px-5 py-3 font-semibold text-white"
+    >
+      Dodaj posebni termin
+    </button>
+  </div>
+</div>
 </div>
 )}
 
