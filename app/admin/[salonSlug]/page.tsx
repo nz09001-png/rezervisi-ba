@@ -86,6 +86,8 @@ const [servicePrice, setServicePrice] = useState("");
 const [serviceDuration, setServiceDuration] = useState("60");
 const [times, setTimes] = useState<any[]>([]);
 const [generatedTimes, setGeneratedTimes] = useState<any[]>([]);
+const [showPreview, setShowPreview] = useState(false);
+const [timesSaved, setTimesSaved] = useState(false);
 const [newTime, setNewTime] = useState("");
 const [startTime, setStartTime] = useState("09:00");
 const [endTime, setEndTime] = useState("17:00");
@@ -725,6 +727,11 @@ function handleGenerateTimes() {
     return;
   }
 
+  if (!startTime || !endTime) {
+    alert("Odaberite početno i završno vrijeme.");
+    return;
+  }
+
   const startDate = new Date(`${scheduleStartDate}T00:00:00`);
   const endDate = new Date(`${scheduleEndDate}T00:00:00`);
 
@@ -733,26 +740,56 @@ function handleGenerateTimes() {
     return;
   }
 
-  const generatedDates = [];
+  const startMinutes =
+    Number(startTime.split(":")[0]) * 60 +
+    Number(startTime.split(":")[1]);
+
+  const endMinutes =
+    Number(endTime.split(":")[0]) * 60 +
+    Number(endTime.split(":")[1]);
+
+  if (startMinutes >= endMinutes) {
+    alert("Početno vrijeme mora biti prije završnog vremena.");
+    return;
+  }
+
+  const interval = Number(intervalMinutes);
+
+  const generatedSlots = [];
   const currentDate = new Date(startDate);
 
   const dayNames = ["Ned", "Pon", "Uto", "Sri", "Čet", "Pet", "Sub"];
 
-while (currentDate <= endDate) {
-  const currentDayName = dayNames[currentDate.getDay()];
+  while (currentDate <= endDate) {
+    const currentDayName = dayNames[currentDate.getDay()];
 
-  if (selectedDays.includes(currentDayName)) {
-    generatedDates.push({
-      date: currentDate.toISOString().split("T")[0],
-    });
+    if (selectedDays.includes(currentDayName)) {
+      for (
+        let currentMinutes = startMinutes;
+        currentMinutes < endMinutes;
+        currentMinutes += interval
+      ) {
+        const hours = Math.floor(currentMinutes / 60);
+        const minutes = currentMinutes % 60;
+
+        const formattedTime = `${String(hours).padStart(2, "0")}:${String(
+          minutes
+        ).padStart(2, "0")}`;
+
+        generatedSlots.push({
+          date: currentDate.toISOString().split("T")[0],
+          time: formattedTime,
+        });
+      }
+    }
+
+    currentDate.setDate(currentDate.getDate() + 1);
   }
 
-  currentDate.setDate(currentDate.getDate() + 1);
-}
+  setGeneratedTimes(generatedSlots);
+setTimesSaved(false);
 
-  setGeneratedTimes(generatedDates);
-
-  console.log("Generisani datumi:", generatedDates);
+console.log("Generisani termini:", generatedSlots);
 }
 if (!isLoggedIn) {
   return (
@@ -1502,18 +1539,99 @@ style={{ backgroundColor: "#611a1a" }}
     marginTop: "20px",
   }}
 >
-  <button
-    type="button"
-    onClick={handleGenerateTimes}
-    className="rounded-xl bg-black px-5 py-3 font-semibold text-white"
+  <div
+    style={{
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "flex-end",
+      gap: "12px",
+    }}
   >
-    Generiši termine
-  </button>
+    <button
+      type="button"
+      onClick={handleGenerateTimes}
+      className="rounded-xl bg-black px-5 py-3 font-semibold text-white"
+    >
+      Generiši termine
+    </button>
+
+    <button
+  type="button"
+  disabled={generatedTimes.length === 0}
+  className="rounded-xl px-5 py-3 font-semibold"
+  style={{
+    backgroundColor:
+      generatedTimes.length === 0
+        ? "white"
+        : timesSaved
+        ? "#611a1a"
+        : "white",
+    color:
+      generatedTimes.length === 0
+        ? "#611a1a"
+        : timesSaved
+        ? "white"
+        : "#611a1a",
+    border: "1px solid #611a1a",
+    cursor:
+      generatedTimes.length === 0 ? "not-allowed" : "pointer",
+    opacity:
+      generatedTimes.length === 0 ? 0.5 : 1,
+  }}
+>
+  {timesSaved ? "Sačuvano ✓" : "Sačuvaj termine"}
+</button>
+  </div>
 </div>
 {generatedTimes.length > 0 && (
-  <p className="mt-3 text-sm text-gray-600">
-    Generisano datuma: {generatedTimes.length}
-  </p>
+  <div className="mt-3">
+    <p className="text-sm text-gray-600">
+      Generisano termina: {generatedTimes.length}
+    </p>
+
+    <button
+      type="button"
+      onClick={() => setShowPreview(!showPreview)}
+      className="mt-2 text-sm font-semibold text-black underline"
+    >
+      {showPreview ? "Sakrij pregled" : "Prikaži pregled"}
+    </button>
+  </div>
+)}
+{showPreview && (
+  <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+    {Object.entries(
+      generatedTimes.reduce((grouped: Record<string, string[]>, slot) => {
+        if (!grouped[slot.date]) {
+          grouped[slot.date] = [];
+        }
+
+        grouped[slot.date].push(slot.time);
+        return grouped;
+      }, {})
+    )
+      .slice(0, 5)
+      .map(([date, times]) => (
+        <div key={date} className="mb-4 last:mb-0">
+          <p className="mb-2 font-semibold">{date}</p>
+
+          <div className="flex flex-wrap gap-2">
+            {(times as string[]).map((time) => (
+              <span
+                key={`${date}-${time}`}
+                className="rounded-lg border border-gray-300 bg-white px-3 py-1 text-sm"
+              >
+                {time}
+              </span>
+            ))}
+          </div>
+        </div>
+      ))}
+
+    <p className="mt-4 text-xs text-gray-500">
+      Prikazano prvih 5 dana.
+    </p>
+  </div>
 )}
 </div>
 <div className="mt-6 rounded-2xl border border-gray-200 bg-gray-50 p-4">
