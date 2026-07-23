@@ -791,6 +791,35 @@ setTimesSaved(false);
 
 console.log("Generisani termini:", generatedSlots);
 }
+async function handleSaveTimes() {
+  if (!salon?.id) {
+    alert("Salon nije pronađen.");
+    return;
+  }
+
+  if (generatedTimes.length === 0) {
+    alert("Nema generisanih termina za spremanje.");
+    return;
+  }
+
+  const timesToSave = generatedTimes.map((slot) => ({
+    salon_id: salon.id,
+    date: slot.date,
+    time: slot.time,
+  }));
+
+  const { error } = await supabase
+    .from("available_times")
+    .insert(timesToSave);
+
+  if (error) {
+    console.error("Greška pri spremanju termina:", error);
+    alert("Došlo je do greške pri spremanju termina.");
+    return;
+  }
+
+  setTimesSaved(true);
+}
 if (!isLoggedIn) {
   return (
       <main className="min-h-screen flex items-center justify-center bg-[#f7f3ee]">
@@ -1557,6 +1586,7 @@ style={{ backgroundColor: "#611a1a" }}
 
     <button
   type="button"
+  onClick={handleSaveTimes}
   disabled={generatedTimes.length === 0}
   className="rounded-xl px-5 py-3 font-semibold"
   style={{
