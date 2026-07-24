@@ -65,7 +65,6 @@ const [salon, setSalon] = useState<any>(null);
   const [password, setPassword] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [error, setError] = useState(false);
-  const [selectedDate, setSelectedDate] = useState("");
   const [filter, setFilter] = useState("all");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -85,6 +84,7 @@ const [serviceDescription, setServiceDescription] = useState("");
 const [servicePrice, setServicePrice] = useState("");
 const [serviceDuration, setServiceDuration] = useState("60");
 const [times, setTimes] = useState<any[]>([]);
+const [selectedDate, setSelectedDate] = useState("");
 const [generatedTimes, setGeneratedTimes] = useState<any[]>([]);
 const [showPreview, setShowPreview] = useState(false);
 const [timesSaved, setTimesSaved] = useState(false);
@@ -180,12 +180,19 @@ async function fetchServices() {
 
   setServices(data || []);
 }
-async function fetchTimes() {
-  const { data, error } = await supabase
+async function fetchTimes(date?: string) {
+  let query = supabase
     .from("available_times")
     .select("*")
-    .eq("salon_id", salon?.id)
-    .order("time", { ascending: true });
+    .eq("salon_id", salon?.id);
+
+  if (date) {
+    query = query.eq("date", date);
+  }
+
+  const { data, error } = await query.order("time", {
+    ascending: true,
+  });
 
   if (error) {
     console.error(error);
@@ -193,8 +200,8 @@ async function fetchTimes() {
   }
 
   setTimes(data || []);
-  console.log("TIMES DATA:", data);
 }
+  
 async function fetchBarbers() {
   if (!salon?.id) return;
 
@@ -285,23 +292,31 @@ async function handleAddTime() {
     alert("Unesite vrijeme.");
     return;
   }
+  if (times.some((item) => item.time === newTime)) {
+  alert("Ovo vrijeme već postoji.");
+  return;
+}
 
   const { error } = await supabase.from("available_times").insert({
-    salon_id: salon?.id,
-    time: newTime,
-  });
+  salon_id: salon?.id,
+  date: selectedDate,
+  time: newTime,
+})
 
   if (error) {
     alert("Greška pri dodavanju vremena.");
     console.error(error);
     return;
   }
+  
 
   setNewTime("");
-  fetchTimes();
+fetchTimes(selectedDate);
 }
 async function handleDeleteTime(id: number) {
-  const confirmDelete = confirm("Da li ste sigurni da želite obrisati vrijeme?");
+  const confirmDelete = confirm(
+    "Da li ste sigurni da želite obrisati vrijeme?"
+  );
 
   if (!confirmDelete) return;
 
@@ -316,8 +331,30 @@ async function handleDeleteTime(id: number) {
     return;
   }
 
-  fetchTimes();
+  fetchTimes(selectedDate);
 }
+async function handleDeleteAllTimesForDate() {
+  const confirmDelete = confirm(
+    "Da li ste sigurni da želite obrisati sve termine za ovaj datum?"
+  );
+
+  if (!confirmDelete) return;
+
+  const { error } = await supabase
+    .from("available_times")
+    .delete()
+    .eq("salon_id", salon?.id)
+    .eq("date", selectedDate);
+
+  if (error) {
+    alert("Greška pri brisanju termina.");
+    console.error(error);
+    return;
+  }
+
+  fetchTimes(selectedDate);
+}
+
 
 
 
@@ -655,6 +692,14 @@ useEffect(() => {
 
   fetchSalon();
 }, [salonSlug]);
+useEffect(() => {
+  if (!selectedDate || !salon?.id) {
+    setTimes([]);
+    return;
+  }
+
+  fetchTimes(selectedDate);
+}, [selectedDate, salon?.id]);
 
   useEffect(() => {
   if (isLoggedIn && salon?.id) {
@@ -810,7 +855,10 @@ async function handleSaveTimes() {
 
   const { error } = await supabase
     .from("available_times")
-    .insert(timesToSave);
+    .upsert(timesToSave, {
+  onConflict: "salon_id,date,time",
+  ignoreDuplicates: true,
+})
 
   if (error) {
     console.error("Greška pri spremanju termina:", error);
@@ -1429,7 +1477,30 @@ style={{ backgroundColor: "#611a1a" }}
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
   <h2 className="mb-4 text-xl font-bold">Termini</h2>
 
-  <div className="mb-4 space-y-2">
+  <h3 className="mb-2 text-lg font-semibold">
+  Pregled i uređivanje termina
+</h3>
+
+<input
+  type="date"
+  value={selectedDate}
+  onChange={(e) => setSelectedDate(e.target.value)}
+  className="mb-4 w-full rounded-lg border p-2"
+/>
+
+{selectedDate && (
+  <h4 className="mb-3 text-lg font-semibold">
+    Termini za {selectedDate}
+  </h4>
+)}
+  {selectedDate && (
+  <>
+  {times.length === 0 ? (
+    <div className="rounded-xl bg-gray-100 p-4 text-center text-gray-500">
+      Nema termina za odabrani datum.
+    </div>
+  ) : (
+    <div className="mb-4 space-y-2">
     {times.map((item) => (
       <div
         key={item.id}
@@ -1438,14 +1509,47 @@ style={{ backgroundColor: "#611a1a" }}
         <span>{item.time}</span>
 
         <button
-          onClick={() => handleDeleteTime(item.id)}
-          className="rounded bg-red-500 px-3 py-1 text-white"
-        >
-          Obriši
-        </button>
+  onClick={() => handleDeleteTime(item.id)}
+  className="rounded bg-red-500 px-3 py-1 text-white"
+>
+  Obriši
+</button>
       </div>
-    ))}
+            ))}
+      </div>
+    )}
+  </>
+)}
+{selectedDate && (
+  <div className="mt-4">
+    <label className="mb-2 block text-sm font-medium">
+      Dodaj novi termin
+    </label>
+
+    <input
+  type="time"
+  step="1800"
+  value={newTime}
+  onChange={(e) => setNewTime(e.target.value)}
+  className="w-full rounded-lg border p-2"
+/>
+    <button
+  type="button"
+  onClick={handleAddTime}
+  className="mt-3 w-full rounded-lg border px-4 py-2 font-medium"
+>
+  Dodaj termin
+</button>
+
+<button
+  type="button"
+  onClick={handleDeleteAllTimesForDate}
+  className="mt-3 w-full rounded-lg border border-red-500 px-4 py-2 font-medium text-red-600"
+>
+  Obriši sve termine za datum
+</button>
   </div>
+)}
 
   <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
   <h3 className="text-lg font-bold">Standardni termini</h3>
