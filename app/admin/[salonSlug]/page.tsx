@@ -853,12 +853,15 @@ async function handleSaveTimes() {
     time: slot.time,
   }));
 
-  const { error } = await supabase
-    .from("available_times")
-    .upsert(timesToSave, {
-  onConflict: "salon_id,date,time",
-  ignoreDuplicates: true,
-})
+  const { data, error } = await supabase
+  .from("available_times")
+  .upsert(timesToSave, {
+    onConflict: "salon_id,date,time",
+    ignoreDuplicates: true,
+  })
+  .select("date, time");
+
+console.log("Sparade tider:", data);
 
   if (error) {
     console.error("Greška pri spremanju termina:", error);
@@ -866,7 +869,13 @@ async function handleSaveTimes() {
     return;
   }
 
-  setTimesSaved(true);
+  if (!data || data.length === 0) {
+  alert("Svi ovi termini već postoje.");
+  return;
+}
+
+alert(`Sačuvano termina: ${data.length}`);
+setTimesSaved(true);
 }
 if (!isLoggedIn) {
   return (

@@ -92,15 +92,16 @@ if (existingBooking) {
   .from("bookings")
   .insert([
     {
-      customer_name: `${ime} ${prezime}`,
-      phone: `${phoneCode} ${phone}`,
-      salon,
-      booking_time: time,
-      booking_date: date,
-      service: service?.name,
-      email: email || null,
-      cancel_token: cancelToken,
-    },
+  customer_name: `${ime} ${prezime}`,
+  phone: `${phoneCode} ${phone}`,
+  salon,
+  booking_time: time,
+  booking_date: date,
+  service: service?.name,
+  duration_minutes: service?.duration_minutes || 60,
+  email: email || null,
+  cancel_token: cancelToken,
+},
   ])
   .select()
   .single();

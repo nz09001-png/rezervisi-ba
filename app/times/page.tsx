@@ -323,6 +323,9 @@ style={{
 ) : (
                 availableTimes.map((slot) => {
   const time = slot.time;
+
+  if (slot.date !== item.date) return null;
+
   const isBooked = bookedTimes.some(
     (booking) =>
       booking.booking_date === item.date &&
