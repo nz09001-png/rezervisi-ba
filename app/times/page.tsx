@@ -65,10 +65,37 @@ useEffect(() => {
       return;
     }
 
+    const currentDate = new Date();
+
+    const mondayDate = new Date(currentDate);
+    const currentDay = mondayDate.getDay();
+    const difference = currentDay === 0 ? -6 : 1 - currentDay;
+
+    mondayDate.setDate(
+      currentDate.getDate() + difference + weekOffset * 7
+    );
+
+    const sundayDate = new Date(mondayDate);
+    sundayDate.setDate(mondayDate.getDate() + 6);
+
+    function formatDate(date: Date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    }
+
+    const weekStart = formatDate(mondayDate);
+    const weekEnd = formatDate(sundayDate);
+
     const { data, error } = await supabase
       .from("available_times")
       .select("*")
       .eq("salon_id", salonData.id)
+      .gte("date", weekStart)
+      .lte("date", weekEnd)
+      .order("date", { ascending: true })
       .order("time", { ascending: true });
 
     if (error) {
@@ -80,15 +107,15 @@ useEffect(() => {
   }
 
   fetchAvailableTimes();
-}, [salonSlug]);
+}, [salonSlug, weekOffset]);
 useEffect(() => {
   async function fetchBookedTimes() {
     if (!salon) return;
 
     const { data, error } = await supabase
-      .from("bookings")
-      .select("booking_date, booking_time")
-      .eq("salon", salon);
+  .from("bookings")
+  .select("booking_date, booking_time, duration_minutes")
+  .eq("salon", salon);
 
     if (error) {
       console.error(error);
@@ -326,11 +353,22 @@ style={{
 
   if (slot.date !== item.date) return null;
 
-  const isBooked = bookedTimes.some(
-    (booking) =>
-      booking.booking_date === item.date &&
-      booking.booking_time === time
-  );
+  const timeToMinutes = (time: string) => {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+};
+
+const slotMinutes = timeToMinutes(slot.time);
+
+const isBooked = bookedTimes.some((booking) => {
+  if (booking.booking_date !== item.date) return false;
+
+  const bookingStart = timeToMinutes(booking.booking_time);
+  const bookingDuration = booking.duration_minutes || 30;
+  const bookingEnd = bookingStart + bookingDuration;
+
+  return slotMinutes >= bookingStart && slotMinutes < bookingEnd;
+});
   if (isBooked) return null;
 
   return (
