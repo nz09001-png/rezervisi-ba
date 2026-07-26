@@ -17,6 +17,11 @@ const serviceId = searchParams.get("serviceId");
 const [bookedTimes, setBookedTimes] = useState<any[]>([]);
 const [availableTimes, setAvailableTimes] = useState<any[]>([]);
 const [weekOffset, setWeekOffset] = useState(0);
+
+const timeToMinutes = (time: string) => {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+};
   
 
   function handleContinue() {
@@ -353,12 +358,11 @@ style={{
 
   if (slot.date !== item.date) return null;
 
-  const timeToMinutes = (time: string) => {
-  const [hours, minutes] = time.split(":").map(Number);
-  return hours * 60 + minutes;
-};
+  
 
 const slotMinutes = timeToMinutes(slot.time);
+const serviceDuration = service?.duration_minutes || 30;
+const slotsNeeded = serviceDuration / 30;
 
 const isBooked = bookedTimes.some((booking) => {
   if (booking.booking_date !== item.date) return false;
@@ -369,7 +373,20 @@ const isBooked = bookedTimes.some((booking) => {
 
   return slotMinutes >= bookingStart && slotMinutes < bookingEnd;
 });
+const hasEnoughSlots = Array.from({ length: slotsNeeded }).every((_, index) => {
+  const nextTime = slotMinutes + index * 30;
+
+  const exists = availableTimes.some((availableSlot) => {
+    if (availableSlot.date !== item.date) return false;
+
+    return timeToMinutes(availableSlot.time) === nextTime;
+  });
+
+  return exists;
+});
   if (isBooked) return null;
+
+if (slotsNeeded > 1 && !hasEnoughSlots) return null;
 
   return (
     <button

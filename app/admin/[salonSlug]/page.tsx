@@ -802,6 +802,9 @@ function handleGenerateTimes() {
 
   const generatedSlots = [];
   const currentDate = new Date(startDate);
+  console.log("scheduleStartDate =", scheduleStartDate);
+console.log("startDate =", startDate);
+console.log("currentDate =", currentDate);
 
   const dayNames = ["Ned", "Pon", "Uto", "Sri", "Čet", "Pet", "Sub"];
 
@@ -822,7 +825,11 @@ function handleGenerateTimes() {
         ).padStart(2, "0")}`;
 
         generatedSlots.push({
-          date: currentDate.toISOString().split("T")[0],
+          date: [
+  currentDate.getFullYear(),
+  String(currentDate.getMonth() + 1).padStart(2, "0"),
+  String(currentDate.getDate()).padStart(2, "0"),
+].join("-"),
           time: formattedTime,
         });
       }
@@ -876,6 +883,62 @@ console.log("Sparade tider:", data);
 
 alert(`Sačuvano termina: ${data.length}`);
 setTimesSaved(true);
+}
+async function handleReplaceTimes() {
+  if (!salon?.id) {
+    alert("Salon nije pronađen.");
+    return;
+  }
+
+  if (generatedTimes.length === 0) {
+    alert("Nema generisanih termina.");
+    return;
+  }
+
+  console.log("salon.id =", salon.id);
+  console.log("generatedTimes =", generatedTimes);
+
+  const uniqueDates = [...new Set(generatedTimes.map((slot) => slot.date))];
+
+  for (const date of uniqueDates) {
+    console.log("Tar bort:", {
+      salonId: salon.id,
+      date,
+    });
+
+    const { error, count } = await supabase
+      .from("available_times")
+      .delete({ count: "exact" })
+      .eq("salon_id", salon.id)
+      .eq("date", date);
+
+    console.log("Raderade:", count);
+
+    if (error) {
+      console.error(error);
+      alert("Greška pri brisanju termina.");
+      return;
+    }
+  }
+
+  const timesToSave = generatedTimes.map((slot) => ({
+    salon_id: salon.id,
+    date: slot.date,
+    time: slot.time,
+  }));
+
+  const { error: insertError } = await supabase
+    .from("available_times")
+    .insert(timesToSave);
+
+  if (insertError) {
+    console.error(insertError);
+    alert("Greška pri spremanju termina.");
+    return;
+  }
+
+  alert("Termini uspješno zamijenjeni.");
+  setTimesSaved(true);
 }
 if (!isLoggedIn) {
   return (
@@ -1723,6 +1786,23 @@ style={{ backgroundColor: "#611a1a" }}
   }}
 >
   {timesSaved ? "Sačuvano ✓" : "Sačuvaj termine"}
+</button>
+<button
+  type="button"
+  onClick={handleReplaceTimes}
+  disabled={generatedTimes.length === 0}
+  className="rounded-xl px-5 py-3 font-semibold"
+  style={{
+    backgroundColor: "#611a1a",
+    color: "white",
+    border: "1px solid #611a1a",
+    cursor:
+      generatedTimes.length === 0 ? "not-allowed" : "pointer",
+    opacity:
+      generatedTimes.length === 0 ? 0.5 : 1,
+  }}
+>
+  Zamijeni termine
 </button>
   </div>
 </div>
