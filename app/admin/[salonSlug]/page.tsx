@@ -83,6 +83,16 @@ const [serviceName, setServiceName] = useState("");
 const [serviceDescription, setServiceDescription] = useState("");
 const [servicePrice, setServicePrice] = useState("");
 const [serviceDuration, setServiceDuration] = useState("60");
+const [showPrice, setShowPrice] = useState(true);
+const [showDuration, setShowDuration] = useState(true);
+const [hasServiceSteps, setHasServiceSteps] = useState(false);
+const [serviceSteps, setServiceSteps] = useState([
+  {
+    name: "",
+    duration_minutes: "",
+    is_barber_busy: true,
+  },
+]);
 const [times, setTimes] = useState<any[]>([]);
 const [selectedDate, setSelectedDate] = useState("");
 const [generatedTimes, setGeneratedTimes] = useState<any[]>([]);
@@ -476,6 +486,9 @@ async function handleAddService() {
   duration_minutes: serviceDuration.trim()
     ? Number(serviceDuration)
     : null,
+
+  show_price: showPrice,
+  show_duration: showDuration,
 });
 
   if (error) {
@@ -486,7 +499,11 @@ async function handleAddService() {
   setServiceName("");
 setServiceDescription("");
 setServicePrice("");
-setServiceDuration("");
+setServiceDuration("60");
+
+setShowPrice(true);
+setShowDuration(true);
+
 fetchServices();
 }
   
@@ -885,6 +902,13 @@ alert(`Sačuvano termina: ${data.length}`);
 setTimesSaved(true);
 }
 async function handleReplaceTimes() {
+  const confirmed = window.confirm(
+  "Jeste li sigurni da želite zamijeniti postojeće termine?"
+);
+
+if (!confirmed) {
+  return;
+}
   if (!salon?.id) {
     alert("Salon nije pronađen.");
     return;
@@ -895,24 +919,18 @@ async function handleReplaceTimes() {
     return;
   }
 
-  console.log("salon.id =", salon.id);
-  console.log("generatedTimes =", generatedTimes);
 
   const uniqueDates = [...new Set(generatedTimes.map((slot) => slot.date))];
 
   for (const date of uniqueDates) {
-    console.log("Tar bort:", {
-      salonId: salon.id,
-      date,
-    });
+    
 
-    const { error, count } = await supabase
+    const { error } = await supabase
       .from("available_times")
       .delete({ count: "exact" })
       .eq("salon_id", salon.id)
       .eq("date", date);
 
-    console.log("Raderade:", count);
 
     if (error) {
       console.error(error);
@@ -937,8 +955,10 @@ async function handleReplaceTimes() {
     return;
   }
 
-  alert("Termini uspješno zamijenjeni.");
-  setTimesSaved(true);
+  await fetchTimes(scheduleStartDate);
+
+alert("Termini uspješno zamijenjeni.");
+setTimesSaved(true);
 }
 if (!isLoggedIn) {
   return (
@@ -1495,6 +1515,13 @@ style={{ backgroundColor: "#611a1a" }}
       Trajanje: {service.duration_minutes} min
     </p>
   )}
+  <p className="mt-2 text-xs text-gray-500">
+  Cijena: {service.show_price ? "Prikazana" : "Skrivena"}
+</p>
+
+<p className="text-xs text-gray-500">
+  Trajanje: {service.show_duration ? "Prikazano" : "Skriveno"}
+</p>
 </div>
 
     <button
@@ -1537,12 +1564,104 @@ style={{ backgroundColor: "#611a1a" }}
   className="mb-3 w-full rounded border p-3"
 />
 
-  <button
-    onClick={handleAddService}
-    className="rounded bg-black px-4 py-2 text-white"
-  >
-    + Dodaj uslugu
-  </button>
+<label className="mb-2 flex items-center gap-2">
+  <input
+    type="checkbox"
+    checked={showPrice}
+    onChange={(e) => setShowPrice(e.target.checked)}
+  />
+  Prikaži cijenu klijentima
+</label>
+
+<label className="mb-4 flex items-center gap-2">
+  <input
+    type="checkbox"
+    checked={showDuration}
+    onChange={(e) => setShowDuration(e.target.checked)}
+  />
+  Prikaži trajanje klijentima
+</label>
+<label className="mb-4 flex items-center gap-2">
+  <input
+    type="checkbox"
+    checked={hasServiceSteps}
+    onChange={(e) => setHasServiceSteps(e.target.checked)}
+  />
+  Frizer nije zauzet tokom cijelog tretmana
+</label>
+
+{hasServiceSteps && (
+  <div className="mb-4 rounded-xl border bg-gray-50 p-4">
+    <h3 className="mb-2 font-semibold">
+      Koraci tretmana
+    </h3>
+
+    <div className="mt-4 rounded-xl border bg-white p-4">
+  <h4 className="mb-4 text-lg font-semibold">
+    Korak 1
+  </h4>
+
+  <input
+  type="text"
+  placeholder="Naziv koraka"
+  value={serviceSteps[0].name}
+  onChange={(e) => {
+    const updatedSteps = [...serviceSteps];
+
+    updatedSteps[0] = {
+      ...updatedSteps[0],
+      name: e.target.value,
+    };
+
+    setServiceSteps(updatedSteps);
+  }}
+  className="mb-3 w-full rounded-lg border p-3"
+/>
+
+  <input
+  type="number"
+  placeholder="Trajanje (min)"
+  value={serviceSteps[0].duration_minutes}
+  onChange={(e) => {
+    const updatedSteps = [...serviceSteps];
+
+    updatedSteps[0] = {
+      ...updatedSteps[0],
+      duration_minutes: e.target.value,
+    };
+
+    setServiceSteps(updatedSteps);
+  }}
+  className="mb-3 w-full rounded-lg border p-3"
+/>
+
+  <label className="flex items-center gap-2">
+  <input
+    type="checkbox"
+    checked={serviceSteps[0].is_barber_busy}
+    onChange={(e) => {
+      const updatedSteps = [...serviceSteps];
+
+      updatedSteps[0] = {
+        ...updatedSteps[0],
+        is_barber_busy: e.target.checked,
+      };
+
+      setServiceSteps(updatedSteps);
+    }}
+  />
+
+  Frizer je zauzet
+</label>
+</div>
+  </div>
+)}
+<button
+  onClick={handleAddService}
+  className="rounded bg-black px-4 py-2 text-white"
+>
+  + Dodaj uslugu
+</button>
 </div>
 )}
 {selectedSettings.includes("times") && (
