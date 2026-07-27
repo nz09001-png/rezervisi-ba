@@ -1596,69 +1596,127 @@ style={{ backgroundColor: "#611a1a" }}
       Koraci tretmana
     </h3>
 
-    <div className="mt-4 rounded-xl border bg-white p-4">
-  <h4 className="mb-4 text-lg font-semibold">
-    Korak 1
-  </h4>
+    {serviceSteps.map((step, index) => (
+  <div
+    key={index}
+    className="mt-4 rounded-xl border bg-white p-4"
+  >
+    <h4 className="mb-4 text-lg font-semibold">
+      Korak {index + 1}
+    </h4>
 
-  <input
-  type="text"
-  placeholder="Naziv koraka"
-  value={serviceSteps[0].name}
-  onChange={(e) => {
-    const updatedSteps = [...serviceSteps];
+    <input
+      type="text"
+      placeholder="Naziv koraka"
+      value={step.name}
+      onChange={(e) => {
+        const updatedSteps = [...serviceSteps];
 
-    updatedSteps[0] = {
-      ...updatedSteps[0],
-      name: e.target.value,
-    };
+        updatedSteps[index] = {
+          ...updatedSteps[index],
+          name: e.target.value,
+        };
 
-    setServiceSteps(updatedSteps);
+        setServiceSteps(updatedSteps);
+      }}
+      className="mb-3 w-full rounded-lg border p-3"
+    />
+
+    <input
+      type="number"
+      placeholder="Trajanje (min)"
+      value={step.duration_minutes}
+      onChange={(e) => {
+        const updatedSteps = [...serviceSteps];
+
+        updatedSteps[index] = {
+          ...updatedSteps[index],
+          duration_minutes: e.target.value,
+        };
+
+        setServiceSteps(updatedSteps);
+      }}
+      className="mb-3 w-full rounded-lg border p-3"
+    />
+
+    <label className="flex items-center gap-2">
+      <input
+        type="checkbox"
+        checked={step.is_barber_busy}
+        onChange={(e) => {
+          const updatedSteps = [...serviceSteps];
+
+          updatedSteps[index] = {
+            ...updatedSteps[index],
+            is_barber_busy: e.target.checked,
+          };
+
+          setServiceSteps(updatedSteps);
+        }}
+      />
+
+      Frizer je zauzet
+    </label>
+    {serviceSteps.length > 1 && (
+  <div
+  className="mt-6"
+  style={{
+    display: "flex",
+    justifyContent: "flex-end",
+    width: "100%",
   }}
-  className="mb-3 w-full rounded-lg border p-3"
-/>
+>
+    <button
+  type="button"
+  onClick={() => {
+    const shouldDelete = window.confirm(
+      "Da li ste sigurni da želite izbrisati ovaj korak?"
+    );
 
-  <input
-  type="number"
-  placeholder="Trajanje (min)"
-  value={serviceSteps[0].duration_minutes}
-  onChange={(e) => {
-    const updatedSteps = [...serviceSteps];
+    if (!shouldDelete) return;
 
-    updatedSteps[0] = {
-      ...updatedSteps[0],
-      duration_minutes: e.target.value,
-    };
-
-    setServiceSteps(updatedSteps);
+    setServiceSteps(
+      serviceSteps.filter((_, stepIndex) => stepIndex !== index)
+    );
   }}
-  className="mb-3 w-full rounded-lg border p-3"
-/>
-
-  <label className="flex items-center gap-2">
-  <input
-    type="checkbox"
-    checked={serviceSteps[0].is_barber_busy}
-    onChange={(e) => {
-      const updatedSteps = [...serviceSteps];
-
-      updatedSteps[0] = {
-        ...updatedSteps[0],
-        is_barber_busy: e.target.checked,
-      };
-
-      setServiceSteps(updatedSteps);
-    }}
-  />
-
-  Frizer je zauzet
-</label>
-</div>
+  className="rounded-lg px-4 py-2 text-white"
+  style={{ backgroundColor: "#dc2626" }}
+>
+  Obriši korak
+</button>
+  </div>
+)}
+  </div>
+))}
+<button
+  type="button"
+  onClick={() => {
+    setServiceSteps([
+      ...serviceSteps,
+      {
+        name: "",
+        duration_minutes: "",
+        is_barber_busy: true,
+      },
+    ]);
+  }}
+  className="mt-4 rounded-lg border px-4 py-2"
+  style={{
+    backgroundColor: "#ffffff",
+    color: "#611a1a",
+    borderColor: "#611a1a",
+  }}
+>
+  + Dodaj korak
+</button>
   </div>
 )}
 <button
   onClick={handleAddService}
-  className="rounded bg-black px-4 py-2 text-white"
+  className="rounded-lg px-5 py-3 text-white font-medium"
+  style={{
+    backgroundColor: "#611a1a",
+  }}
 >
   + Dodaj uslugu
 </button>
