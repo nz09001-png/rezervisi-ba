@@ -80,6 +80,7 @@ const [openingHours, setOpeningHours] = useState("");
 const [heroPosition, setHeroPosition] = useState("center");
 const [services, setServices] = useState<any[]>([]);
 const [serviceName, setServiceName] = useState("");
+const [editingServiceId, setEditingServiceId] = useState<number | null>(null);
 const [serviceDescription, setServiceDescription] = useState("");
 const [servicePrice, setServicePrice] = useState("");
 const [serviceDuration, setServiceDuration] = useState("60");
@@ -93,6 +94,9 @@ const [serviceSteps, setServiceSteps] = useState([
     is_barber_busy: true,
   },
 ]);
+const totalDuration = serviceSteps.reduce((total, step) => {
+  return total + (Number(step.duration_minutes) || 0);
+}, 0);
 const [times, setTimes] = useState<any[]>([]);
 const [selectedDate, setSelectedDate] = useState("");
 const [generatedTimes, setGeneratedTimes] = useState<any[]>([]);
@@ -124,6 +128,62 @@ const [bookingTab, setBookingTab] = useState("aktivne");
 const [showNotifications, setShowNotifications] = useState(false);
 const [showSettingsMenu, setShowSettingsMenu] = useState(false);
 const [selectedSettings, setSelectedSettings] = useState<string[]>([]);
+
+async function handleEditService(service: any) {
+  setEditingServiceId(service.id);
+  setServiceName(service.name || "");
+  setServiceDescription(service.description || "");
+  setServicePrice(
+    service.price !== null && service.price !== undefined
+      ? String(service.price)
+      : ""
+  );
+  setServiceDuration(
+    service.duration_minutes !== null &&
+      service.duration_minutes !== undefined
+      ? String(service.duration_minutes)
+      : "60"
+  );
+  setShowPrice(service.show_price ?? true);
+  setShowDuration(service.show_duration ?? true);
+
+  const { data: stepsData, error: stepsError } = await supabase
+    .from("service_steps")
+    .select("name, duration_minutes, is_barber_busy, step_order")
+    .eq("service_id", service.id)
+    .order("step_order", { ascending: true });
+
+  if (stepsError) {
+    console.error("Kunde inte hämta tjänstens steg:", stepsError);
+    return;
+  }
+
+  if (stepsData && stepsData.length > 0) {
+    setHasServiceSteps(true);
+
+    setServiceSteps(
+      stepsData.map((step) => ({
+        name: step.name || "",
+        duration_minutes:
+          step.duration_minutes !== null &&
+          step.duration_minutes !== undefined
+            ? String(step.duration_minutes)
+            : "",
+        is_barber_busy: step.is_barber_busy ?? true,
+      }))
+    );
+  } else {
+    setHasServiceSteps(false);
+
+    setServiceSteps([
+      {
+        name: "",
+        duration_minutes: "",
+        is_barber_busy: true,
+      },
+    ]);
+  }
+}
 
 
   function handleLogin() {
@@ -478,23 +538,50 @@ async function handleAddService() {
   return;
 }
 
-  const { error } = await supabase.from("services").insert({
+  const { data, error } = await supabase
+  .from("services")
+  .insert({
   salon_id: salon?.id,
   name: serviceName.trim(),
   description: serviceDescription.trim() || null,
   price: servicePrice.trim() || null,
-  duration_minutes: serviceDuration.trim()
+  duration_minutes: hasServiceSteps
+  ? totalDuration
+  : serviceDuration.trim()
     ? Number(serviceDuration)
     : null,
 
   show_price: showPrice,
-  show_duration: showDuration,
-});
+show_duration: showDuration,
+})
+.select()
+.single();
 
   if (error) {
   alert(JSON.stringify(error));
   return;
 }
+
+if (hasServiceSteps) {
+  const stepsToInsert = serviceSteps.map((step, index) => ({
+    service_id: data.id,
+    name: step.name,
+    duration_minutes: Number(step.duration_minutes),
+    is_barber_busy: step.is_barber_busy,
+    step_order: index + 1,
+  }));
+
+  const { error: stepError } = await supabase
+    .from("service_steps")
+    .insert(stepsToInsert);
+
+  if (stepError) {
+    alert(JSON.stringify(stepError));
+    return;
+  }
+}
+
+setServiceName("");
 
   setServiceName("");
 setServiceDescription("");
@@ -1490,20 +1577,23 @@ style={{ backgroundColor: "#611a1a" }}
 </p>
 
   <div className="mb-4 space-y-2">
-    {services.map((service) => (
+   {services.map((service) => (
   <div
     key={service.id}
-    className="flex items-center justify-between rounded-xl bg-gray-50 p-3"
+    className="rounded-xl border border-gray-200 bg-white p-4"
   >
     <div>
-  <p>{service.name}</p>
+        <p className="text-lg font-semibold">
+          {service.name}
+        </p>
 
-  {service.description && (
-    <p className="mt-1 text-sm text-gray-500">
-      {service.description}
-    </p>
-  )}
+        {service.description && (
+          <p className="mt-1 text-sm text-gray-500">
+            {service.description}
+          </p>
+        )}
 
+       <div className="mt-2 space-y-1">
   {service.price && (
     <p className="font-bold">
       {service.price} BAM
@@ -1511,25 +1601,50 @@ style={{ backgroundColor: "#611a1a" }}
   )}
 
   {service.duration_minutes && (
-    <p className="text-sm text-gray-500">
+    <p className="font-bold">
       Trajanje: {service.duration_minutes} min
     </p>
   )}
-  <p className="mt-2 text-xs text-gray-500">
-  Cijena: {service.show_price ? "Prikazana" : "Skrivena"}
-</p>
-
-<p className="text-xs text-gray-500">
-  Trajanje: {service.show_duration ? "Prikazano" : "Skriveno"}
-</p>
 </div>
 
-    <button
-      onClick={() => handleDeleteService(service.id)}
-      className="rounded bg-red-500 px-3 py-1 text-white"
-    >
-      Obriši
-    </button>
+        <div className="mt-3 space-y-1">
+          <p className="text-xs text-gray-500">
+            Cijena:{" "}
+            {service.show_price ? "Prikazana" : "Skrivena"}
+          </p>
+
+          <p className="text-xs text-gray-500">
+            Trajanje:{" "}
+            {service.show_duration ? "Prikazano" : "Skriveno"}
+          </p>
+                </div>
+    </div>
+
+    <div className="mt-4 flex w-full gap-2">
+      <button
+  type="button"
+  onClick={() => handleEditService(service)}
+  className="rounded-lg border px-4 py-2"
+  style={{
+  backgroundColor: "#ffffff",
+  color: "#611a1a",
+  borderColor: "#611a1a",
+  marginLeft: "auto",
+}}
+>
+  Edit
+</button>
+
+      <button
+        onClick={() => handleDeleteService(service.id)}
+        className="rounded-lg px-4 py-2 text-white"
+        style={{
+          backgroundColor: "#ef4444",
+        }}
+      >
+        Obriši
+      </button>
+    </div>
   </div>
 ))}
   </div>
@@ -1559,10 +1674,21 @@ style={{ backgroundColor: "#611a1a" }}
   <input
   type="number"
   placeholder="Trajanje u minutama, npr. 30"
-  value={serviceDuration}
+  value={hasServiceSteps ? totalDuration : serviceDuration}
   onChange={(e) => setServiceDuration(e.target.value)}
-  className="mb-3 w-full rounded border p-3"
+  disabled={hasServiceSteps}
+  className={`mb-3 w-full rounded border p-3 ${
+    hasServiceSteps
+      ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+      : ""
+  }`}
 />
+
+{hasServiceSteps && (
+  <p className="mb-3 text-sm text-gray-500">
+    Trajanje se automatski izračunava na osnovu koraka tretmana.
+  </p>
+)}
 
 <label className="mb-2 flex items-center gap-2">
   <input
@@ -1623,21 +1749,22 @@ style={{ backgroundColor: "#611a1a" }}
     />
 
     <input
-      type="number"
-      placeholder="Trajanje (min)"
-      value={step.duration_minutes}
-      onChange={(e) => {
-        const updatedSteps = [...serviceSteps];
+  type="number"
+  onWheel={(e) => e.currentTarget.blur()}
+  placeholder="Trajanje (min)"
+  value={step.duration_minutes}
+  onChange={(e) => {
+    const updatedSteps = [...serviceSteps];
 
-        updatedSteps[index] = {
-          ...updatedSteps[index],
-          duration_minutes: e.target.value,
-        };
+    updatedSteps[index] = {
+      ...updatedSteps[index],
+      duration_minutes: e.target.value,
+    };
 
-        setServiceSteps(updatedSteps);
-      }}
-      className="mb-3 w-full rounded-lg border p-3"
-    />
+    setServiceSteps(updatedSteps);
+  }}
+  className="mb-3 w-full rounded-lg border p-3"
+/>
 
     <label className="flex items-center gap-2">
       <input
