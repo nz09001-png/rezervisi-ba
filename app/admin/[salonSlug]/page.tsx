@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Cropper from "react-easy-crop";
@@ -82,6 +82,7 @@ const [services, setServices] = useState<any[]>([]);
 const [serviceName, setServiceName] = useState("");
 const [editingServiceId, setEditingServiceId] = useState<number | null>(null);
 const [serviceDescription, setServiceDescription] = useState("");
+const serviceFormRef = useRef<HTMLDivElement | null>(null);
 const [servicePrice, setServicePrice] = useState("");
 const [serviceDuration, setServiceDuration] = useState("60");
 const [showPrice, setShowPrice] = useState(true);
@@ -129,6 +130,25 @@ const [showNotifications, setShowNotifications] = useState(false);
 const [showSettingsMenu, setShowSettingsMenu] = useState(false);
 const [selectedSettings, setSelectedSettings] = useState<string[]>([]);
 
+function handleCancelServiceEdit() {
+  setEditingServiceId(null);
+  setServiceName("");
+  setServiceDescription("");
+  setServicePrice("");
+  setServiceDuration("60");
+  setShowPrice(true);
+  setShowDuration(true);
+  setHasServiceSteps(false);
+
+  setServiceSteps([
+    {
+      name: "",
+      duration_minutes: "",
+      is_barber_busy: true,
+    },
+  ]);
+}
+
 async function handleEditService(service: any) {
   setEditingServiceId(service.id);
   setServiceName(service.name || "");
@@ -172,7 +192,7 @@ async function handleEditService(service: any) {
         is_barber_busy: step.is_barber_busy ?? true,
       }))
     );
-  } else {
+  }  else {
     setHasServiceSteps(false);
 
     setServiceSteps([
@@ -184,6 +204,10 @@ async function handleEditService(service: any) {
     ]);
   }
 }
+serviceFormRef.current?.scrollIntoView({
+  behavior: "smooth",
+  block: "start",
+});
 
 
   function handleLogin() {
@@ -534,8 +558,51 @@ async function handleDeleteClosedDay(id: number) {
 
 async function handleAddService() {
   if (!serviceName.trim()) {
-  alert("Unesite naziv usluge.");
+    alert("Unesite naziv usluge.");
+    return;
+  }
+
+  if (editingServiceId !== null) {
+    console.log("editingServiceId =", editingServiceId);
+  const { data: updatedServices, error: updateError } = await supabase
+  .from("services")
+  .update({
+    name: serviceName.trim(),
+    description: serviceDescription.trim() || null,
+    price: servicePrice.trim() || null,
+    duration_minutes: hasServiceSteps
+      ? totalDuration
+      : serviceDuration.trim()
+        ? Number(serviceDuration)
+        : null,
+    show_price: showPrice,
+    show_duration: showDuration,
+  })
+  .eq("id", editingServiceId)
+  .select();
+
+console.log("UPPDATERADE RADER:", updatedServices);
+
+  if (updateError) {
+  console.log(updateError);
+  alert(JSON.stringify(updateError));
   return;
+}
+
+console.log("UPDATE OK");
+console.log({
+  serviceName,
+  servicePrice,
+  serviceDescription,
+  showPrice,
+  showDuration,
+});
+
+await fetchServices();
+handleCancelServiceEdit();
+
+alert("Usluga je uspješno ažurirana.");
+return;
 }
 
   const { data, error } = await supabase
@@ -1579,9 +1646,17 @@ style={{ backgroundColor: "#611a1a" }}
   <div className="mb-4 space-y-2">
    {services.map((service) => (
   <div
-    key={service.id}
-    className="rounded-xl border border-gray-200 bg-white p-4"
-  >
+  key={service.id}
+  className="rounded-xl border p-4 transition-all"
+  style={{
+    backgroundColor:
+      editingServiceId === service.id ? "#e5cccc" : "#ffffff",
+    borderColor:
+      editingServiceId === service.id ? "#611a1a" : "#e5e7eb",
+    borderWidth:
+      editingServiceId === service.id ? "2px" : "1px",
+  }}
+>
     <div>
         <p className="text-lg font-semibold">
           {service.name}
@@ -1649,6 +1724,7 @@ style={{ backgroundColor: "#611a1a" }}
 ))}
   </div>
 
+  <div ref={serviceFormRef}></div>
   <input
     type="text"
     placeholder="Naziv usluge"
@@ -1838,15 +1914,30 @@ style={{ backgroundColor: "#611a1a" }}
 </button>
   </div>
 )}
-<button
-  onClick={handleAddService}
-  className="rounded-lg px-5 py-3 text-white font-medium"
+<div className="flex gap-3">
+  <button
+    onClick={handleAddService}
+    className="rounded-lg px-5 py-3 text-white font-medium"
+    style={{
+      backgroundColor: "#611a1a",
+    }}
+  >
+    {editingServiceId !== null ? "Sačuvaj izmjene" : "+ Dodaj uslugu"}
+  </button>
+
+  {editingServiceId !== null && (
+    <button
+  onClick={handleCancelServiceEdit}
+  className="rounded-lg px-5 py-3 font-medium"
   style={{
-    backgroundColor: "#611a1a",
+    border: "2px solid #dc2626",
+    color: "#dc2626",
   }}
 >
-  + Dodaj uslugu
+  Otkaži editovanje
 </button>
+  )}
+</div>
 </div>
 )}
 {selectedSettings.includes("times") && (
