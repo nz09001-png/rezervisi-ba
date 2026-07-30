@@ -57,6 +57,16 @@ async function getCroppedImage(
     );
   });
 }
+
+async function createCroppedPreview(
+  imageSrc: string,
+  croppedAreaPixels: any
+): Promise<string> {
+  const blob = await getCroppedImage(imageSrc, croppedAreaPixels);
+
+  return URL.createObjectURL(blob);
+}
+
 export default function AdminPage() {
     const params = useParams();
 const salonSlug = params.salonSlug as string;
@@ -71,6 +81,7 @@ const [salon, setSalon] = useState<any>(null);
 const [crop, setCrop] = useState({ x: 0, y: 0 });
 const [zoom, setZoom] = useState(1);
 const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+const [croppedPreviewUrl, setCroppedPreviewUrl] = useState<string | null>(null);
   const [galleryImages, setGalleryImages] = useState<any[]>([]);
 const [galleryFile, setGalleryFile] = useState<File | null>(null);
   const [description, setDescription] = useState("");
@@ -129,6 +140,7 @@ const [bookingTab, setBookingTab] = useState("aktivne");
 const [showNotifications, setShowNotifications] = useState(false);
 const [showSettingsMenu, setShowSettingsMenu] = useState(false);
 const [selectedSettings, setSelectedSettings] = useState<string[]>([]);
+const [isUploadingImage, setIsUploadingImage] = useState(false);
 
 function handleCancelServiceEdit() {
   setEditingServiceId(null);
@@ -203,11 +215,12 @@ async function handleEditService(service: any) {
       },
     ]);
   }
-}
-serviceFormRef.current?.scrollIntoView({
+  serviceFormRef.current?.scrollIntoView({
   behavior: "smooth",
   block: "start",
 });
+}
+
 
 
   function handleLogin() {
@@ -598,6 +611,35 @@ console.log({
   showDuration,
 });
 
+const { error: deleteStepsError } = await supabase
+  .from("service_steps")
+  .delete()
+  .eq("service_id", editingServiceId);
+
+if (deleteStepsError) {
+  alert(JSON.stringify(deleteStepsError));
+  return;
+}
+
+if (hasServiceSteps) {
+  const stepsToInsert = serviceSteps.map((step, index) => ({
+    service_id: editingServiceId,
+    name: step.name.trim(),
+    duration_minutes: Number(step.duration_minutes),
+    is_barber_busy: step.is_barber_busy,
+    step_order: index + 1,
+  }));
+
+  const { error: insertStepsError } = await supabase
+    .from("service_steps")
+    .insert(stepsToInsert);
+
+  if (insertStepsError) {
+    alert(JSON.stringify(insertStepsError));
+    return;
+  }
+}
+
 await fetchServices();
 handleCancelServiceEdit();
 
@@ -762,67 +804,73 @@ async function handleDeleteGalleryImage(id: number) {
   fetchGalleryImages();
 }
   async function handleImageUpload() {
-  if (!selectedFile) {
-    alert("Prvo odaberite sliku.");
-    return;
+  setIsUploadingImage(true);
+
+  try {
+    if (!selectedFile) {
+      alert("Prvo odaberite sliku.");
+      return;
+    }
+
+    if (!imagePreview || !croppedAreaPixels) {
+      alert("Prvo odaberite područje slike.");
+      return;
+    }
+
+    const fileName = `salon-x-${Date.now()}-${selectedFile.name}`;
+
+    const croppedBlob = await getCroppedImage(
+      imagePreview,
+      croppedAreaPixels
+    );
+
+    const { error: uploadError } = await supabase.storage
+      .from("salon-images")
+      .upload(fileName, croppedBlob);
+
+    if (uploadError) {
+      alert("Greška pri učitavanju slike.");
+      console.error(uploadError);
+      return;
+    }
+
+    const { data } = supabase.storage
+      .from("salon-images")
+      .getPublicUrl(fileName);
+
+    const imageUrl = data.publicUrl;
+
+    const { error: updateError } = await supabase
+      .from("salons")
+      .update({ image_url: imageUrl })
+      .eq("id", salon?.id);
+
+    if (updateError) {
+      alert("Slika je učitana, ali nije spremljena u profil.");
+      console.error(updateError);
+      return;
+    }
+
+    alert("Slika je uspješno spremljena.");
+
+        setSalon((prevSalon: any) =>
+      prevSalon
+        ? {
+            ...prevSalon,
+            image_url: imageUrl,
+          }
+        : prevSalon
+    );
+
+    setImagePreview(null);
+    setSelectedFile(null);
+    setCroppedPreviewUrl(null);
+    setZoom(1);
+    setCrop({ x: 0, y: 0 });
+    setCroppedAreaPixels(null);
+  } finally {
+    setIsUploadingImage(false);
   }
-
-  const fileName = `salon-x-${Date.now()}-${selectedFile.name}`;
-  if (!imagePreview || !croppedAreaPixels) {
-  alert("Prvo odaberite područje slike.");
-  return;
-}
-
-const croppedBlob = await getCroppedImage(
-  imagePreview,
-  croppedAreaPixels
-);
-
-  const { error: uploadError } = await supabase.storage
-    .from("salon-images")
-    .upload(fileName, croppedBlob);
-
-  if (uploadError) {
-    alert("Greška pri učitavanju slike.");
-    console.error(uploadError);
-    return;
-  }
-
-  const { data } = supabase.storage
-    .from("salon-images")
-    .getPublicUrl(fileName);
-
-  const imageUrl = data.publicUrl;
-
-  const { error: updateError } = await supabase
-    .from("salons")
-    .update({ image_url: imageUrl })
-    .eq("id", salon?.id)
-
-
-  if (updateError) {
-    alert("Slika je učitana, ali nije spremljena u profil.");
-    console.error(updateError);
-    return;
-  }
-  
-
-  alert("Slika je uspješno spremljena.");
-
-setSalon((prevSalon: any) =>
-  prevSalon
-    ? {
-        ...prevSalon,
-        image_url: imageUrl,
-      }
-    : prevSalon
-);
-
-setImagePreview(null);
-setSelectedFile(null);
-setZoom(1);
-setCrop({ x: 0, y: 0 });
-setCroppedAreaPixels(null);
 }
 async function handleSalonInfoUpdate() {
   const { error } = await supabase
@@ -884,6 +932,7 @@ fetchNotifications();
 fetchGalleryImages();
   }
 }, [isLoggedIn, salon]);
+
 
 
 const today = new Date().toISOString().split("T")[0];
@@ -1450,32 +1499,85 @@ style={{
     Odabrana slika: <strong>{selectedFile.name}</strong>
   </p>
 )}
+{selectedFile && (
+  <p
+    style={{
+      marginTop: "4px",
+      color: "#777",
+      fontSize: "13px",
+      lineHeight: "1.5",
+    }}
+  >
+    Preporučeni format: široka fotografija (oko 1000 × 360 px ili sličan omjer).
+  </p>
+)}
 
 {imagePreview && (
-  <div className="mt-4">
-    <div className="relative h-72 w-full overflow-hidden rounded-2xl bg-gray-100">
-      <Cropper
-        image={imagePreview}
-        crop={crop}
-        zoom={zoom}
-        aspect={16 / 9}
-        onCropChange={setCrop}
-        onZoomChange={setZoom}
-        onCropComplete={(_, croppedAreaPixels) => {
-          setCroppedAreaPixels(croppedAreaPixels);
-        }}
-      />
-    </div>
+  <div className="relative mt-4 h-[370px] w-full overflow-hidden rounded-2xl bg-gray-100">
+    <Cropper
+      image={imagePreview}
+      crop={crop}
+      zoom={zoom}
+      aspect={1000 / 360}
+      onCropChange={setCrop}
+      onZoomChange={setZoom}
+      onCropComplete={async (_, croppedAreaPixels) => {
+        setCroppedAreaPixels(croppedAreaPixels);
+
+        if (!imagePreview) return;
+
+        try {
+          const previewUrl = await createCroppedPreview(
+            imagePreview,
+            croppedAreaPixels
+          );
+
+          setCroppedPreviewUrl(previewUrl);
+        } catch (error) {
+          console.error("Preview error:", error);
+        }
+      }}
+    />
   </div>
 )}
+<div className="mt-6">
+  <p className="mb-3 font-medium text-gray-700">
+    Ovako će izgledati na stranici
+  </p>
+
+  <div
+  className="w-full overflow-hidden rounded-2xl bg-gray-200"
+  style={{
+    height: "360px",
+  }}
+>
+  {croppedPreviewUrl && (
+    <img
+      src={croppedPreviewUrl}
+      alt="Hero preview"
+      style={{
+  width: "100%",
+  height: "360px",
+  objectFit: "cover",
+  display: "block",
+}}
+    />
+  )}
+</div>
+</div>
   {selectedFile && (
   <div className="mt-4 flex gap-3">
     <button
-      onClick={handleImageUpload}
-      className="rounded-xl bg-black px-5 py-3 font-medium text-white transition hover:opacity-90"
-    >
-      Sačuvaj sliku
-    </button>
+  onClick={handleImageUpload}
+  disabled={isUploadingImage}
+  className={`rounded-xl px-5 py-3 font-medium text-white transition ${
+    isUploadingImage
+      ? "cursor-not-allowed bg-gray-500"
+      : "bg-black hover:opacity-90"
+  }`}
+>
+  {isUploadingImage ? "Spremanje..." : "Sačuvaj sliku"}
+</button>
 
     <button
   type="button"
