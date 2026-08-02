@@ -20,6 +20,9 @@ export default function SalonPage() {
 const [loadingTimes, setLoadingTimes] = useState(false);
 const [barbers, setBarbers] = useState<any[]>([]);
 const [closedDays, setClosedDays] = useState<any[]>([])
+const [selectedBarberByService, setSelectedBarberByService] = useState<
+  Record<number, number | null>
+>({});
 
   useEffect(() => {
     async function fetchSalon() {
@@ -680,7 +683,7 @@ return (
     </span>
   )}
 
-  {service.duration_minutes && (
+   {service.duration_minutes && (
     <span
       style={{
         color: "#6b7280",
@@ -691,6 +694,50 @@ return (
     </span>
   )}
 </div>
+
+{salon.show_barbers && (
+  <div style={{ marginTop: "16px" }}>
+    <p
+      style={{
+        marginBottom: "8px",
+        fontWeight: "700",
+        color: "#111827",
+      }}
+    >
+      Frizer
+    </p>
+
+    <select
+      value={selectedBarberByService[service.id] ?? ""}
+      onChange={(e) => {
+        const value = e.target.value;
+
+        setSelectedBarberByService((previous) => ({
+          ...previous,
+          [service.id]: value ? Number(value) : null,
+        }));
+      }}
+      style={{
+        width: "100%",
+        maxWidth: "280px",
+        border: "1px solid #d1d5db",
+        borderRadius: "12px",
+        padding: "10px 12px",
+        backgroundColor: "white",
+      }}
+    >
+      <option value="">Bilo koji frizer</option>
+
+      {barbers.map((barber) => (
+        <option key={barber.id} value={barber.id}>
+          {barber.name}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
+
+
       </div>
 
       <Link

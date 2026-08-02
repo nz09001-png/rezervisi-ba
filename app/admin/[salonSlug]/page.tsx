@@ -88,6 +88,7 @@ const [galleryFile, setGalleryFile] = useState<File | null>(null);
 const [phone, setPhone] = useState("");
 const [address, setAddress] = useState("");
 const [openingHours, setOpeningHours] = useState("");
+const [showBarbers, setShowBarbers] = useState(false);
 const [heroPosition, setHeroPosition] = useState("center");
 const [services, setServices] = useState<any[]>([]);
 const [serviceName, setServiceName] = useState("");
@@ -873,16 +874,22 @@ async function handleDeleteGalleryImage(id: number) {
   }
 }
 async function handleSalonInfoUpdate() {
-  const { error } = await supabase
-    .from("salons")
-    .update({
-  description: description,
-  phone: phone,
-  address: address,
-  opening_hours: openingHours,
-  hero_position: heroPosition,
-})
-    .eq("id", salon?.id)
+  const { data: updatedSalon, error } = await supabase
+  .from("salons")
+  .update({
+    description: description,
+    phone: phone,
+    address: address,
+    opening_hours: openingHours,
+    hero_position: heroPosition,
+    show_barbers: showBarbers,
+  })
+  .eq("id", salon?.id)
+  .select("id, show_barbers")
+  .single();
+
+console.log("UPPDATERAD SALONG:", updatedSalon);
+console.log("SHOW BARBERS STATE:", showBarbers);
 
   if (error) {
     alert("Greška pri spremanju podataka.");
@@ -907,6 +914,7 @@ useEffect(() => {
     }
 
     setSalon(data);
+setShowBarbers(data.show_barbers ?? false);
   }
 
   fetchSalon();
@@ -2470,6 +2478,17 @@ style={{ backgroundColor: "#611a1a" }}
 {selectedSettings.includes("barbers") && (
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
     <h2 className="mb-4 text-xl font-bold">Frizeri</h2>
+    <label className="mb-4 flex items-center gap-2">
+  <input
+    type="checkbox"
+    checked={showBarbers}
+    onChange={(e) => setShowBarbers(e.target.checked)}
+  />
+
+  Prikaži frizere na stranici
+</label>
+
+
 
     <div className="mb-4 space-y-2">
       {barbers.map((barber) => (
@@ -2503,6 +2522,31 @@ style={{ backgroundColor: "#611a1a" }}
     >
       + Dodaj frizera
     </button>
+    <button
+  type="button"
+  onClick={async () => {
+    const { error } = await supabase
+      .from("salons")
+      .update({
+        show_barbers: showBarbers,
+      })
+      .eq("id", salon?.id);
+
+    if (error) {
+      alert("Greška pri spremanju postavke.");
+      console.error(error);
+      return;
+    }
+
+    alert("Postavka je uspješno spremljena.");
+  }}
+  className="rounded-xl px-5 py-3 font-medium text-white"
+  style={{
+    backgroundColor: "#611a1a",
+  }}
+>
+  Sačuvaj postavku
+</button>
   </div>
 )}
 
