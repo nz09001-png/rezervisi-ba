@@ -5,6 +5,11 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 
+const timeToMinutes = (time: string) => {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+};
+
 export default function PotvrdaPage() {
   const searchParams = useSearchParams();
 const router = useRouter();
@@ -18,6 +23,7 @@ const formattedDate = date
   ? `${date.split("-")[2]}.${date.split("-")[1]}.${date.split("-")[0]}.`
   : "";
 const time = searchParams.get("time");
+const barberId = searchParams.get("barberId");
   const ime = searchParams.get("ime");
   const prezime = searchParams.get("prezime");
   const phoneCode = searchParams.get("phoneCode");
@@ -25,6 +31,9 @@ const time = searchParams.get("time");
   const email = searchParams.get("email");
   const napomena = searchParams.get("napomena");
   const [service, setService] = useState<any>(null);
+  const [barberName, setBarberName] = useState<string | null>(null);
+  const [barbers, setBarbers] = useState<any[]>([]);
+  const [salonId, setSalonId] = useState<number | null>(null);
 const [loading, setLoading] = useState(false);
 const [confirmed, setConfirmed] = useState(false);
 const [timeTaken, setTimeTaken] = useState(false);
@@ -49,6 +58,73 @@ useEffect(() => {
 
   fetchService();
 }, [serviceId]);
+useEffect(() => {
+  async function fetchBarber() {
+    if (!barberId) {
+      setBarberName(null);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("barbers")
+      .select("name")
+      .eq("id", barberId)
+      .single();
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setBarberName(data.name);
+  }
+
+  fetchBarber();
+}, [barberId]);
+
+useEffect(() => {
+  async function fetchSalonId() {
+    if (!salonSlug) return;
+
+    const { data, error } = await supabase
+      .from("salons")
+      .select("id")
+      .eq("slug", salonSlug)
+      .single();
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setSalonId(data.id);
+  }
+
+  fetchSalonId();
+}, [salonSlug]);
+
+useEffect(() => {
+  async function fetchBarbers() {
+    if (!salonId) return;
+
+    const { data, error } = await supabase
+      .from("barbers")
+      .select("id, name")
+      .eq("salon_id", salonId)
+      .eq("is_active", true)
+      .order("name", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setBarbers(data || []);
+  }
+
+  fetchBarbers();
+}, [salonId]);
+
 async function handleConfirmBooking() {
   if (confirmed) return;
 
@@ -68,22 +144,57 @@ async function handleConfirmBooking() {
     napomena,
   });
   const cancelToken = crypto.randomUUID();
-  const { data: existingBooking, error: existingBookingError } = await supabase
+  const requestedStart = timeToMinutes(time || "00:00");
+const requestedDuration = service?.duration_minutes || 60;
+const requestedEnd = requestedStart + requestedDuration;
+  const { data: bookingsAtTime, error: bookingsAtTimeError } = await supabase
   .from("bookings")
-  .select("id")
+  .select("barber_id, booking_time, duration_minutes")
   .eq("salon", salon)
   .eq("booking_date", date)
-  .eq("booking_time", time)
-  .maybeSingle();
+  
 
-if (existingBookingError) {
-  console.error(existingBookingError);
-  alert("Greška pri provjeri termina.");
+if (bookingsAtTimeError) {
+  console.error(bookingsAtTimeError);
+  alert("Greška pri provjeri frizera.");
+  setLoading(false);
+  return;
+}
+const overlappingBookings = (bookingsAtTime || []).filter((booking) => {
+  const bookingStart = timeToMinutes(booking.booking_time);
+  const bookingDuration = booking.duration_minutes || 30;
+  const bookingEnd = bookingStart + bookingDuration;
+
+  return requestedStart < bookingEnd && requestedEnd > bookingStart;
+});
+
+const busyBarberIds = overlappingBookings
+  .map((booking) => booking.barber_id)
+  .filter((id) => id !== null);
+ 
+  const availableBarber = !barberId
+  ? barbers.find((barber) => !busyBarberIds.includes(barber.id))
+  : null;
+
+  const finalBarberId = barberId
+  ? Number(barberId)
+  : availableBarber?.id || null;
+
+const finalBarberName = barberId
+  ? barberName
+  : availableBarber?.name || null;
+
+  if (!finalBarberId) {
+  setTimeTaken(true);
   setLoading(false);
   return;
 }
 
-if (existingBooking) {
+const hasOverlapForFinalBarber = overlappingBookings.some(
+  (booking) => booking.barber_id === finalBarberId
+);
+
+if (hasOverlapForFinalBarber) {
   setTimeTaken(true);
   setLoading(false);
   return;
@@ -99,6 +210,8 @@ if (existingBooking) {
   booking_date: date,
   service: service?.name,
   duration_minutes: service?.duration_minutes || 60,
+  barber_name: finalBarberName,
+barber_id: finalBarberId,
   email: email || null,
   cancel_token: cancelToken,
 },

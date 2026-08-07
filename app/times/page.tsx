@@ -11,12 +11,16 @@ function TimesContent() {
   const salon = searchParams.get("salon");
 const salonSlug = searchParams.get("salonSlug");
 const serviceId = searchParams.get("serviceId");
+const barberId = searchParams.get("barberId");
   const [service, setService] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
 const [bookedTimes, setBookedTimes] = useState<any[]>([]);
 const [availableTimes, setAvailableTimes] = useState<any[]>([]);
+const [barbers, setBarbers] = useState<any[]>([]);
+const [salonId, setSalonId] = useState<number | null>(null);
 const [weekOffset, setWeekOffset] = useState(0);
+
 
 const timeToMinutes = (time: string) => {
   const [hours, minutes] = time.split(":").map(Number);
@@ -32,9 +36,55 @@ const timeToMinutes = (time: string) => {
     salonSlug || ""
   )}&serviceId=${serviceId}&date=${encodeURIComponent(
     selectedDate
-  )}&time=${encodeURIComponent(selectedTime)}`
+  )}&time=${encodeURIComponent(
+    selectedTime
+  )}&barberId=${encodeURIComponent(barberId || "")}`
 );
 }
+
+useEffect(() => {
+  async function fetchSalonId() {
+    if (!salonSlug) return;
+
+    const { data, error } = await supabase
+      .from("salons")
+      .select("id")
+      .eq("slug", salonSlug)
+      .single();
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setSalonId(data.id);
+  }
+
+  fetchSalonId();
+}, [salonSlug]);
+
+useEffect(() => {
+  async function fetchBarbers() {
+    if (!salonId) return;
+
+    const { data, error } = await supabase
+      .from("barbers")
+      .select("id, name")
+      .eq("salon_id", salonId)
+      .eq("is_active", true)
+      .order("name", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setBarbers(data || []);
+  }
+
+  fetchBarbers();
+}, [salonId]);
+
   useEffect(() => {
   async function fetchService() {
     if (!serviceId) return;
@@ -114,22 +164,28 @@ useEffect(() => {
   fetchAvailableTimes();
 }, [salonSlug, weekOffset]);
 useEffect(() => {
-  async function fetchBookedTimes() {
-    if (!salon) return;
+ async function fetchBookedTimes() {
+  if (!salon) return;
 
-    const { data, error } = await supabase
-  .from("bookings")
-  .select("booking_date, booking_time, duration_minutes")
-  .eq("salon", salon);
+  let query = supabase
+    .from("bookings")
+    .select("booking_date, booking_time, duration_minutes, barber_id")
+    .eq("salon", salon);
 
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    setBookedTimes(data || []);
-    console.log("Bokade tider:", data);
+  if (barberId) {
+    query = query.eq("barber_id", Number(barberId));
   }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  setBookedTimes(data || []);
+  console.log("Bokade tider:", data);
+}
 
   fetchBookedTimes();
 }, [salon]);
@@ -362,17 +418,28 @@ style={{
 
 const slotMinutes = timeToMinutes(slot.time);
 const serviceDuration = service?.duration_minutes || 30;
+const slotEnd = slotMinutes + serviceDuration;
 const slotsNeeded = serviceDuration / 30;
 
-const isBooked = bookedTimes.some((booking) => {
+
+const bookingsForSlot = bookedTimes.filter((booking) => {
   if (booking.booking_date !== item.date) return false;
 
   const bookingStart = timeToMinutes(booking.booking_time);
   const bookingDuration = booking.duration_minutes || 30;
   const bookingEnd = bookingStart + bookingDuration;
 
-  return slotMinutes >= bookingStart && slotMinutes < bookingEnd;
+  return slotMinutes < bookingEnd && slotEnd > bookingStart;
 });
+
+const busyBarberIds = bookingsForSlot
+  .map((booking) => booking.barber_id)
+  .filter((id) => id !== null);
+
+const isBooked = barberId
+  ? bookingsForSlot.length > 0
+  : barbers.length > 0 &&
+    barbers.every((barber) => busyBarberIds.includes(barber.id));
 const hasEnoughSlots = Array.from({ length: slotsNeeded }).every((_, index) => {
   const nextTime = slotMinutes + index * 30;
 

@@ -15,6 +15,7 @@ const salonSlug = searchParams.get("salonSlug");
 const serviceId = searchParams.get("serviceId");
 const date = searchParams.get("date");
 const time = searchParams.get("time");
+const barberId = searchParams.get("barberId");
   const [service, setService] = useState<any>(null);
   const [ime, setIme] = useState("");
 const [prezime, setPrezime] = useState("");
@@ -34,6 +35,7 @@ const handleNext = () => {
   serviceId: serviceId || "",
   date: date || "",
   time: time || "",
+  barberId: barberId || "",
   ime,
   prezime,
   phoneCode,

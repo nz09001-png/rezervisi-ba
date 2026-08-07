@@ -742,10 +742,14 @@ return (
 
       <Link
         href={`/times?salon=${encodeURIComponent(
-          salon.salon_name
-        )}&salonSlug=${encodeURIComponent(
-          salonSlug
-        )}&serviceId=${service.id}`}
+  salon.salon_name
+)}&salonSlug=${encodeURIComponent(
+  salonSlug
+)}&serviceId=${service.id}&barberId=${
+  salon.show_barbers && selectedBarberByService[service.id]
+    ? selectedBarberByService[service.id]
+    : ""
+}`}
         style={{
   backgroundColor: "#611a1a",
   padding: "8px 18px",
