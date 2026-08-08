@@ -37,6 +37,40 @@ const barberId = searchParams.get("barberId");
 const [loading, setLoading] = useState(false);
 const [confirmed, setConfirmed] = useState(false);
 const [timeTaken, setTimeTaken] = useState(false);
+const [bookedServiceSteps, setBookedServiceSteps] = useState<any[]>([]);
+const [serviceSteps, setServiceSteps] = useState<any[]>([]);
+
+const getBusyIntervalsForCurrentService = (startMinutes: number) => {
+  if (serviceSteps.length === 0) {
+    const duration = service?.duration_minutes || 30;
+
+    return [
+      {
+        start: startMinutes,
+        end: startMinutes + duration,
+      },
+    ];
+  }
+
+  let offset = 0;
+  const busyIntervals = [];
+
+  for (const step of serviceSteps) {
+    const stepStart = startMinutes + offset;
+    const stepEnd = stepStart + step.duration_minutes;
+
+    if (step.is_barber_busy) {
+      busyIntervals.push({
+        start: stepStart,
+        end: stepEnd,
+      });
+    }
+
+    offset += step.duration_minutes;
+  }
+
+  return busyIntervals;
+};
 
 useEffect(() => {
   async function fetchService() {
@@ -58,6 +92,28 @@ useEffect(() => {
 
   fetchService();
 }, [serviceId]);
+
+useEffect(() => {
+  async function fetchServiceSteps() {
+    if (!serviceId) return;
+
+    const { data, error } = await supabase
+      .from("service_steps")
+      .select("service_id, duration_minutes, is_barber_busy, step_order")
+      .eq("service_id", serviceId)
+      .order("step_order", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setServiceSteps(data || []);
+  }
+
+  fetchServiceSteps();
+}, [serviceId]);
+
 useEffect(() => {
   async function fetchBarber() {
     if (!barberId) {
@@ -147,9 +203,11 @@ async function handleConfirmBooking() {
   const requestedStart = timeToMinutes(time || "00:00");
 const requestedDuration = service?.duration_minutes || 60;
 const requestedEnd = requestedStart + requestedDuration;
+const currentBusyIntervals =
+  getBusyIntervalsForCurrentService(requestedStart);
   const { data: bookingsAtTime, error: bookingsAtTimeError } = await supabase
   .from("bookings")
-  .select("barber_id, booking_time, duration_minutes")
+  .select("barber_id, booking_time, duration_minutes, service_id")
   .eq("salon", salon)
   .eq("booking_date", date)
   
@@ -160,12 +218,76 @@ if (bookingsAtTimeError) {
   setLoading(false);
   return;
 }
+const bookedServiceIds = Array.from(
+  new Set(
+    (bookingsAtTime || [])
+      .map((booking) => booking.service_id)
+      .filter((id) => id !== null)
+  )
+);
+
+let stepsForBookedServices: any[] = [];
+
+if (bookedServiceIds.length > 0) {
+  const { data: stepsData, error: stepsError } = await supabase
+    .from("service_steps")
+    .select("service_id, duration_minutes, is_barber_busy, step_order")
+    .in("service_id", bookedServiceIds)
+    .order("step_order", { ascending: true });
+
+  if (stepsError) {
+    console.error(stepsError);
+    alert("Greška pri provjeri koraka usluge.");
+    setLoading(false);
+    return;
+  }
+
+  stepsForBookedServices = stepsData || [];
+  setBookedServiceSteps(stepsData || []);
+}
 const overlappingBookings = (bookingsAtTime || []).filter((booking) => {
   const bookingStart = timeToMinutes(booking.booking_time);
+
+  const steps = stepsForBookedServices
+    .filter((step) => step.service_id === booking.service_id)
+    .sort((a, b) => a.step_order - b.step_order);
+
+  // Vanlig tjänst eller gammal bokning utan service_steps
+  if (steps.length === 0) {
   const bookingDuration = booking.duration_minutes || 30;
   const bookingEnd = bookingStart + bookingDuration;
 
-  return requestedStart < bookingEnd && requestedEnd > bookingStart;
+  return currentBusyIntervals.some((currentInterval) => {
+    return (
+      currentInterval.start < bookingEnd &&
+      currentInterval.end > bookingStart
+    );
+  });
+}
+
+  let offset = 0;
+
+  for (const step of steps) {
+    const stepStart = bookingStart + offset;
+    const stepEnd = stepStart + step.duration_minutes;
+
+    if (step.is_barber_busy) {
+  const hasOverlap = currentBusyIntervals.some((currentInterval) => {
+    return (
+      currentInterval.start < stepEnd &&
+      currentInterval.end > stepStart
+    );
+  });
+
+  if (hasOverlap) {
+    return true;
+  }
+}
+
+    offset += step.duration_minutes;
+  }
+
+  return false;
 });
 
 const busyBarberIds = overlappingBookings
@@ -209,6 +331,7 @@ if (hasOverlapForFinalBarber) {
   booking_time: time,
   booking_date: date,
   service: service?.name,
+  service_id: serviceId ? Number(serviceId) : null,
   duration_minutes: service?.duration_minutes || 60,
   barber_name: finalBarberName,
 barber_id: finalBarberId,

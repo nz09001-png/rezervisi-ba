@@ -16,15 +16,87 @@ const barberId = searchParams.get("barberId");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
 const [bookedTimes, setBookedTimes] = useState<any[]>([]);
+const [serviceSteps, setServiceSteps] = useState<any[]>([]);
+const [bookedServiceSteps, setBookedServiceSteps] = useState<any[]>([]);
 const [availableTimes, setAvailableTimes] = useState<any[]>([]);
 const [barbers, setBarbers] = useState<any[]>([]);
 const [salonId, setSalonId] = useState<number | null>(null);
 const [weekOffset, setWeekOffset] = useState(0);
 
 
+
+
 const timeToMinutes = (time: string) => {
   const [hours, minutes] = time.split(":").map(Number);
   return hours * 60 + minutes;
+};
+
+const getBusyIntervalsForCurrentService = (startMinutes: number) => {
+  if (serviceSteps.length === 0) {
+    const duration = service?.duration_minutes || 30;
+
+    return [
+      {
+        start: startMinutes,
+        end: startMinutes + duration,
+      },
+    ];
+  }
+
+  let offset = 0;
+  const busyIntervals = [];
+
+  for (const step of serviceSteps) {
+    const stepStart = startMinutes + offset;
+    const stepEnd = stepStart + step.duration_minutes;
+
+    if (step.is_barber_busy) {
+      busyIntervals.push({
+        start: stepStart,
+        end: stepEnd,
+      });
+    }
+
+    offset += step.duration_minutes;
+  }
+
+  return busyIntervals;
+};
+
+const getBusyIntervalsForBooking = (booking: any) => {
+  const bookingStart = timeToMinutes(booking.booking_time);
+
+  const steps = bookedServiceSteps
+    .filter((step) => step.service_id === booking.service_id)
+    .sort((a, b) => a.step_order - b.step_order);
+
+  if (steps.length === 0) {
+    return [
+      {
+        start: bookingStart,
+        end: bookingStart + (booking.duration_minutes || 30),
+      },
+    ];
+  }
+
+  let offset = 0;
+  const busyIntervals = [];
+
+  for (const step of steps) {
+    const stepStart = bookingStart + offset;
+    const stepEnd = stepStart + step.duration_minutes;
+
+    if (step.is_barber_busy) {
+      busyIntervals.push({
+        start: stepStart,
+        end: stepEnd,
+      });
+    }
+
+    offset += step.duration_minutes;
+  }
+
+  return busyIntervals;
 };
   
 
@@ -62,6 +134,59 @@ useEffect(() => {
 
   fetchSalonId();
 }, [salonSlug]);
+
+useEffect(() => {
+  async function fetchServiceSteps() {
+    if (!serviceId) return;
+
+    const { data, error } = await supabase
+      .from("service_steps")
+      .select("id, service_id, name, duration_minutes, is_barber_busy, step_order")
+      .eq("service_id", serviceId)
+      .order("step_order", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setServiceSteps(data || []);
+  }
+
+  fetchServiceSteps();
+}, [serviceId]);
+
+useEffect(() => {
+  async function fetchBookedServiceSteps() {
+    const serviceIds = Array.from(
+      new Set(
+        bookedTimes
+          .map((booking) => booking.service_id)
+          .filter((id) => id !== null)
+      )
+    );
+
+    if (serviceIds.length === 0) {
+      setBookedServiceSteps([]);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("service_steps")
+      .select("service_id, duration_minutes, is_barber_busy, step_order")
+      .in("service_id", serviceIds)
+      .order("step_order", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setBookedServiceSteps(data || []);
+  }
+
+  fetchBookedServiceSteps();
+}, [bookedTimes]);
 
 useEffect(() => {
   async function fetchBarbers() {
@@ -169,7 +294,7 @@ useEffect(() => {
 
   let query = supabase
     .from("bookings")
-    .select("booking_date, booking_time, duration_minutes, barber_id")
+    .select("booking_date, booking_time, duration_minutes, barber_id, service_id")
     .eq("salon", salon);
 
   if (barberId) {
@@ -420,16 +545,23 @@ const slotMinutes = timeToMinutes(slot.time);
 const serviceDuration = service?.duration_minutes || 30;
 const slotEnd = slotMinutes + serviceDuration;
 const slotsNeeded = serviceDuration / 30;
+const currentBusyIntervals =
+  getBusyIntervalsForCurrentService(slotMinutes);
 
 
 const bookingsForSlot = bookedTimes.filter((booking) => {
   if (booking.booking_date !== item.date) return false;
 
-  const bookingStart = timeToMinutes(booking.booking_time);
-  const bookingDuration = booking.duration_minutes || 30;
-  const bookingEnd = bookingStart + bookingDuration;
+  const busyIntervals = getBusyIntervalsForBooking(booking);
 
-  return slotMinutes < bookingEnd && slotEnd > bookingStart;
+  return busyIntervals.some((bookingInterval) => {
+  return currentBusyIntervals.some((currentInterval) => {
+    return (
+      currentInterval.start < bookingInterval.end &&
+      currentInterval.end > bookingInterval.start
+    );
+  });
+});
 });
 
 const busyBarberIds = bookingsForSlot
