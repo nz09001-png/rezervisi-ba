@@ -16,7 +16,6 @@ const router = useRouter();
 
   const salon = searchParams.get("salon");
   const salonSlug = searchParams.get("salonSlug");
-  console.log("salonSlug:", salonSlug);
   const serviceId = searchParams.get("serviceId");
 const date = searchParams.get("date");
 const formattedDate = date
@@ -37,7 +36,6 @@ const barberId = searchParams.get("barberId");
 const [loading, setLoading] = useState(false);
 const [confirmed, setConfirmed] = useState(false);
 const [timeTaken, setTimeTaken] = useState(false);
-const [bookedServiceSteps, setBookedServiceSteps] = useState<any[]>([]);
 const [serviceSteps, setServiceSteps] = useState<any[]>([]);
 
 const getBusyIntervalsForCurrentService = (startMinutes: number) => {
@@ -187,22 +185,10 @@ async function handleConfirmBooking() {
   setTimeTaken(false);
   setLoading(true);
 
-  console.log("Bokning ska sparas:", {
-    salon,
-    service,
-    date,
-    time,
-    ime,
-    prezime,
-    phoneCode,
-    phone,
-    email,
-    napomena,
-  });
+ 
   const cancelToken = crypto.randomUUID();
   const requestedStart = timeToMinutes(time || "00:00");
-const requestedDuration = service?.duration_minutes || 60;
-const requestedEnd = requestedStart + requestedDuration;
+
 const currentBusyIntervals =
   getBusyIntervalsForCurrentService(requestedStart);
   const { data: bookingsAtTime, error: bookingsAtTimeError } = await supabase
@@ -243,7 +229,6 @@ if (bookedServiceIds.length > 0) {
   }
 
   stepsForBookedServices = stepsData || [];
-  setBookedServiceSteps(stepsData || []);
 }
 const overlappingBookings = (bookingsAtTime || []).filter((booking) => {
   const bookingStart = timeToMinutes(booking.booking_time);
@@ -365,9 +350,8 @@ if (email && email.trim()) {
     }),
   });
 
-  const emailResult = await emailResponse.json();
+  await emailResponse.json();
 
-  console.log("Email-resultat:", emailResult);
 }
 setConfirmed(true);
 

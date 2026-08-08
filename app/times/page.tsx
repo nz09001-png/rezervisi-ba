@@ -309,7 +309,6 @@ useEffect(() => {
   }
 
   setBookedTimes(data || []);
-  console.log("Bokade tider:", data);
 }
 
   fetchBookedTimes();
@@ -543,7 +542,6 @@ style={{
 
 const slotMinutes = timeToMinutes(slot.time);
 const serviceDuration = service?.duration_minutes || 30;
-const slotEnd = slotMinutes + serviceDuration;
 const slotsNeeded = serviceDuration / 30;
 const currentBusyIntervals =
   getBusyIntervalsForCurrentService(slotMinutes);
