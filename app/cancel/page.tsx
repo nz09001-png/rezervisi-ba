@@ -24,12 +24,18 @@ export default function CancelPage() {
 
     setLoading(true);
 
-    const { data: bookingData } = await supabase
+    const { data: bookingData, error: bookingError } = await supabase
   .from("bookings")
   .select("*")
   .eq("id", bookingId)
   .eq("cancel_token", token)
   .single();
+
+if (bookingError || !bookingData) {
+  alert("Rezervacija nije pronađena ili link za otkazivanje nije važeći.");
+  setLoading(false);
+  return;
+}
 
   const { data: salonData } = await supabase
   .from("salons")

@@ -985,12 +985,24 @@ const filteredBookings = bookings.filter((booking) => {
 
 const todayDate = new Date().toISOString().split("T")[0];
 
+const now = new Date();
+const getBookingEndDateTime = (booking: any) => {
+  const [hours, minutes] = booking.booking_time.split(":").map(Number);
+
+  const start = new Date(booking.booking_date);
+  start.setHours(hours, minutes, 0, 0);
+
+  const duration = booking.duration_minutes || 30;
+
+  return new Date(start.getTime() + duration * 60 * 1000);
+};
+
 const activeBookings = filteredBookings.filter(
-  (booking) => booking.booking_date >= todayDate
+  (booking) => getBookingEndDateTime(booking) > now
 );
 
 const completedBookings = filteredBookings.filter(
-  (booking) => booking.booking_date < todayDate
+  (booking) => getBookingEndDateTime(booking) <= now
 );
 
 const todaysBookings = bookings.filter(

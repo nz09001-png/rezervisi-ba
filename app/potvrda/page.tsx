@@ -32,6 +32,7 @@ const barberId = searchParams.get("barberId");
   const [service, setService] = useState<any>(null);
   const [barberName, setBarberName] = useState<string | null>(null);
   const [barbers, setBarbers] = useState<any[]>([]);
+  const [availableTimes, setAvailableTimes] = useState<any[]>([]);
   const [salonId, setSalonId] = useState<number | null>(null);
   const [closedDays, setClosedDays] = useState<any[]>([]);
 const [loading, setLoading] = useState(false);
@@ -70,6 +71,28 @@ const getBusyIntervalsForCurrentService = (startMinutes: number) => {
 
   return busyIntervals;
 };
+
+useEffect(() => {
+  async function fetchAvailableTimes() {
+    if (!salonId || !date) return;
+
+    const { data, error } = await supabase
+      .from("available_times")
+      .select("time")
+      .eq("salon_id", salonId)
+      .eq("date", date)
+      .order("time", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setAvailableTimes(data || []);
+  }
+
+  fetchAvailableTimes();
+}, [salonId, date]);
 
 useEffect(() => {
   async function fetchService() {
@@ -248,6 +271,23 @@ if (
  
   const cancelToken = crypto.randomUUID();
   const requestedStart = timeToMinutes(time || "00:00");
+const serviceDuration = service?.duration_minutes || 30;
+const slotsNeeded = Math.ceil(serviceDuration / 30);
+const hasEnoughAvailableSlots = Array.from(
+  { length: slotsNeeded }
+).every((_, index) => {
+  const nextTime = requestedStart + index * 30;
+
+  return availableTimes.some(
+    (availableSlot) =>
+      timeToMinutes(availableSlot.time) === nextTime
+  );
+});
+if (!hasEnoughAvailableSlots) {
+  alert("Odabrani termin nije dostupan za cijelo trajanje usluge.");
+  setLoading(false);
+  return;
+}
 
 const currentBusyIntervals =
   getBusyIntervalsForCurrentService(requestedStart);

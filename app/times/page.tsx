@@ -596,7 +596,7 @@ style={{
 
 const slotMinutes = timeToMinutes(slot.time);
 const serviceDuration = service?.duration_minutes || 30;
-const slotsNeeded = serviceDuration / 30;
+const slotsNeeded = Math.ceil(serviceDuration / 30);
 const currentBusyIntervals =
   getBusyIntervalsForCurrentService(slotMinutes);
 
