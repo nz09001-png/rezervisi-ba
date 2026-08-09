@@ -33,6 +33,7 @@ const barberId = searchParams.get("barberId");
   const [barberName, setBarberName] = useState<string | null>(null);
   const [barbers, setBarbers] = useState<any[]>([]);
   const [salonId, setSalonId] = useState<number | null>(null);
+  const [closedDays, setClosedDays] = useState<any[]>([]);
 const [loading, setLoading] = useState(false);
 const [confirmed, setConfirmed] = useState(false);
 const [timeTaken, setTimeTaken] = useState(false);
@@ -179,8 +180,67 @@ useEffect(() => {
   fetchBarbers();
 }, [salonId]);
 
+useEffect(() => {
+  async function fetchClosedDays() {
+    if (!salonId) return;
+
+    const { data, error } = await supabase
+      .from("closed_days")
+      .select("date, reason, barber_id")
+      .eq("salon_id", salonId);
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setClosedDays(data || []);
+  }
+
+  fetchClosedDays();
+}, [salonId]);
+
 async function handleConfirmBooking() {
   if (confirmed) return;
+
+  const isSalonClosed = closedDays.some(
+  (day) => day.date === date && day.barber_id === null
+);
+
+const isSelectedBarberClosed = barberId
+  ? closedDays.some(
+      (day) =>
+        day.date === date &&
+        day.barber_id === Number(barberId)
+    )
+  : false;
+
+  const closedBarberIdsForDay = closedDays
+  .filter(
+    (day) =>
+      day.date === date &&
+      day.barber_id !== null
+  )
+  .map((day) => day.barber_id);
+
+  const areAllBarbersClosed =
+  !barberId &&
+  barbers.length > 0 &&
+  barbers.every((barber) =>
+    closedBarberIdsForDay.includes(barber.id)
+  );
+
+if (
+  isSalonClosed ||
+  isSelectedBarberClosed ||
+  areAllBarbersClosed
+) {
+  alert("Salon ili odabrani frizer nisu dostupni na ovaj datum.");
+  return;
+}
+
+  setTimeTaken(false);
+  setLoading(true);
 
   setTimeTaken(false);
   setLoading(true);
@@ -280,7 +340,11 @@ const busyBarberIds = overlappingBookings
   .filter((id) => id !== null);
  
   const availableBarber = !barberId
-  ? barbers.find((barber) => !busyBarberIds.includes(barber.id))
+  ? barbers.find(
+      (barber) =>
+        !busyBarberIds.includes(barber.id) &&
+        !closedBarberIdsForDay.includes(barber.id)
+    )
   : null;
 
   const finalBarberId = barberId

@@ -16,12 +16,14 @@ const barberId = searchParams.get("barberId");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
 const [bookedTimes, setBookedTimes] = useState<any[]>([]);
+const [closedDays, setClosedDays] = useState<any[]>([]);
 const [serviceSteps, setServiceSteps] = useState<any[]>([]);
 const [bookedServiceSteps, setBookedServiceSteps] = useState<any[]>([]);
 const [availableTimes, setAvailableTimes] = useState<any[]>([]);
 const [barbers, setBarbers] = useState<any[]>([]);
 const [salonId, setSalonId] = useState<number | null>(null);
 const [weekOffset, setWeekOffset] = useState(0);
+
 
 
 
@@ -134,6 +136,28 @@ useEffect(() => {
 
   fetchSalonId();
 }, [salonSlug]);
+
+useEffect(() => {
+  async function fetchClosedDays() {
+    if (!salonId) return;
+
+    const { data, error } = await supabase
+      .from("closed_days")
+      .select("date, reason, barber_id")
+      .eq("salon_id", salonId)
+      .order("date", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setClosedDays(data || []);
+  }
+
+  fetchClosedDays();
+}, [salonId]);
+
 
 useEffect(() => {
   async function fetchServiceSteps() {
@@ -498,6 +522,31 @@ return (
   itemDate.setHours(0, 0, 0, 0);
 
   const isPastDay = itemDate < todayOnly;
+  const closedDay = closedDays.find(
+  (day) => day.date === item.date && day.barber_id === null
+);
+
+const isClosedDay = !!closedDay;
+const isSelectedBarberClosed = barberId
+  ? closedDays.some(
+      (day) =>
+        day.date === item.date &&
+        day.barber_id === Number(barberId)
+    )
+  : false;
+  const closedBarberIdsForDay = closedDays
+  .filter(
+    (day) =>
+      day.date === item.date &&
+      day.barber_id !== null
+  )
+  .map((day) => day.barber_id);
+  const areAllBarbersClosed =
+  !barberId &&
+  barbers.length > 0 &&
+  barbers.every((barber) =>
+    closedBarberIdsForDay.includes(barber.id)
+  );
 
   return (
           <div
@@ -524,10 +573,15 @@ style={{
             </div>
 
             <div className="space-y-3 p-4">
-              {isPastDay ? (
-  <p className="pt-10 text-center text-lg font-medium italic text-gray-400">
-    Dan je prošao
-  </p>
+  {isPastDay ||
+  isClosedDay ||
+  isSelectedBarberClosed ||
+  areAllBarbersClosed ? (
+    <p className="pt-10 text-center text-lg font-medium italic text-gray-400">
+  {isClosedDay || isSelectedBarberClosed || areAllBarbersClosed
+    ? "Zatvoreno"
+    : "Dan je prošao"}
+</p>
 ) : item.day === "Ned" ? (
   <p className="pt-10 text-center text-lg font-medium italic text-[#611a1a]">
     Nema termina

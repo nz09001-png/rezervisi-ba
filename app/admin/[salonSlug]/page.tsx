@@ -137,6 +137,7 @@ const [closedDays, setClosedDays] = useState<any[]>([]);
 const [closedDate, setClosedDate] = useState("");
 const [closedReason, setClosedReason] = useState("");
 const [closedEndDate, setClosedEndDate] = useState("");
+const [closedBarberId, setClosedBarberId] = useState<number | null>(null);
 const [bookingTab, setBookingTab] = useState("aktivne");
 const [showNotifications, setShowNotifications] = useState(false);
 const [showSettingsMenu, setShowSettingsMenu] = useState(false);
@@ -526,14 +527,15 @@ async function handleAddClosedDay() {
   const endDate = new Date(closedEndDate);
 
   while (currentDate <= endDate) {
-    dates.push({
-      salon_id: salon?.id,
-      date: currentDate.toISOString().split("T")[0],
-      reason: closedReason,
-    });
+  dates.push({
+    salon_id: salon?.id,
+    date: currentDate.toISOString().split("T")[0],
+    reason: closedReason,
+    barber_id: closedBarberId,
+  });
 
-    currentDate.setDate(currentDate.getDate() + 1);
-  }
+  currentDate.setDate(currentDate.getDate() + 1);
+}
 
   const { error } = await supabase
     .from("closed_days")
@@ -546,10 +548,11 @@ async function handleAddClosedDay() {
   }
 
   setClosedDate("");
-  setClosedEndDate("");
-  setClosedReason("");
+setClosedEndDate("");
+setClosedReason("");
+setClosedBarberId(null);
 
-  fetchClosedDays();
+fetchClosedDays();
 }
 async function handleDeleteClosedDay(id: number) {
   const confirmDelete = confirm("Da li ste sigurni da želite obrisati zatvoreni dan?");
@@ -2465,6 +2468,25 @@ style={{ backgroundColor: "#611a1a" }}
       onChange={(e) => setClosedReason(e.target.value)}
       className="mb-3 w-full rounded border p-3"
     />
+
+    <label className="mb-2 block font-medium">Za koga?</label>
+
+<select
+  value={closedBarberId ?? ""}
+  onChange={(e) => {
+    const value = e.target.value;
+    setClosedBarberId(value ? Number(value) : null);
+  }}
+  className="mb-3 w-full rounded border p-3"
+>
+  <option value="">Cijeli salon</option>
+
+  {barbers.map((barber) => (
+    <option key={barber.id} value={barber.id}>
+      {barber.name}
+    </option>
+  ))}
+</select>
 
     <button
       onClick={handleAddClosedDay}
