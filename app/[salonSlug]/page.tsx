@@ -652,7 +652,7 @@ return (
   </p>
 )}
 
-        <div
+       <div
   style={{
     display: "flex",
     gap: "12px",
@@ -660,7 +660,7 @@ return (
     flexWrap: "wrap",
   }}
 >
-  {service.price && (
+  {service.show_price && service.price && (
     <span
       style={{
         color: "#111827",
@@ -672,18 +672,21 @@ return (
     </span>
   )}
 
-  {service.price && service.duration_minutes && (
-    <span
-      style={{
-        color: "#6b7280",
-        fontWeight: "500",
-      }}
-    >
-      •
-    </span>
-  )}
+  {service.show_price &&
+    service.price &&
+    service.show_duration &&
+    service.duration_minutes && (
+      <span
+        style={{
+          color: "#6b7280",
+          fontWeight: "500",
+        }}
+      >
+        •
+      </span>
+    )}
 
-   {service.duration_minutes && (
+  {service.show_duration && service.duration_minutes && (
     <span
       style={{
         color: "#6b7280",
