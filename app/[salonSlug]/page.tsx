@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase";
 export default function SalonPage() {
   const params = useParams();
   const salonSlug = params.salonSlug as string;
-
+const [serviceBarbers, setServiceBarbers] = useState<any[]>([]);
   const [salon, setSalon] = useState<any>(null);
   const [services, setServices] = useState<any[]>([]);
   const [times, setTimes] = useState<any[]>([]);
@@ -23,6 +23,26 @@ const [closedDays, setClosedDays] = useState<any[]>([])
 const [selectedBarberByService, setSelectedBarberByService] = useState<
   Record<number, number | null>
 >({});
+
+
+
+useEffect(() => {
+  async function fetchServiceBarbers() {
+    const { data, error } = await supabase
+      .from("service_barbers")
+      .select("service_id, barber_id");
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setServiceBarbers(data || []);
+  }
+
+  fetchServiceBarbers();
+}, []);
+
 
   useEffect(() => {
     async function fetchSalon() {
@@ -731,11 +751,22 @@ return (
     >
       <option value="">Bilo koji frizer</option>
 
-      {barbers.map((barber) => (
-        <option key={barber.id} value={barber.id}>
-          {barber.name}
-        </option>
-      ))}
+      {barbers
+  .filter((barber) => {
+    const linkedBarberIds = serviceBarbers
+      .filter((link) => link.service_id === service.id)
+      .map((link) => link.barber_id);
+
+    return (
+      linkedBarberIds.length === 0 ||
+      linkedBarberIds.includes(barber.id)
+    );
+  })
+  .map((barber) => (
+    <option key={barber.id} value={barber.id}>
+      {barber.name}
+    </option>
+  ))}
     </select>
   </div>
 )}

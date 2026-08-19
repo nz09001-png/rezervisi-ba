@@ -23,6 +23,7 @@ const [availableTimes, setAvailableTimes] = useState<any[]>([]);
 const [barbers, setBarbers] = useState<any[]>([]);
 const [salonId, setSalonId] = useState<number | null>(null);
 const [weekOffset, setWeekOffset] = useState(0);
+const [eligibleBarberIds, setEligibleBarberIds] = useState<number[]>([]);
 
 
 
@@ -115,6 +116,32 @@ const getBusyIntervalsForBooking = (booking: any) => {
   )}&barberId=${encodeURIComponent(barberId || "")}`
 );
 }
+
+
+useEffect(() => {
+  async function fetchEligibleBarbers() {
+    if (!serviceId) {
+      setEligibleBarberIds([]);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("service_barbers")
+      .select("barber_id")
+      .eq("service_id", serviceId);
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setEligibleBarberIds(
+      (data || []).map((item) => item.barber_id)
+    );
+  }
+
+  fetchEligibleBarbers();
+}, [serviceId]);
 
 useEffect(() => {
   async function fetchSalonId() {
@@ -534,6 +561,12 @@ const isSelectedBarberClosed = barberId
         day.barber_id === Number(barberId)
     )
   : false;
+
+const isSelectedBarberIneligible =
+  !!barberId &&
+  eligibleBarberIds.length > 0 &&
+  !eligibleBarberIds.includes(Number(barberId));
+
   const closedBarberIdsForDay = closedDays
   .filter(
     (day) =>
@@ -541,10 +574,17 @@ const isSelectedBarberClosed = barberId
       day.barber_id !== null
   )
   .map((day) => day.barber_id);
-  const areAllBarbersClosed =
+  const relevantBarbersForClosedCheck =
+  eligibleBarberIds.length > 0
+    ? barbers.filter((barber) =>
+        eligibleBarberIds.includes(barber.id)
+      )
+    : barbers;
+
+const areAllBarbersClosed =
   !barberId &&
-  barbers.length > 0 &&
-  barbers.every((barber) =>
+  relevantBarbersForClosedCheck.length > 0 &&
+  relevantBarbersForClosedCheck.every((barber) =>
     closedBarberIdsForDay.includes(barber.id)
   );
 
@@ -574,11 +614,14 @@ style={{
 
             <div className="space-y-3 p-4">
   {isPastDay ||
-  isClosedDay ||
-  isSelectedBarberClosed ||
-  areAllBarbersClosed ? (
+isClosedDay ||
+isSelectedBarberClosed ||
+areAllBarbersClosed ||
+isSelectedBarberIneligible ? (
     <p className="pt-10 text-center text-lg font-medium italic text-gray-400">
-  {isClosedDay || isSelectedBarberClosed || areAllBarbersClosed
+  {isSelectedBarberIneligible
+  ? "Frizer nije dostupan za ovu uslugu"
+  : isClosedDay || isSelectedBarberClosed || areAllBarbersClosed
     ? "Zatvoreno"
     : "Dan je prošao"}
 </p>
@@ -620,10 +663,19 @@ const busyBarberIds = bookingsForSlot
   .map((booking) => booking.barber_id)
   .filter((id) => id !== null);
 
+const relevantBarbers =
+  eligibleBarberIds.length > 0
+    ? barbers.filter((barber) =>
+        eligibleBarberIds.includes(barber.id)
+      )
+    : barbers;
+
 const isBooked = barberId
   ? bookingsForSlot.length > 0
-  : barbers.length > 0 &&
-    barbers.every((barber) => busyBarberIds.includes(barber.id));
+  : relevantBarbers.length > 0 &&
+    relevantBarbers.every((barber) =>
+      busyBarberIds.includes(barber.id)
+    );
 const hasEnoughSlots = Array.from({ length: slotsNeeded }).every((_, index) => {
   const nextTime = slotMinutes + index * 30;
 

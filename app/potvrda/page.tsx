@@ -39,6 +39,7 @@ const [loading, setLoading] = useState(false);
 const [confirmed, setConfirmed] = useState(false);
 const [timeTaken, setTimeTaken] = useState(false);
 const [serviceSteps, setServiceSteps] = useState<any[]>([]);
+const [eligibleBarberIds, setEligibleBarberIds] = useState<number[]>([]);
 
 const getBusyIntervalsForCurrentService = (startMinutes: number) => {
   if (serviceSteps.length === 0) {
@@ -137,6 +138,31 @@ useEffect(() => {
 }, [serviceId]);
 
 useEffect(() => {
+  async function fetchEligibleBarbers() {
+    if (!serviceId) {
+      setEligibleBarberIds([]);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("service_barbers")
+      .select("barber_id")
+      .eq("service_id", serviceId);
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setEligibleBarberIds(
+      (data || []).map((item) => item.barber_id)
+    );
+  }
+
+  fetchEligibleBarbers();
+}, [serviceId]);
+
+useEffect(() => {
   async function fetchBarber() {
     if (!barberId) {
       setBarberName(null);
@@ -225,6 +251,15 @@ useEffect(() => {
 
 async function handleConfirmBooking() {
   if (confirmed) return;
+  const isSelectedBarberIneligible =
+  !!barberId &&
+  eligibleBarberIds.length > 0 &&
+  !eligibleBarberIds.includes(Number(barberId));
+
+if (isSelectedBarberIneligible) {
+  alert("Odabrani frizer ne pruža ovu uslugu.");
+  return;
+}
 
   const isSalonClosed = closedDays.some(
   (day) => day.date === date && day.barber_id === null
@@ -379,8 +414,15 @@ const busyBarberIds = overlappingBookings
   .map((booking) => booking.barber_id)
   .filter((id) => id !== null);
  
-  const availableBarber = !barberId
-  ? barbers.find(
+  const relevantBarbers =
+  eligibleBarberIds.length > 0
+    ? barbers.filter((barber) =>
+        eligibleBarberIds.includes(barber.id)
+      )
+    : barbers;
+
+const availableBarber = !barberId
+  ? relevantBarbers.find(
       (barber) =>
         !busyBarberIds.includes(barber.id) &&
         !closedBarberIdsForDay.includes(barber.id)

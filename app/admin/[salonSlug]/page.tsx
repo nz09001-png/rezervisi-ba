@@ -143,6 +143,8 @@ const [showNotifications, setShowNotifications] = useState(false);
 const [showSettingsMenu, setShowSettingsMenu] = useState(false);
 const [selectedSettings, setSelectedSettings] = useState<string[]>([]);
 const [isUploadingImage, setIsUploadingImage] = useState(false);
+const [selectedServiceBarberIds, setSelectedServiceBarberIds] = useState<number[]>([]);
+
 
 function handleCancelServiceEdit() {
   setEditingServiceId(null);
@@ -180,6 +182,24 @@ async function handleEditService(service: any) {
   );
   setShowPrice(service.show_price ?? true);
   setShowDuration(service.show_duration ?? true);
+
+  const { data: serviceBarbersData, error: serviceBarbersError } =
+  await supabase
+    .from("service_barbers")
+    .select("barber_id")
+    .eq("service_id", service.id);
+
+if (serviceBarbersError) {
+  console.error(
+    "Kunde inte hämta frisörer för tjänsten:",
+    serviceBarbersError
+  );
+  return;
+}
+
+setSelectedServiceBarberIds(
+  (serviceBarbersData || []).map((item) => item.barber_id)
+);
 
   const { data: stepsData, error: stepsError } = await supabase
     .from("service_steps")
@@ -644,6 +664,34 @@ if (hasServiceSteps) {
   }
 }
 
+const { error: deleteServiceBarbersError } = await supabase
+  .from("service_barbers")
+  .delete()
+  .eq("service_id", editingServiceId);
+
+if (deleteServiceBarbersError) {
+  alert(JSON.stringify(deleteServiceBarbersError));
+  return;
+}
+
+if (selectedServiceBarberIds.length > 0) {
+  const serviceBarbersToInsert = selectedServiceBarberIds.map(
+    (barberId) => ({
+      service_id: editingServiceId,
+      barber_id: barberId,
+    })
+  );
+
+  const { error: insertServiceBarbersError } = await supabase
+    .from("service_barbers")
+    .insert(serviceBarbersToInsert);
+
+  if (insertServiceBarbersError) {
+    alert(JSON.stringify(insertServiceBarbersError));
+    return;
+  }
+}
+
 await fetchServices();
 handleCancelServiceEdit();
 
@@ -690,6 +738,24 @@ if (hasServiceSteps) {
 
   if (stepError) {
     alert(JSON.stringify(stepError));
+    return;
+  }
+}
+
+if (selectedServiceBarberIds.length > 0) {
+  const serviceBarbersToInsert = selectedServiceBarberIds.map(
+    (barberId) => ({
+      service_id: data.id,
+      barber_id: barberId,
+    })
+  );
+
+  const { error: serviceBarbersError } = await supabase
+    .from("service_barbers")
+    .insert(serviceBarbersToInsert);
+
+  if (serviceBarbersError) {
+    alert(JSON.stringify(serviceBarbersError));
     return;
   }
 }
@@ -1908,6 +1974,41 @@ style={{ backgroundColor: "#611a1a" }}
   />
   Prikaži trajanje klijentima
 </label>
+
+<div className="mb-4">
+  <p className="mb-2 font-medium">
+    Izaberi frizere za ovu uslugu
+  </p>
+
+  <div className="space-y-2">
+    {barbers.map((barber) => (
+      <label
+        key={barber.id}
+        className="flex items-center gap-2"
+      >
+        <input
+          type="checkbox"
+          checked={selectedServiceBarberIds.includes(barber.id)}
+          onChange={(e) => {
+            if (e.target.checked) {
+              setSelectedServiceBarberIds((prev) => [
+                ...prev,
+                barber.id,
+              ]);
+            } else {
+              setSelectedServiceBarberIds((prev) =>
+                prev.filter((id) => id !== barber.id)
+              );
+            }
+          }}
+        />
+
+        <span>{barber.name}</span>
+      </label>
+    ))}
+  </div>
+</div>
+
 <label className="mb-4 flex items-center gap-2">
   <input
     type="checkbox"
