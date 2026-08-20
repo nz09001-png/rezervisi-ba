@@ -501,7 +501,7 @@ if (email && email.trim()) {
 }
 setConfirmed(true);
 
-router.push(
+router.replace(
   `/uspjesno?salon=${encodeURIComponent(salon || "")}&salonSlug=${encodeURIComponent(
     salonSlug || ""
   )}&service=${encodeURIComponent(service?.name || "")}&date=${encodeURIComponent(

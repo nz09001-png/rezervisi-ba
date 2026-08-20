@@ -1,9 +1,24 @@
 "use client";
 
+import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 
 export default function UspjesnoPage() {
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+  window.history.pushState(null, "", window.location.href);
+
+  const handlePopState = () => {
+    window.history.pushState(null, "", window.location.href);
+  };
+
+  window.addEventListener("popstate", handlePopState);
+
+  return () => {
+    window.removeEventListener("popstate", handlePopState);
+  };
+}, []);
 
   const salon = searchParams.get("salon");
   const salonSlug = searchParams.get("salonSlug");

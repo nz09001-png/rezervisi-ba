@@ -29,6 +29,21 @@ const handleNext = () => {
     return;
   }
 
+  const cleanedPhone = phone.replace(/\s+/g, "");
+
+if (!/^\d{6,15}$/.test(cleanedPhone)) {
+  alert("Molimo unesite ispravan broj telefona.");
+  return;
+}
+
+  if (
+  email.trim() &&
+  !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+) {
+  alert("Molimo unesite ispravnu email adresu.");
+  return;
+}
+
   const params = new URLSearchParams({
   salon: salon || "",
   salonSlug: salonSlug || "",
