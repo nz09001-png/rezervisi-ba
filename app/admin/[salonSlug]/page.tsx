@@ -128,8 +128,6 @@ const [selectedDays, setSelectedDays] = useState([
 ]);
 const [scheduleStartDate, setScheduleStartDate] = useState("");
 const [scheduleEndDate, setScheduleEndDate] = useState("");
-const [specialDate, setSpecialDate] = useState("");
-const [specialTime, setSpecialTime] = useState("");
 const [notifications, setNotifications] = useState<any[]>([]);
 const [barbers, setBarbers] = useState<any[]>([]);
 const [newBarberName, setNewBarberName] = useState("");
@@ -969,6 +967,8 @@ console.log("SHOW BARBERS STATE:", showBarbers);
   alert("Podaci su uspješno spremljeni.");
 }
 
+
+
 useEffect(() => {
   async function fetchSalon() {
     const { data, error } = await supabase
@@ -1193,6 +1193,8 @@ console.log("Sparade tider:", data);
 alert(`Sačuvano termina: ${data.length}`);
 setTimesSaved(true);
 }
+
+
 async function handleReplaceTimes() {
   const confirmed = window.confirm(
   "Jeste li sigurni da želite zamijeniti postojeće termine?"
@@ -2478,57 +2480,7 @@ style={{ backgroundColor: "#611a1a" }}
   </div>
 )}
 </div>
-<div className="mt-6 rounded-2xl border border-gray-200 bg-gray-50 p-4">
-  <h3 className="text-lg font-bold">Posebni termini</h3>
 
-  <p className="mt-1 text-sm text-gray-500">
-    Dodajte ili uklonite pojedinačne termine za određene datume.
-  </p>
-
-  <div className="mt-4 grid gap-4 md:grid-cols-2">
-    <div>
-      <label className="mb-1 block text-sm font-semibold">
-        Datum
-      </label>
-
-      <input
-        type="date"
-        value={specialDate}
-        onChange={(e) => setSpecialDate(e.target.value)}
-        className="w-full rounded-xl border border-gray-300 bg-white p-3"
-      />
-    </div>
-
-    <div>
-      <label className="mb-1 block text-sm font-semibold">
-        Vrijeme
-      </label>
-
-      <input
-        type="time"
-        value={specialTime}
-        onChange={(e) => setSpecialTime(e.target.value)}
-        className="w-full rounded-xl border border-gray-300 bg-white p-3"
-      />
-    </div>
-  </div>
-
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "flex-end",
-      width: "100%",
-      marginTop: "20px",
-    }}
-  >
-    <button
-      type="button"
-      className="rounded-xl bg-black px-5 py-3 font-semibold text-white"
-    >
-      Dodaj posebni termin
-    </button>
-  </div>
-</div>
 </div>
 )}
 
