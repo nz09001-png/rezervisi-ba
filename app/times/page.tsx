@@ -638,6 +638,17 @@ isSelectedBarberIneligible ? (
   
 
 const slotMinutes = timeToMinutes(slot.time);
+const now = new Date();
+
+const today = `${now.getFullYear()}-${String(
+  now.getMonth() + 1
+).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+
+const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+if (item.date === today && slotMinutes <= currentMinutes) {
+  return null;
+}
 const serviceDuration = service?.duration_minutes || 30;
 const slotsNeeded = Math.ceil(serviceDuration / 30);
 const currentBusyIntervals =

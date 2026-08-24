@@ -251,6 +251,23 @@ useEffect(() => {
 
 async function handleConfirmBooking() {
   if (confirmed) return;
+  if (date && time) {
+  const [year, month, day] = date.split("-").map(Number);
+  const [hours, minutes] = time.split(":").map(Number);
+
+  const bookingDateTime = new Date(
+    year,
+    month - 1,
+    day,
+    hours,
+    minutes
+  );
+
+  if (bookingDateTime <= new Date()) {
+    alert("Odabrani termin je već prošao.");
+    return;
+  }
+}
   const isSelectedBarberIneligible =
   !!barberId &&
   eligibleBarberIds.length > 0 &&
