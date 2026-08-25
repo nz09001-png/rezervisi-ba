@@ -20,6 +20,7 @@ const [serviceBarbers, setServiceBarbers] = useState<any[]>([]);
 const [loadingTimes, setLoadingTimes] = useState(false);
 const [barbers, setBarbers] = useState<any[]>([]);
 const [closedDays, setClosedDays] = useState<any[]>([])
+const [isMobile, setIsMobile] = useState(false);
 const [selectedBarberByService, setSelectedBarberByService] = useState<
   Record<number, number | null>
 >({});
@@ -192,6 +193,21 @@ useEffect(() => {
 
   fetchBookedTimes();
 }, [selectedDate, salon]);
+
+useEffect(() => {
+  const checkMobile = () => {
+    setIsMobile(window.innerWidth < 768);
+  };
+
+  checkMobile();
+
+  window.addEventListener("resize", checkMobile);
+
+  return () => {
+    window.removeEventListener("resize", checkMobile);
+  };
+}, []);
+
 if (!salon) {
   return <h1>Laddar salong...</h1>;
 }
@@ -287,23 +303,24 @@ return (
 
   <div
     style={{
-      display: "grid",
-      gridTemplateColumns: "1.15fr 0.85fr",
-      gap: "20px",
-      alignItems: "stretch",
-    }}
+  display: "grid",
+  gridTemplateColumns: isMobile ? "1fr" : "1.15fr 0.85fr",
+  gap: "20px",
+  alignItems: "stretch",
+}}
   >
     {/* GOOGLE MAPS - LIJEVO */}
     <div
       style={{
-        height: "360px",
-        border: "1px solid rgba(97, 26, 26, 0.18)",
-        borderRadius: "20px",
-        overflow: "hidden",
-        backgroundColor: "#ffffff",
-        display: "flex",
-        flexDirection: "column",
-      }}
+  height: isMobile ? "320px" : "360px",
+  border: "1px solid rgba(97, 26, 26, 0.18)",
+  borderRadius: "20px",
+  overflow: "hidden",
+  backgroundColor: "#ffffff",
+  display: "flex",
+  flexDirection: "column",
+  order: isMobile ? 2 : 1,
+}}
     >
       <iframe
         src={`https://www.google.com/maps?q=${encodeURIComponent(
@@ -352,11 +369,13 @@ return (
     {/* INFORMACIJE - DESNO */}
     <div
       style={{
-        height: "360px",
-        display: "grid",
-        gridTemplateRows: "repeat(3, 1fr)",
-        gap: "14px",
-      }}
+  height: isMobile ? "auto" : "360px",
+  display: "grid",
+  gridTemplateColumns: isMobile ? "1fr 1fr" : "1fr",
+gridTemplateRows: isMobile ? "auto auto" : "repeat(3, 1fr)",
+  gap: "14px",
+  order: isMobile ? 1 : 2,
+}}
     >
       <div
         style={{
@@ -428,14 +447,15 @@ return (
 
       <div
         style={{
-          border: "1px solid rgba(97, 26, 26, 0.18)",
-          borderRadius: "18px",
-          padding: "20px",
-          backgroundColor: "#ffffff",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-        }}
+  border: "1px solid rgba(97, 26, 26, 0.18)",
+  borderRadius: "18px",
+  padding: "20px",
+  backgroundColor: "#ffffff",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "center",
+  gridColumn: isMobile ? "1 / -1" : "auto",
+}}
       >
         <p
           style={{
@@ -477,26 +497,26 @@ return (
 
     <div
       style={{
-        position: "relative",
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: "24px",
-        width: "100%",
-      }}
+  position: "relative",
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+gap: "24px",
+  width: "100%",
+}}
     >
       {visibleImages.map((image, index) => (
   <div
     key={image.id}
     onClick={() => setSelectedImageIndex(galleryIndex + index)}
     style={{
-      width: "100%",
-      height: "260px",
-      borderRadius: "20px",
-      backgroundImage: `url(${image.image_url})`,
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      cursor: "pointer",
-    }}
+  width: "100%",
+  height: isMobile ? "160px" : "260px",
+  borderRadius: "20px",
+  backgroundImage: `url(${image.image_url})`,
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+  cursor: "pointer",
+}}
   />
 ))}
 
@@ -505,16 +525,16 @@ return (
         onClick={previousGalleryImages}
         style={{
           position: "absolute",
-          left: "16px",
+          left: isMobile ? "8px" : "16px",
           top: "50%",
           transform: "translateY(-50%)",
-          width: "44px",
-          height: "44px",
+          width: isMobile ? "36px" : "44px",
+          height: isMobile ? "36px" : "44px",
           borderRadius: "999px",
           border: "none",
           backgroundColor: "#611a1a",
           color: "white",
-          fontSize: "24px",
+          fontSize: isMobile ? "20px" : "24px",
           fontWeight: "700",
           cursor: "pointer",
           boxShadow: "0 6px 16px rgba(0, 0, 0, 0.16)",
@@ -528,16 +548,16 @@ return (
         onClick={nextGalleryImages}
         style={{
           position: "absolute",
-          right: "16px",
+          right: isMobile ? "8px" : "16px",
           top: "50%",
           transform: "translateY(-50%)",
-          width: "44px",
-          height: "44px",
+          width: isMobile ? "36px" : "44px",
+          height: isMobile ? "36px" : "44px",
           borderRadius: "999px",
           border: "none",
           backgroundColor: "#611a1a",
           color: "white",
-          fontSize: "24px",
+          fontSize: isMobile ? "20px" : "24px",
           fontWeight: "700",
           cursor: "pointer",
           boxShadow: "0 6px 16px rgba(0, 0, 0, 0.16)",
