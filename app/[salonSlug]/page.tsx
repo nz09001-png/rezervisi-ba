@@ -232,7 +232,7 @@ return (
     alt={salon.salon_name}
     style={{
   width: "100%",
-  height: "360px",
+  height: "400px",
   objectFit: "cover",
   objectPosition: salon.hero_position || "center",
   display: "block",
@@ -273,112 +273,13 @@ return (
   </p>
 </div>
 
-        <div
-  style={{
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: "16px",
-    marginBottom: "18px",
-  }}
->
-  <div
-    style={{
-      border: "1px solid #d1d5db",
-      borderRadius: "16px",
-      padding: "12px 16px",
-      backgroundColor: "#ffffff",
-    }}
-  >
-    <div style={{ display: "flex", gap: "0px", alignItems: "flex-start" }}>
-      
-
-      <div>
-        <p
-          style={{
-            color: "#611a1a",
-            fontSize: "16px",
-            fontWeight: "700",
-            marginBottom: "4px",
-          }}
-        >
-          Adresa
-        </p>
-
-        <p style={{ color: "#111827", fontWeight: "700", lineHeight: "1.4" }}>
-          {salon.address}
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <div
-    style={{
-      border: "1px solid #d1d5db",
-      borderRadius: "16px",
-      padding: "12px 16px",
-      backgroundColor: "#ffffff",
-    }}
-  >
-    <div style={{ display: "flex", gap: "0px", alignItems: "flex-start" }}>
-      
-
-      <div>
-        <p
-          style={{
-            color: "#611a1a",
-            fontSize: "16px",
-            fontWeight: "700",
-            marginBottom: "4px",
-          }}
-        >
-          Telefon
-        </p>
-
-        <p style={{ color: "#111827", fontWeight: "700", lineHeight: "1.4" }}>
-          {salon.phone}
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <div
-    style={{
-      border: "1px solid #d1d5db",
-      borderRadius: "16px",
-      padding: "12px 16px",
-      backgroundColor: "#ffffff",
-    }}
-  >
-    <div style={{ display: "flex", gap: "0px", alignItems: "flex-start" }}>
-      
-
-      <div>
-        <p
-          style={{
-            color: "#611a1a",
-            fontSize: "16px",
-            fontWeight: "700",
-            marginBottom: "4px",
-          }}
-        >
-          Radno vrijeme
-        </p>
-
-        <p style={{ color: "#111827", fontWeight: "700", lineHeight: "1.4" }}>
-          {salon.opening_hours}
-        </p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div style={{ marginBottom: "40px" }}>
+        <div style={{ marginBottom: "48px" }}>
   <h2
     style={{
       color: "#611a1a",
       fontSize: "28px",
       fontWeight: "600",
-      marginBottom: "16px",
+      marginBottom: "18px",
     }}
   >
     Lokacija
@@ -386,51 +287,178 @@ return (
 
   <div
     style={{
-      border: "1px solid #d1d5db",
-      borderRadius: "20px",
-      overflow: "hidden",
-      backgroundColor: "white",
+      display: "grid",
+      gridTemplateColumns: "1.15fr 0.85fr",
+      gap: "20px",
+      alignItems: "stretch",
     }}
   >
-    <iframe
-      src={`https://www.google.com/maps?q=${encodeURIComponent(
-        salon.address || ""
-      )}&output=embed`}
-      width="100%"
-      height="160"
-      style={{ border: 0, display: "block" }}
-      loading="lazy"
-    />
-
+    {/* GOOGLE MAPS - LIJEVO */}
     <div
       style={{
-        padding: "16px",
+        height: "360px",
+        border: "1px solid rgba(97, 26, 26, 0.18)",
+        borderRadius: "20px",
+        overflow: "hidden",
+        backgroundColor: "#ffffff",
         display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        gap: "16px",
+        flexDirection: "column",
       }}
     >
-      
-
-      <a
-        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+      <iframe
+        src={`https://www.google.com/maps?q=${encodeURIComponent(
           salon.address || ""
-        )}`}
-        target="_blank"
-        rel="noopener noreferrer"
+        )}&output=embed`}
+        width="100%"
         style={{
-          backgroundColor: "#611a1a",
-          color: "white",
-          padding: "10px 16px",
-          borderRadius: "12px",
-          fontWeight: "700",
-          textDecoration: "none",
-          whiteSpace: "nowrap",
+          border: 0,
+          display: "block",
+          flex: 1,
+          minHeight: 0,
+        }}
+        loading="lazy"
+      />
+
+      <div
+        style={{
+          padding: "14px 16px",
+          borderTop: "1px solid #eeeeee",
+          backgroundColor: "#ffffff",
         }}
       >
-        Otvori u Google Maps
-      </a>
+        <a
+          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+            salon.address || ""
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "block",
+            width: "100%",
+            backgroundColor: "#611a1a",
+            color: "#ffffff",
+            padding: "11px 16px",
+            borderRadius: "12px",
+            fontWeight: "700",
+            textDecoration: "none",
+            textAlign: "center",
+          }}
+        >
+          Otvori u Google Maps
+        </a>
+      </div>
+    </div>
+
+    {/* INFORMACIJE - DESNO */}
+    <div
+      style={{
+        height: "360px",
+        display: "grid",
+        gridTemplateRows: "repeat(3, 1fr)",
+        gap: "14px",
+      }}
+    >
+      <div
+        style={{
+          border: "1px solid rgba(97, 26, 26, 0.18)",
+          borderRadius: "18px",
+          padding: "20px",
+          backgroundColor: "#ffffff",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+        }}
+      >
+        <p
+          style={{
+            color: "#611a1a",
+            fontSize: "15px",
+            fontWeight: "700",
+            marginBottom: "6px",
+          }}
+        >
+          Adresa
+        </p>
+
+        <p
+          style={{
+            color: "#111827",
+            fontSize: "16px",
+            fontWeight: "700",
+            lineHeight: "1.5",
+          }}
+        >
+          {salon.address}
+        </p>
+      </div>
+
+      <div
+        style={{
+          border: "1px solid rgba(97, 26, 26, 0.18)",
+          borderRadius: "18px",
+          padding: "20px",
+          backgroundColor: "#ffffff",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+        }}
+      >
+        <p
+          style={{
+            color: "#611a1a",
+            fontSize: "15px",
+            fontWeight: "700",
+            marginBottom: "6px",
+          }}
+        >
+          Telefon
+        </p>
+
+        <p
+          style={{
+            color: "#111827",
+            fontSize: "16px",
+            fontWeight: "700",
+            lineHeight: "1.5",
+          }}
+        >
+          {salon.phone}
+        </p>
+      </div>
+
+      <div
+        style={{
+          border: "1px solid rgba(97, 26, 26, 0.18)",
+          borderRadius: "18px",
+          padding: "20px",
+          backgroundColor: "#ffffff",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+        }}
+      >
+        <p
+          style={{
+            color: "#611a1a",
+            fontSize: "15px",
+            fontWeight: "700",
+            marginBottom: "6px",
+          }}
+        >
+          Radno vrijeme
+        </p>
+
+        <p
+          style={{
+            color: "#111827",
+            fontSize: "16px",
+            fontWeight: "700",
+            lineHeight: "1.5",
+          }}
+        >
+          {salon.opening_hours}
+        </p>
+      </div>
     </div>
   </div>
 </div>
@@ -480,15 +508,16 @@ return (
           left: "16px",
           top: "50%",
           transform: "translateY(-50%)",
-          width: "52px",
-          height: "52px",
+          width: "44px",
+          height: "44px",
           borderRadius: "999px",
           border: "none",
           backgroundColor: "#611a1a",
           color: "white",
-          fontSize: "26px",
+          fontSize: "24px",
           fontWeight: "700",
           cursor: "pointer",
+          boxShadow: "0 6px 16px rgba(0, 0, 0, 0.16)",
         }}
       >
         ‹
@@ -502,15 +531,16 @@ return (
           right: "16px",
           top: "50%",
           transform: "translateY(-50%)",
-          width: "52px",
-          height: "52px",
+          width: "44px",
+          height: "44px",
           borderRadius: "999px",
           border: "none",
           backgroundColor: "#611a1a",
           color: "white",
-          fontSize: "30px",
+          fontSize: "24px",
           fontWeight: "700",
           cursor: "pointer",
+          boxShadow: "0 6px 16px rgba(0, 0, 0, 0.16)",
         }}
       >
         ›
@@ -639,14 +669,16 @@ return (
     <div
       key={service.id}
       style={{
-        border: "1px solid #d1d5db",
-        borderRadius: "20px",
-        padding: "16px 22px",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        backgroundColor: "white",
-      }}
+  border: "1px solid rgba(97, 26, 26, 0.16)",
+  borderRadius: "18px",
+  padding: "18px 20px",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: "24px",
+  backgroundColor: "#ffffff",
+  boxShadow: "0 4px 14px rgba(0, 0, 0, 0.04)",
+}}
     >
       <div>
         <h3
@@ -784,13 +816,16 @@ return (
     ? selectedBarberByService[service.id]
     : ""
 }`}
-        style={{
+       style={{
   backgroundColor: "#611a1a",
-  padding: "8px 18px",
+  padding: "11px 22px",
   borderRadius: "12px",
-  color: "white",
+  color: "#ffffff",
   fontWeight: "700",
+  fontSize: "15px",
   textDecoration: "none",
+  whiteSpace: "nowrap",
+  boxShadow: "0 4px 10px rgba(97, 26, 26, 0.18)",
 }}
       >
         Rezerviši
