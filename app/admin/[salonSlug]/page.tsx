@@ -816,7 +816,13 @@ async function handleGalleryImageUpload() {
     return;
   }
 
-  const fileName = `gallery-${salon?.id}-${Date.now()}-${galleryFile.name}`;
+  const safeFileName = galleryFile.name
+  .normalize("NFD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/[^a-zA-Z0-9._-]/g, "-")
+  .replace(/-+/g, "-");
+
+const fileName = `gallery-${salon?.id}-${Date.now()}-${safeFileName}`;
 
   const { error: uploadError } = await supabase.storage
     .from("salon-images")

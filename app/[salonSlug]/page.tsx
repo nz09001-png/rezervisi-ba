@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { createPortal } from "react-dom";
+
 
 export default function SalonPage() {
   const params = useParams();
@@ -207,6 +209,18 @@ useEffect(() => {
     window.removeEventListener("resize", checkMobile);
   };
 }, []);
+
+useEffect(() => {
+  if (selectedImageIndex !== null) {
+    document.body.style.overflow = "hidden";
+  } else {
+    document.body.style.overflow = "";
+  }
+
+  return () => {
+    document.body.style.overflow = "";
+  };
+}, [selectedImageIndex]);
 
 if (!salon) {
   return <h1>Laddar salong...</h1>;
@@ -568,109 +582,139 @@ gap: "24px",
     </div>
   </div>
 )}
-        {selectedImageIndex !== null && salonImages[selectedImageIndex] && (
-  <div
-    style={{
-      position: "fixed",
-      inset: 0,
-      backgroundColor: "rgba(0,0,0,0.85)",
-      zIndex: 9999,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "24px",
-    }}
-  >
-    <button
-      type="button"
-      onClick={() => setSelectedImageIndex(null)}
+ {typeof document !== "undefined" &&
+  selectedImageIndex !== null &&
+  salonImages[selectedImageIndex] &&
+  createPortal(
+    <div
       style={{
-        position: "absolute",
-        top: "24px",
-        right: "32px",
-        color: "white",
-        background: "transparent",
-        border: "none",
-        fontSize: "42px",
-        cursor: "pointer",
+        position: "fixed",
+        inset: 0,
+        backgroundColor: "rgba(0,0,0,0.9)",
+        zIndex: 9999,
       }}
     >
-      ×
-    </button>
+      {/* BILDYTA */}
+      <div
+        style={{
+          position: "fixed",
+          top: isMobile ? "64px" : "40px",
+          bottom: isMobile ? "64px" : "40px",
+          left: isMobile ? "48px" : "90px",
+          right: isMobile ? "48px" : "90px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <img
+          src={salonImages[selectedImageIndex].image_url}
+          alt="Slika salona"
+          style={{
+  width: "100%",
+  height: "100%",
+  objectFit: "contain",
+  objectPosition: "center top",
+  borderRadius: "16px",
+}}
+        />
+      </div>
 
-    <button
-      type="button"
-      onClick={() =>
-        setSelectedImageIndex(
-          selectedImageIndex === 0
-            ? salonImages.length - 1
-            : selectedImageIndex - 1
-        )
-      }
-      style={{
-        position: "absolute",
-        left: "32px",
-        color: "white",
-        backgroundColor: "#611a1a",
-        border: "none",
-        width: "56px",
-        height: "56px",
-        borderRadius: "999px",
-        fontSize: "34px",
-        cursor: "pointer",
-      }}
-    >
-      ‹
-    </button>
+      {/* STÄNG */}
+      <button
+        type="button"
+        onClick={() => setSelectedImageIndex(null)}
+        style={{
+          position: "fixed",
+          top: isMobile ? "14px" : "24px",
+          right: isMobile ? "16px" : "32px",
+          color: "#ffffff",
+          background: "transparent",
+          border: "none",
+          fontSize: "42px",
+          cursor: "pointer",
+          zIndex: 10002,
+        }}
+      >
+        ×
+      </button>
 
-    <img
-      src={salonImages[selectedImageIndex].image_url}
-      alt="Slika salona"
-      style={{
-        maxWidth: "90%",
-        maxHeight: "90%",
-        objectFit: "contain",
-        borderRadius: "16px",
-      }}
-    />
+      {/* FÖREGÅENDE */}
+      <button
+        type="button"
+        onClick={() =>
+          setSelectedImageIndex(
+            selectedImageIndex === 0
+              ? salonImages.length - 1
+              : selectedImageIndex - 1
+          )
+        }
+        style={{
+          position: "fixed",
+          left: isMobile ? "8px" : "32px",
+          top: "50%",
+          transform: "translateY(-50%)",
+          width: isMobile ? "38px" : "56px",
+          height: isMobile ? "38px" : "56px",
+          borderRadius: "999px",
+          border: "none",
+          backgroundColor: "#611a1a",
+          color: "#ffffff",
+          fontSize: isMobile ? "24px" : "34px",
+          cursor: "pointer",
+          zIndex: 10002,
+        }}
+      >
+        ‹
+      </button>
 
-    <button
-      type="button"
-      onClick={() =>
-        setSelectedImageIndex(
-          selectedImageIndex === salonImages.length - 1
-            ? 0
-            : selectedImageIndex + 1
-        )
-      }
-      style={{
-        position: "absolute",
-        right: "32px",
-        color: "white",
-        backgroundColor: "#611a1a",
-        border: "none",
-        width: "56px",
-        height: "56px",
-        borderRadius: "999px",
-        fontSize: "34px",
-        cursor: "pointer",
-      }}
-    >
-      ›
-    </button>
+      {/* NÄSTA */}
+      <button
+        type="button"
+        onClick={() =>
+          setSelectedImageIndex(
+            selectedImageIndex === salonImages.length - 1
+              ? 0
+              : selectedImageIndex + 1
+          )
+        }
+        style={{
+          position: "fixed",
+          right: isMobile ? "8px" : "32px",
+          top: "50%",
+          transform: "translateY(-50%)",
+          width: isMobile ? "38px" : "56px",
+          height: isMobile ? "38px" : "56px",
+          borderRadius: "999px",
+          border: "none",
+          backgroundColor: "#611a1a",
+          color: "#ffffff",
+          fontSize: isMobile ? "24px" : "34px",
+          cursor: "pointer",
+          zIndex: 10002,
+        }}
+      >
+        ›
+      </button>
 
-    <p
-      style={{
-        position: "absolute",
-        bottom: "32px",
-        color: "white",
-        fontWeight: "600",
-      }}
-    >
-      {selectedImageIndex + 1} / {salonImages.length}
-    </p>
-  </div>
-)}
+      {/* BILDRÄKNARE */}
+      <p
+        style={{
+          position: "fixed",
+          bottom: "16px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          color: "#ffffff",
+          fontWeight: "600",
+          margin: 0,
+          zIndex: 10002,
+        }}
+      >
+        {selectedImageIndex + 1} / {salonImages.length}
+      </p>
+    </div>,
+    document.body
+  )}
         
 
 <h2
@@ -782,44 +826,80 @@ gap: "24px",
       Frizer
     </p>
 
-    <select
-      value={selectedBarberByService[service.id] ?? ""}
-      onChange={(e) => {
-        const value = e.target.value;
-
-        setSelectedBarberByService((previous) => ({
-          ...previous,
-          [service.id]: value ? Number(value) : null,
-        }));
-      }}
+    <div
       style={{
-        width: "100%",
-        maxWidth: "280px",
-        border: "1px solid #d1d5db",
-        borderRadius: "12px",
-        padding: "10px 12px",
-        backgroundColor: "white",
+        display: "flex",
+        alignItems: "center",
+        gap: isMobile ? "10px" : "0px",
       }}
     >
-      <option value="">Bilo koji frizer</option>
+      <select
+        value={selectedBarberByService[service.id] ?? ""}
+        onChange={(e) => {
+          const value = e.target.value;
 
-      {barbers
-  .filter((barber) => {
-    const linkedBarberIds = serviceBarbers
-      .filter((link) => link.service_id === service.id)
-      .map((link) => link.barber_id);
+          setSelectedBarberByService((previous) => ({
+            ...previous,
+            [service.id]: value ? Number(value) : null,
+          }));
+        }}
+        style={{
+          width: "100%",
+          maxWidth: isMobile ? "170px" : "280px",
+          border: "1px solid #d1d5db",
+          borderRadius: "12px",
+          padding: "10px 12px",
+          backgroundColor: "white",
+        }}
+      >
+        <option value="">Bilo koji frizer</option>
 
-    return (
-      linkedBarberIds.length === 0 ||
-      linkedBarberIds.includes(barber.id)
-    );
-  })
-  .map((barber) => (
-    <option key={barber.id} value={barber.id}>
-      {barber.name}
-    </option>
-  ))}
-    </select>
+        {barbers
+          .filter((barber) => {
+            const linkedBarberIds = serviceBarbers
+              .filter((link) => link.service_id === service.id)
+              .map((link) => link.barber_id);
+
+            return (
+              linkedBarberIds.length === 0 ||
+              linkedBarberIds.includes(barber.id)
+            );
+          })
+          .map((barber) => (
+            <option key={barber.id} value={barber.id}>
+              {barber.name}
+            </option>
+          ))}
+      </select>
+
+      {isMobile && (
+        <Link
+          href={`/times?salon=${encodeURIComponent(
+            salon.salon_name
+          )}&salonSlug=${encodeURIComponent(
+            salonSlug
+          )}&serviceId=${service.id}&barberId=${
+            salon.show_barbers && selectedBarberByService[service.id]
+              ? selectedBarberByService[service.id]
+              : ""
+          }`}
+          style={{
+  display: "inline-block",
+  backgroundColor: "#611a1a",
+  padding: "11px 22px",
+  borderRadius: "12px",
+  color: "#ffffff",
+  fontWeight: "700",
+  fontSize: "15px",
+  textDecoration: "none",
+  whiteSpace: "nowrap",
+  boxShadow: "0 4px 10px rgba(97, 26, 26, 0.18)",
+}}
+        >
+          Rezerviši
+        </Link>
+      )}
+    </div>
   </div>
 )}
 
@@ -837,6 +917,7 @@ gap: "24px",
     : ""
 }`}
        style={{
+        display: isMobile ? "none" : "inline-block",
   backgroundColor: "#611a1a",
   padding: "11px 22px",
   borderRadius: "12px",
