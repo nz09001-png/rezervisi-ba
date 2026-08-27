@@ -21,6 +21,9 @@ const [serviceSteps, setServiceSteps] = useState<any[]>([]);
 const [bookedServiceSteps, setBookedServiceSteps] = useState<any[]>([]);
 const [availableTimes, setAvailableTimes] = useState<any[]>([]);
 const [barbers, setBarbers] = useState<any[]>([]);
+const selectedBarber = barberId
+  ? barbers.find((barber) => barber.id === Number(barberId))
+  : null;
 const [salonId, setSalonId] = useState<number | null>(null);
 const [weekOffset, setWeekOffset] = useState(0);
 const [eligibleBarberIds, setEligibleBarberIds] = useState<number[]>([]);
@@ -428,21 +431,132 @@ return (
 </Link>
     <div className="mx-auto max-w-7xl">
       
-      {service && (
-  <div
-  className="mb-8 inline-block rounded-xl border px-5 py-3"
-  style={{
-    backgroundColor: "rgba(97, 26, 26, 0.03)",
-    border: "1px solid rgba(97, 26, 26, 0.15)",
-  }}
->
-    <p className="font-bold">{service.name}</p>
+  {service && (
+    <div
+      className="mb-8"
+      style={{
+        width: "100%",
+        maxWidth: "340px",
+        padding: "18px 20px",
+        borderRadius: "18px",
+        backgroundColor: "rgba(97, 26, 26, 0.03)",
+        border: "1px solid rgba(97, 26, 26, 0.15)",
+        boxShadow: "0 4px 14px rgba(0, 0, 0, 0.04)",
+      }}
+    >
+      
 
-    <p className="text-gray-600">
-      {service.price} KM • {service.duration_minutes || 60} min
+      <p
+        style={{
+          margin: 0,
+          marginBottom: "18px",
+          color: "#111827",
+          fontSize: "24px",
+          fontWeight: "700",
+        }}
+      >
+        {service.name}
+      </p>
+      {service.description && (
+  <p
+    style={{
+      margin: 0,
+      marginTop: "-18px",
+      marginBottom: "10px",
+      color: "#6b7280",
+      fontSize: "14px",
+      lineHeight: "1.5",
+    }}
+  >
+    {service.description}
+  </p>
+)}
+
+      <div
+        style={{
+          display: "flex",
+          gap: "32px",
+          alignItems: "center",
+        }}
+      >
+        {service.show_price && (
+  <div>
+    <p
+      style={{
+        margin: 0,
+        marginBottom: "3px",
+        color: "#6b7280",
+        fontSize: "13px",
+      }}
+    >
+      Cijena
+    </p>
+
+    <p
+      style={{
+        margin: 0,
+        color: "#111827",
+        fontSize: "17px",
+        fontWeight: "700",
+      }}
+    >
+      {service.price} KM
     </p>
   </div>
 )}
+
+        {service.show_duration && (
+  <div>
+    <p
+      style={{
+        margin: 0,
+        marginBottom: "3px",
+        color: "#6b7280",
+        fontSize: "13px",
+      }}
+    >
+      Trajanje
+    </p>
+
+    <p
+      style={{
+        margin: 0,
+        color: "#111827",
+        fontSize: "17px",
+        fontWeight: "700",
+      }}
+    >
+      {service.duration_minutes || 60} min
+    </p>
+  </div>
+)}
+      <div>
+  <p
+    style={{
+      margin: 0,
+      marginBottom: "3px",
+      color: "#6b7280",
+      fontSize: "13px",
+    }}
+  >
+    Frizer
+  </p>
+
+  <p
+    style={{
+      margin: 0,
+      color: "#111827",
+      fontSize: "17px",
+      fontWeight: "700",
+    }}
+  >
+    {selectedBarber ? selectedBarber.name : "Bilo koji frizer"}
+  </p>
+</div>
+      </div>
+    </div>
+  )}
+  
 
       <div className="mb-10 flex items-end justify-between gap-8">
   <div>
@@ -482,7 +596,7 @@ return (
   </button>
 </div>
 
-  <div className="mt-4 h-1.5 w-24 bg-[#611a1a]" />
+
 </div>
 
   <div className="flex items-center gap-2">
@@ -496,8 +610,8 @@ return (
         <div className="flex flex-col items-center">
           <div
             style={{
-              width: "18px",
-              height: "18px",
+              width: "22px",
+              height: "22px",
               borderRadius: "9999px",
               display: "flex",
               alignItems: "center",
@@ -523,7 +637,7 @@ return (
         {index < 3 && (
   <div
     style={{
-      width: "15px",
+      width: "24px",
       height: "1px",
       backgroundColor: index === 0 ? "#611a1a" : "#d1d5db",
       marginBottom: "24px",
