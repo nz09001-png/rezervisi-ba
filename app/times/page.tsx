@@ -718,15 +718,16 @@ return (
 
 
 
-      <div
-        className="overflow-hidden rounded-3xl"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
-          border: "1px solid #611a1a",
-          backgroundColor: "#ffffff",
-        }}
-      >
+    
+  <div
+  className="rounded-3xl"
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
+    border: "1px solid #611a1a",
+    backgroundColor: "#ffffff",
+  }}
+>
         {weekDays.map((item) => {
   const itemDate = new Date(item.date);
   itemDate.setHours(0, 0, 0, 0);
@@ -786,16 +787,34 @@ style={{
     backgroundColor: "rgba(97, 26, 26, 0.03)",
   }}
 >
-              <p className="text-lg font-semibold text-[#611a1a]">
-                {item.day}
-              </p>
+              <p
+  className={
+    isMobile
+      ? "text-sm font-semibold text-[#611a1a]"
+      : "text-lg font-semibold text-[#611a1a]"
+  }
+>
+  {item.day}
+</p>
 
-              <p className="text-4xl font-bold text-[#611a1a]">
-                {item.label}
-              </p>
+<p
+  className={
+    isMobile
+      ? "text-2xl font-bold text-[#611a1a]"
+      : "text-4xl font-bold text-[#611a1a]"
+  }
+>
+  {item.label}
+</p>
             </div>
 
-            <div className="space-y-3 p-4">
+            <div
+  className={
+    isMobile
+      ? "space-y-3 px-1 py-3"
+      : "space-y-3 p-4"
+  }
+>
   {isPastDay ||
 isClosedDay ||
 isSelectedBarberClosed ||
@@ -809,9 +828,15 @@ isSelectedBarberIneligible ? (
     : "Dan je prošao"}
 </p>
 ) : item.day === "Ned" ? (
-  <p className="pt-10 text-center text-lg font-medium italic text-[#611a1a]">
-    Nema termina
-  </p>
+  <p
+  className={
+    isMobile
+      ? "px-1 pt-5 text-center text-[10px] font-medium italic leading-tight text-[#611a1a]"
+      : "pt-10 text-center text-lg font-medium italic text-[#611a1a]"
+  }
+>
+  Nema termina
+</p>
 ) : (
                 availableTimes.map((slot) => {
   const time = slot.time;
@@ -918,7 +943,11 @@ if (slotsNeeded > 1 && !hasEnoughSlots) return null;
       e.currentTarget.style.color = "#611a1a";
     }
   }}
-  className="w-full rounded-xl py-2 font-bold"
+  className={
+  isMobile
+    ? "mx-auto w-[calc(100%-4px)] rounded-lg py-2 text-[11px] font-bold"
+    : "w-full rounded-xl py-2 font-bold"
+}
 >
   {isBooked ? "Zauzeto" : time}
 </button>
@@ -929,9 +958,10 @@ if (slotsNeeded > 1 && !hasEnoughSlots) return null;
           </div>
           );
 })}
-                  </div>
+</div>
 
-      <div
+
+<div
   style={{
     display: "flex",
     justifyContent: "flex-end",
@@ -955,8 +985,8 @@ if (slotsNeeded > 1 && !hasEnoughSlots) return null;
   </button>
 </div>
 
-    </div>
-  </main>
+</div>
+</main>
 );
 }
 
