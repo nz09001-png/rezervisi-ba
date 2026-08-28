@@ -27,6 +27,7 @@ const selectedBarber = barberId
 const [salonId, setSalonId] = useState<number | null>(null);
 const [weekOffset, setWeekOffset] = useState(0);
 const [eligibleBarberIds, setEligibleBarberIds] = useState<number[]>([]);
+const [isMobile, setIsMobile] = useState(false);
 
 
 
@@ -368,6 +369,19 @@ useEffect(() => {
   fetchBookedTimes();
 }, [salon]);
 
+useEffect(() => {
+  const checkMobile = () => {
+    setIsMobile(window.innerWidth < 768);
+  };
+
+  checkMobile();
+  window.addEventListener("resize", checkMobile);
+
+  return () => {
+    window.removeEventListener("resize", checkMobile);
+  };
+}, []);
+
   const today = new Date();
 
 const monday = new Date(today);
@@ -429,7 +443,7 @@ return (
 >
   ← Nazad
 </Link>
-    <div className="mx-auto max-w-7xl">
+    <div className="mx-auto w-full max-w-7xl">
       
   {service && (
     <div
@@ -557,6 +571,56 @@ return (
     </div>
   )}
   
+  {isMobile && (
+    <div
+  className="flex w-full items-center justify-center"
+  style={{
+    marginTop: "-20px",
+    marginBottom: "12px",
+    transform: "translateX(80px)",
+  }}
+>
+      {[
+        { nr: "1", active: true },
+        { nr: "2", active: true },
+        { nr: "3", active: false },
+        { nr: "4", active: false },
+      ].map((step, index) => (
+        <div key={step.nr} className="flex items-center">
+          <div
+            style={{
+              width: "20px",
+              height: "20px",
+              borderRadius: "9999px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "10px",
+              fontWeight: "700",
+              backgroundColor: step.active ? "#611a1a" : "#ffffff",
+              color: step.active ? "#ffffff" : "#6b7280",
+              border: step.active
+                ? "1px solid #611a1a"
+                : "1px solid #d1d5db",
+            }}
+          >
+            {step.nr}
+          </div>
+
+          {index < 3 && (
+            <div
+              style={{
+                width: "24px",
+                height: "1px",
+                backgroundColor:
+                  index === 0 ? "#611a1a" : "#d1d5db",
+              }}
+            />
+          )}
+        </div>
+      ))}
+    </div>
+  )}
 
       <div className="mb-10 flex items-end justify-between gap-8">
   <div>
@@ -599,14 +663,14 @@ return (
 
 </div>
 
-  <div className="flex items-center gap-2">
+  <div className="hidden md:flex md:items-center md:gap-2">
     {[
       { nr: "1", label: "USLUGA", active: true },
       { nr: "2", label: "VRIJEME", active: true },
       { nr: "3", label: "PODACI", active: false },
       { nr: "4", label: "POTVRDA", active: false },
     ].map((step, index) => (
-      <div key={step.nr} className="flex items-center gap-4">
+      <div key={step.nr} className="flex items-center gap-1 md:gap-4">
         <div className="flex flex-col items-center">
           <div
             style={{
@@ -626,7 +690,7 @@ return (
           </div>
 
           <p
-            className={`mt-1 text-[11px] font-semibold tracking-wide ${
+            className={`mt-1 text-[10px] md:text-[11px] font-semibold tracking-wide ${
               step.active ? "text-[#611a1a]" : "text-gray-500"
             }`}
           >
@@ -645,9 +709,14 @@ return (
   />
 )}
       </div>
-    ))}
+        ))}
   </div>
+
+
+
 </div>
+
+
 
       <div
         className="overflow-hidden rounded-3xl"
