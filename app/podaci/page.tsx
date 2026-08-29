@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
+import { parsePhoneNumberFromString } from "libphonenumber-js";
 
 export default function PodaciPage() {
 
@@ -17,24 +18,74 @@ const date = searchParams.get("date");
 const time = searchParams.get("time");
 const barberId = searchParams.get("barberId");
   const [service, setService] = useState<any>(null);
+  const [barber, setBarber] = useState<any>(null);
   const [ime, setIme] = useState("");
 const [prezime, setPrezime] = useState("");
 const [phoneCode, setPhoneCode] = useState("+387");
+const phonePlaceholders: Record<string, string> = {
+  "+387": "Primjer: 061 234 567",
+  "+385": "Primjer: 091 234 5678",
+  "+381": "Primjer: 064 123 4567",
+  "+382": "Primjer: 067 123 456",
+  "+386": "Primjer: 041 234 567",
+  "+46": "Primjer: 070 123 45 67",
+  "+47": "Primjer: 412 34 567",
+  "+45": "Primjer: 20 12 34 56",
+  "+49": "Primjer: 0151 23456789",
+  "+43": "Primjer: 0664 1234567",
+  "+41": "Primjer: 079 123 45 67",
+};
+const phoneCountries: Record<
+  string,
+  "BA" | "HR" | "RS" | "ME" | "SI" | "SE" | "NO" | "DK" | "DE" | "AT" | "CH"
+> = {
+  "+387": "BA",
+  "+385": "HR",
+  "+381": "RS",
+  "+382": "ME",
+  "+386": "SI",
+  "+46": "SE",
+  "+47": "NO",
+  "+45": "DK",
+  "+49": "DE",
+  "+43": "AT",
+  "+41": "CH",
+};
 const [phone, setPhone] = useState("");
 const [email, setEmail] = useState("");
 const [napomena, setNapomena] = useState("");
+const [isMobile, setIsMobile] = useState(false);
+
+useEffect(() => {
+  const checkMobile = () => {
+    setIsMobile(window.innerWidth < 768);
+  };
+
+  checkMobile();
+  window.addEventListener("resize", checkMobile);
+
+  return () => {
+    window.removeEventListener("resize", checkMobile);
+  };
+}, []);
 const handleNext = () => {
   if (!ime.trim() || !prezime.trim() || !phone.trim()) {
     alert("Molimo unesite ime, prezime i broj telefona.");
     return;
   }
 
-  const cleanedPhone = phone.replace(/\s+/g, "");
+  const country = phoneCountries[phoneCode];
 
-if (!/^\d{6,15}$/.test(cleanedPhone)) {
+const parsedPhone = country
+  ? parsePhoneNumberFromString(phone, country)
+  : undefined;
+
+if (!parsedPhone || !parsedPhone.isValid()) {
   alert("Molimo unesite ispravan broj telefona.");
   return;
 }
+
+const normalizedPhone = parsedPhone.number;
 
   if (
   email.trim() &&
@@ -54,9 +105,10 @@ if (!/^\d{6,15}$/.test(cleanedPhone)) {
   ime,
   prezime,
   phoneCode,
-  phone,
-  email,
-  napomena,
+phone,
+normalizedPhone,
+email,
+napomena,
 });
 
   router.push(`/potvrda?${params.toString()}`);
@@ -83,8 +135,35 @@ useEffect(() => {
   fetchService();
 }, [serviceId]);
 
+useEffect(() => {
+  async function fetchBarber() {
+    if (!barberId) return;
+
+    const { data, error } = await supabase
+      .from("barbers")
+      .select("id, name")
+      .eq("id", barberId)
+      .single();
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setBarber(data);
+  }
+
+  fetchBarber();
+}, [barberId]);
+
   return (
-    <main className="min-h-screen bg-white px-8 py-6">
+    <main
+  className={
+    isMobile
+      ? "min-h-screen bg-white px-4 py-4"
+      : "min-h-screen bg-white px-8 py-6"
+  }
+>
       <Link
   href={`/times?salon=${encodeURIComponent(
     salon || ""
@@ -116,10 +195,16 @@ useEffect(() => {
       Unesi podatke
     </h1>
 
-    <div className="mt-4 h-1.5 w-24 bg-[#611a1a]" />
+   
   </div>
 
-  <div className="flex items-center gap-2">
+  <div
+  className={
+    isMobile
+      ? "hidden"
+      : "flex items-center gap-2"
+  }
+>
     {[
       { nr: "1", label: "USLUGA", active: true },
       { nr: "2", label: "VRIJEME", active: true },
@@ -172,29 +257,266 @@ useEffect(() => {
 
 </div>
 
-        <div
-  className="mb-4 inline-block rounded-xl border px-5 py-3"
+
+
+       <div
+  className="mb-6"
   style={{
+    width: "100%",
+    maxWidth: "420px",
+    padding: "18px 20px",
+    borderRadius: "18px",
     backgroundColor: "rgba(97, 26, 26, 0.03)",
     border: "1px solid rgba(97, 26, 26, 0.15)",
+    boxShadow: "0 4px 14px rgba(0, 0, 0, 0.04)",
   }}
 >
-  <p className="font-bold">
+  <p
+    style={{
+      margin: 0,
+      color: "#111827",
+      fontSize: "24px",
+      fontWeight: "700",
+    }}
+  >
     {service ? service.name : "Učitava se..."}
   </p>
 
-  <p className="text-gray-600">
-    {service ? `${service.price} KM • ${service.duration_minutes || 60} min` : ""}
-  </p>
+  {service?.description && (
+    <p
+      style={{
+  marginTop: "4px",
+  marginRight: 0,
+  marginBottom: 0,
+  marginLeft: 0,
+  color: "#6b7280",
+  fontSize: "14px",
+  lineHeight: "1.5",
+}}
+    >
+      {service.description}
+    </p>
+  )}
 
-  <p className="mt-1 text-sm text-[#611a1a] font-medium">
-    {time}
-  </p>
+  <div
+    style={{
+      display: "flex",
+      gap: "40px",
+      alignItems: "center",
+      marginTop: "18px",
+      marginBottom: "18px",
+    }}
+  >
+    <div>
+      <p
+        style={{
+          margin: 0,
+          marginBottom: "3px",
+          color: "#6b7280",
+          fontSize: "13px",
+        }}
+      >
+        Datum
+      </p>
+
+      <p
+        style={{
+          margin: 0,
+          color: "#111827",
+          fontSize: "17px",
+          fontWeight: "700",
+        }}
+      >
+        {date
+          ? (() => {
+              const [year, month, day] = date.split("-");
+              return `${day}.${month}.${year}`;
+            })()
+          : ""}
+      </p>
+    </div>
+
+    <div>
+      <p
+        style={{
+          margin: 0,
+          marginBottom: "3px",
+          color: "#6b7280",
+          fontSize: "13px",
+        }}
+      >
+        Vrijeme
+      </p>
+
+      <p
+        style={{
+          margin: 0,
+          color: "#111827",
+          fontSize: "17px",
+          fontWeight: "700",
+        }}
+      >
+        {time}
+      </p>
+    </div>
+  </div>
+
+  <div
+  style={{
+    display: isMobile ? "grid" : "flex",
+    gridTemplateColumns: isMobile ? "repeat(3, minmax(0, 1fr))" : undefined,
+    gap: isMobile ? "12px" : "32px",
+    alignItems: "start",
+  }}
+>
+    {service?.show_price && (
+      <div>
+        <p
+          style={{
+            margin: 0,
+            marginBottom: "3px",
+            color: "#6b7280",
+            fontSize: "13px",
+          }}
+        >
+          Cijena
+        </p>
+
+        <p
+          style={{
+            margin: 0,
+            color: "#111827",
+            fontSize: "17px",
+            fontWeight: "700",
+          }}
+        >
+          {service.price} KM
+        </p>
+      </div>
+    )}
+
+    {service?.show_duration && (
+      <div>
+        <p
+          style={{
+            margin: 0,
+            marginBottom: "3px",
+            color: "#6b7280",
+            fontSize: "13px",
+          }}
+        >
+          Trajanje
+        </p>
+
+        <p
+          style={{
+            margin: 0,
+            color: "#111827",
+            fontSize: "17px",
+            fontWeight: "700",
+          }}
+        >
+          {service.duration_minutes || 60} min
+        </p>
+      </div>
+    )}
+
+    <div>
+      <p
+        style={{
+          margin: 0,
+          marginBottom: "3px",
+          color: "#6b7280",
+          fontSize: "13px",
+        }}
+      >
+        Frizer
+      </p>
+
+      <p
+        style={{
+          margin: 0,
+          color: "#111827",
+          fontSize: "17px",
+          fontWeight: "700",
+        }}
+      >
+        {barberId
+          ? barber
+            ? barber.name
+            : "Učitava se..."
+          : "Bilo koji frizer"}
+      </p>
+    </div>
+  </div>
 </div>
 
+{isMobile && (
+  <div
+    className="flex w-full items-center"
+    style={{
+      marginTop: "-10px",
+      marginBottom: "12px",
+      paddingLeft: "170px",
+    }}
+  >
+    {[
+      { nr: "1", active: true },
+      { nr: "2", active: true },
+      { nr: "3", active: true },
+      { nr: "4", active: false },
+    ].map((step, index) => (
+      <div key={step.nr} className="flex items-center">
+        <div
+          style={{
+            width: "20px",
+            height: "20px",
+            borderRadius: "9999px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "10px",
+            fontWeight: "700",
+            backgroundColor: step.active ? "#611a1a" : "#ffffff",
+            color: step.active ? "#ffffff" : "#6b7280",
+            border: step.active
+              ? "1px solid #611a1a"
+              : "1px solid #d1d5db",
+          }}
+        >
+          {step.nr}
+        </div>
 
-        <div className="mx-auto max-w-3xl rounded-3xl border border-[#611a1a] bg-white p-8 shadow-sm">
-        <div className="mb-6 grid grid-cols-2 gap-6">
+        {index < 3 && (
+          <div
+            style={{
+              width: "24px",
+              height: "1px",
+              backgroundColor:
+                index < 2 ? "#611a1a" : "#d1d5db",
+            }}
+          />
+        )}
+      </div>
+    ))}
+  </div>
+)}
+
+
+        <div
+  className={
+    isMobile
+      ? "mx-auto max-w-4xl rounded-3xl border border-[#611a1a] bg-white p-4 shadow-sm"
+      : "mx-auto max-w-4xl rounded-3xl border border-[#611a1a] bg-white p-6 shadow-sm"
+  }
+>
+        <div
+  className={
+    isMobile
+      ? "mb-6 grid grid-cols-1 gap-4"
+      : "mb-6 grid grid-cols-2 gap-6"
+  }
+>
 
   <div>
     <label
@@ -209,7 +531,7 @@ useEffect(() => {
   value={ime}
   onChange={(e) => setIme(e.target.value)}
   placeholder="Unesite ime"
-  className="w-full rounded-xl border border-[#611a1a] p-3"
+  className="w-full rounded-xl border border-gray-300 p-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
 />
   </div>
 
@@ -240,30 +562,40 @@ useEffect(() => {
   Telefon *
 </label>
 
-  <div className="flex gap-3">
+  <div
+  className={
+    isMobile
+      ? "flex gap-2"
+      : "flex gap-3"
+  }
+>
     <select
   value={phoneCode}
   onChange={(e) => setPhoneCode(e.target.value)}
-  className="w-40 rounded-xl border border-[#611a1a] px-4 py-3"
+  className={
+  isMobile
+    ? "w-28 rounded-xl border border-[#611a1a] px-3 py-3"
+    : "w-40 rounded-xl border border-[#611a1a] px-4 py-3"
+}
 >
-  <option value="+387">🇧🇦 +387</option>
-  <option value="+385">🇭🇷 +385</option>
-  <option value="+381">🇷🇸 +381</option>
-  <option value="+382">🇲🇪 +382</option>
-  <option value="+386">🇸🇮 +386</option>
-  <option value="+46">🇸🇪 +46</option>
-  <option value="+47">🇳🇴 +47</option>
-  <option value="+45">🇩🇰 +45</option>
-  <option value="+49">🇩🇪 +49</option>
-  <option value="+43">🇦🇹 +43</option>
-  <option value="+41">🇨🇭 +41</option>
+  <option value="+387">BA +387</option>
+<option value="+385">HR +385</option>
+<option value="+381">RS +381</option>
+<option value="+382">ME +382</option>
+<option value="+386">SI +386</option>
+<option value="+46">SE +46</option>
+<option value="+47">NO +47</option>
+<option value="+45">DK +45</option>
+<option value="+49">DE +49</option>
+<option value="+43">AT +43</option>
+<option value="+41">CH +41</option>
 </select>
 
     <input
   type="tel"
   value={phone}
   onChange={(e) => setPhone(e.target.value)}
-  placeholder="Primjer: 061 234 567"
+  placeholder={phonePlaceholders[phoneCode] || "Unesite broj telefona"}
   className="w-full rounded-xl border border-gray-300 p-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
 />
   </div>
@@ -290,7 +622,7 @@ useEffect(() => {
   type="email"
   value={email}
   onChange={(e) => setEmail(e.target.value)}
-  placeholder= "Unesite email adresu ako želite primiti potvrdu i putem emaila."
+  placeholder={isMobile ? "Unesite email adresu" : "Unesite email adresu ako želite primiti potvrdu i putem emaila."}
   className="w-full rounded-xl border border-[#611a1a] p-3"
 />
 </div>

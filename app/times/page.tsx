@@ -430,7 +430,7 @@ const weekTitle =
     const todayOnly = new Date();
 todayOnly.setHours(0, 0, 0, 0);
 return (
-  <main className="min-h-screen bg-white px-8 py-6">
+  <main className="min-h-screen bg-white px-3 py-6 md:px-8">
     <Link
   href={`/${salonSlug}`}
   style={{
@@ -572,14 +572,14 @@ return (
   )}
   
   {isMobile && (
-    <div
-  className="flex w-full items-center justify-center"
-  style={{
-    marginTop: "-20px",
-    marginBottom: "12px",
-    transform: "translateX(80px)",
-  }}
->
+  <div
+    className="flex w-full items-center"
+    style={{
+      marginTop: "-20px",
+      marginBottom: "12px",
+      paddingLeft: "170px",
+    }}
+  >
       {[
         { nr: "1", active: true },
         { nr: "2", active: true },
@@ -775,7 +775,11 @@ const areAllBarbersClosed =
   return (
           <div
             key={item.day}
-            className="min-h-[360px] bg-white"
+            className={
+  isMobile
+    ? "bg-white"
+    : "min-h-[360px] bg-white"
+}
 style={{
   borderRight: "1px solid rgba(97, 26, 26, 0.25)",
 }}
@@ -811,7 +815,7 @@ style={{
             <div
   className={
     isMobile
-      ? "space-y-3 px-1 py-3"
+      ? "space-y-2 px-1 py-3"
       : "space-y-3 p-4"
   }
 >
@@ -943,9 +947,9 @@ if (slotsNeeded > 1 && !hasEnoughSlots) return null;
       e.currentTarget.style.color = "#611a1a";
     }
   }}
-  className={
+ className={
   isMobile
-    ? "mx-auto w-[calc(100%-4px)] rounded-lg py-2 text-[11px] font-bold"
+    ? "mx-auto w-[calc(100%_-_4px)] rounded-lg py-1.5 text-[11px] font-bold"
     : "w-full rounded-xl py-2 font-bold"
 }
 >

@@ -27,6 +27,7 @@ const barberId = searchParams.get("barberId");
   const prezime = searchParams.get("prezime");
   const phoneCode = searchParams.get("phoneCode");
   const phone = searchParams.get("phone");
+  const normalizedPhone = searchParams.get("normalizedPhone");
   const email = searchParams.get("email");
   const napomena = searchParams.get("napomena");
   const [service, setService] = useState<any>(null);
@@ -474,7 +475,7 @@ if (hasOverlapForFinalBarber) {
   .insert([
     {
   customer_name: `${ime} ${prezime}`,
-  phone: `${phoneCode} ${phone}`,
+  phone: normalizedPhone || `${phoneCode} ${phone}`,
   salon,
   booking_time: time,
   booking_date: date,
