@@ -552,107 +552,249 @@ router.replace(
 >
   ← Nazad
 </Link>
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-12 flex items-end justify-between">
-          <h1
-  className="text-3xl font-bold"
-  style={{
-    marginLeft: "310px",
-    color: "#611a1a",
-  }}
->
-            Pregled rezervacije
-          </h1>
-          <div
-  className="flex items-center gap-2"
-  style={{
-    marginRight: "100px",
-    marginTop: "-75px",
-  }}
->
-  {[
-  { nr: "1", label: "USLUGA" },
-  { nr: "2", label: "VRIJEME" },
-  { nr: "3", label: "PODACI" },
-  { nr: "4", label: "POTVRDA" },
-].map((step, index) => (
-  <div key={step.nr} className="flex items-center gap-4">
-    <div className="flex flex-col items-center">
       <div
+  className="mx-auto"
+  style={{
+    width: "680px",
+    maxWidth: "100%",
+  }}
+>
+        <div
+  className="flex items-end justify-between"
+  style={{
+    marginBottom: "14px",
+    gap: "40px",
+    transform: "translateX(110px)",
+  }}
+>
+  <div>
+    <h1 className="text-3xl font-bold text-[#611a1a]">
+      Pregled rezervacije
+    </h1>
+  </div>
+
+  <div className="flex items-center gap-2">
+    {[
+      { nr: "1", label: "USLUGA" },
+      { nr: "2", label: "VRIJEME" },
+      { nr: "3", label: "PODACI" },
+      { nr: "4", label: "POTVRDA" },
+    ].map((step, index) => (
+      <div key={step.nr} className="flex items-center gap-4">
+        <div className="flex flex-col items-center">
+          <div
+            style={{
+              width: "18px",
+              height: "18px",
+              borderRadius: "9999px",
+              backgroundColor: "#611a1a",
+              color: "#ffffff",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "10px",
+              fontWeight: "bold",
+            }}
+          >
+            {step.nr}
+          </div>
+
+          <p className="mt-1 text-[11px] font-semibold tracking-wide text-[#611a1a]">
+            {step.label}
+          </p>
+        </div>
+
+        {index < 3 && (
+          <div
+            style={{
+              width: "15px",
+              height: "1px",
+              backgroundColor: "#611a1a",
+              marginBottom: "24px",
+            }}
+          />
+        )}
+      </div>
+    ))}
+  </div>
+</div>
+        
+  <div
+  className="mb-6"
+  style={{
+    width: "420px",
+    maxWidth: "420px",
+    marginLeft: "auto",
+    marginRight: "auto",
+    padding: "18px 20px",
+    borderRadius: "18px",
+    backgroundColor: "rgba(97, 26, 26, 0.03)",
+    border: "1px solid rgba(97, 26, 26, 0.15)",
+    boxShadow: "0 4px 14px rgba(0, 0, 0, 0.04)",
+  }}
+>
+  <p
+    style={{
+      margin: 0,
+      color: "#111827",
+      fontSize: "24px",
+      fontWeight: "700",
+    }}
+  >
+    {service ? service.name : "Učitava se..."}
+  </p>
+
+  <div
+    style={{
+      display: "flex",
+      gap: "40px",
+      alignItems: "center",
+      marginTop: "18px",
+      marginBottom: "18px",
+    }}
+  >
+    <div>
+      <p
         style={{
-          width: "18px",
-          height: "18px",
-          borderRadius: "9999px",
-          backgroundColor: "#611a1a",
-          color: "#ffffff",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "10px",
-          fontWeight: "bold",
+          margin: 0,
+          marginBottom: "3px",
+          color: "#6b7280",
+          fontSize: "13px",
         }}
       >
-        {step.nr}
-      </div>
+        Datum
+      </p>
 
       <p
         style={{
-          marginTop: "4px",
-          fontSize: "11px",
-          fontWeight: "600",
-          color: "#611a1a",
+          margin: 0,
+          color: "#111827",
+          fontSize: "17px",
+          fontWeight: "700",
         }}
       >
-        {step.label}
+        {formattedDate}
       </p>
     </div>
 
-    {index < 3 && (
-      <div
+    <div>
+      <p
         style={{
-          width: "15px",
-          height: "1px",
-          backgroundColor: "#611a1a",
-          marginBottom: "24px",
+          margin: 0,
+          marginBottom: "3px",
+          color: "#6b7280",
+          fontSize: "13px",
         }}
-      />
-    )}
+      >
+        Vrijeme
+      </p>
+
+      <p
+        style={{
+          margin: 0,
+          color: "#111827",
+          fontSize: "17px",
+          fontWeight: "700",
+        }}
+      >
+        {time}
+      </p>
+    </div>
   </div>
-))}
-</div>
-          <div className="mt-4 h-1.5 w-24 bg-[#611a1a]" />
-        </div>
-        
+
   <div
-  className="mb-6 inline-block rounded-xl border px-5 py-3"
   style={{
-  backgroundColor: "rgba(97, 26, 26, 0.03)",
-  border: "1px solid rgba(97, 26, 26, 0.15)",
-  marginLeft: "310px",
-  marginTop: "10px",
-}}
+    display: "flex",
+    gap: "32px",
+    alignItems: "center",
+  }}
 >
-  <p className="font-bold">
-    {salon}
-  </p>
+  {service?.show_price && (
+    <div>
+      <p
+        style={{
+          margin: 0,
+          marginBottom: "3px",
+          color: "#6b7280",
+          fontSize: "13px",
+        }}
+      >
+        Cijena
+      </p>
 
-  <p className="text-gray-600">
-    {service
-      ? `${service.name} • ${service.price} KM • ${service.duration_minutes || 60} min`
-      : "Učitava se..."}
-  </p>
+      <p
+        style={{
+          margin: 0,
+          color: "#111827",
+          fontSize: "17px",
+          fontWeight: "700",
+        }}
+      >
+        {service.price} KM
+      </p>
+    </div>
+  )}
 
-  <p className="mt-1 text-sm font-medium text-[#611a1a]">
-    {formattedDate} • {time}
-  </p>
+  {service?.show_duration && (
+    <div>
+      <p
+        style={{
+          margin: 0,
+          marginBottom: "3px",
+          color: "#6b7280",
+          fontSize: "13px",
+        }}
+      >
+        Trajanje
+      </p>
+
+      <p
+        style={{
+          margin: 0,
+          color: "#111827",
+          fontSize: "17px",
+          fontWeight: "700",
+        }}
+      >
+        {service.duration_minutes || 60} min
+      </p>
+    </div>
+  )}
+
+  <div>
+    <p
+      style={{
+        margin: 0,
+        marginBottom: "3px",
+        color: "#6b7280",
+        fontSize: "13px",
+      }}
+    >
+      Frizer
+    </p>
+
+    <p
+      style={{
+        margin: 0,
+        color: "#111827",
+        fontSize: "17px",
+        fontWeight: "700",
+      }}
+    >
+      {barberId ? barberName : "Bilo koji frizer"}
+    </p>
+  </div>
+</div>
 </div>
 
 
 
         <div
-  className="mx-auto max-w-xl rounded-3xl bg-white p-6 shadow-sm"
+  className="mx-auto rounded-3xl bg-white p-6 shadow-sm"
   style={{
-    border: "3px solid #611a1a",
+    width: "420px",
+    maxWidth: "100%",
+    border: "2px solid #611a1a",
   }}
 >
   <h2
@@ -666,7 +808,6 @@ router.replace(
   className="mx-auto"
   style={{
     width: "340px",
-    transform: "translateX(30px)",
   }}
 >
   <div
