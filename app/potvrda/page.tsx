@@ -41,6 +41,20 @@ const [confirmed, setConfirmed] = useState(false);
 const [timeTaken, setTimeTaken] = useState(false);
 const [serviceSteps, setServiceSteps] = useState<any[]>([]);
 const [eligibleBarberIds, setEligibleBarberIds] = useState<number[]>([]);
+const [isMobile, setIsMobile] = useState(false);
+
+useEffect(() => {
+  const checkMobile = () => {
+    setIsMobile(window.innerWidth < 768);
+  };
+
+  checkMobile();
+  window.addEventListener("resize", checkMobile);
+
+  return () => {
+    window.removeEventListener("resize", checkMobile);
+  };
+}, []);
 
 const getBusyIntervalsForCurrentService = (startMinutes: number) => {
   if (serviceSteps.length === 0) {
@@ -522,7 +536,15 @@ setConfirmed(true);
 router.replace(
   `/uspjesno?salon=${encodeURIComponent(salon || "")}&salonSlug=${encodeURIComponent(
     salonSlug || ""
-  )}&service=${encodeURIComponent(service?.name || "")}&date=${encodeURIComponent(
+  )}&service=${encodeURIComponent(service?.name || "")}&barber=${encodeURIComponent(
+    finalBarberName || ""
+  )}&price=${encodeURIComponent(
+    service?.price?.toString() || ""
+  )}&duration=${encodeURIComponent(
+    (service?.duration_minutes || 60).toString()
+  )}&showPrice=${service?.show_price ? "true" : "false"}&showDuration=${
+    service?.show_duration ? "true" : "false"
+  }&date=${encodeURIComponent(
     date || ""
   )}&time=${encodeURIComponent(time || "")}&ime=${encodeURIComponent(
     ime || ""
@@ -564,7 +586,7 @@ router.replace(
   style={{
     marginBottom: "14px",
     gap: "40px",
-    transform: "translateX(110px)",
+    transform: isMobile ? "none" : "translateX(110px)",
   }}
 >
   <div>
@@ -573,7 +595,13 @@ router.replace(
     </h1>
   </div>
 
-  <div className="flex items-center gap-2">
+  <div
+  className={
+    isMobile
+      ? "hidden"
+      : "flex items-center gap-2"
+  }
+>
     {[
       { nr: "1", label: "USLUGA" },
       { nr: "2", label: "VRIJEME" },
@@ -618,12 +646,15 @@ router.replace(
     ))}
   </div>
 </div>
-        
+
+
+
+
   <div
   className="mb-6"
   style={{
-    width: "420px",
-    maxWidth: "420px",
+    width: isMobile ? "100%" : "420px",
+maxWidth: isMobile ? "100%" : "420px",
     marginLeft: "auto",
     marginRight: "auto",
     padding: "18px 20px",
@@ -787,7 +818,51 @@ router.replace(
 </div>
 </div>
 
+{isMobile && ( 
+  <div 
+    className="flex items-center justify-center" 
+    style={{ 
+      marginBottom: "10px",
+      transform: "translateX(70px)",
+    }} 
+  >
+    {[
+      { nr: "1" },
+      { nr: "2" },
+      { nr: "3" },
+      { nr: "4" },
+    ].map((step, index) => (
+      <div key={step.nr} className="flex items-center">
+        <div
+          style={{
+            width: "20px",
+            height: "20px",
+            borderRadius: "9999px",
+            backgroundColor: "#611a1a",
+            color: "white",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "10px",
+            fontWeight: "700",
+          }}
+        >
+          {step.nr}
+        </div>
 
+        {index < 3 && (
+          <div
+            style={{
+              width: "28px",
+              height: "1px",
+              backgroundColor: "#611a1a",
+            }}
+          />
+        )}
+      </div>
+    ))}
+  </div>
+)}
 
         <div
   className="mx-auto rounded-3xl bg-white p-6 shadow-sm"
@@ -856,6 +931,7 @@ router.replace(
     <span>{phoneCode} {phone}</span>
   </div>
 
+  {email?.trim() && (
   <div
     style={{
       display: "grid",
@@ -865,11 +941,20 @@ router.replace(
       alignItems: "center",
     }}
   >
-    <span style={{ fontWeight: "700", color: "#611a1a", textAlign: "right", paddingRight: "20px" }}>
+    <span
+      style={{
+        fontWeight: "700",
+        color: "#611a1a",
+        textAlign: "right",
+        paddingRight: "20px",
+      }}
+    >
       Email:
     </span>
+
     <span>{email}</span>
   </div>
+)}
 
   <div
     style={{
