@@ -84,6 +84,7 @@ const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
 const [croppedPreviewUrl, setCroppedPreviewUrl] = useState<string | null>(null);
   const [galleryImages, setGalleryImages] = useState<any[]>([]);
 const [galleryFile, setGalleryFile] = useState<File | null>(null);
+const [galleryPreviewUrl, setGalleryPreviewUrl] = useState<string | null>(null);
   const [description, setDescription] = useState("");
 const [phone, setPhone] = useState("");
 const [address, setAddress] = useState("");
@@ -541,19 +542,33 @@ async function handleAddClosedDay() {
   }
 
   const dates = [];
+
   const currentDate = new Date(closedDate);
   const endDate = new Date(closedEndDate);
 
   while (currentDate <= endDate) {
-  dates.push({
-    salon_id: salon?.id,
-    date: currentDate.toISOString().split("T")[0],
-    reason: closedReason,
-    barber_id: closedBarberId,
-  });
+    dates.push({
+      salon_id: salon?.id,
+      date: currentDate.toISOString().split("T")[0],
+      reason: closedReason,
+      barber_id: closedBarberId,
+    });
 
-  currentDate.setDate(currentDate.getDate() + 1);
-}
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  const duplicate = dates.find((newDay) =>
+    closedDays.some(
+      (existingDay) =>
+        existingDay.date === newDay.date &&
+        (existingDay.barber_id ?? null) === (newDay.barber_id ?? null)
+    )
+  );
+
+  if (duplicate) {
+    alert("Ovaj zatvoreni dan već postoji.");
+    return;
+  }
 
   const { error } = await supabase
     .from("closed_days")
@@ -566,11 +581,11 @@ async function handleAddClosedDay() {
   }
 
   setClosedDate("");
-setClosedEndDate("");
-setClosedReason("");
-setClosedBarberId(null);
+  setClosedEndDate("");
+  setClosedReason("");
+  setClosedBarberId(null);
 
-fetchClosedDays();
+  fetchClosedDays();
 }
 async function handleDeleteClosedDay(id: number) {
   const confirmDelete = confirm("Da li ste sigurni da želite obrisati zatvoreni dan?");
@@ -1546,14 +1561,26 @@ style={{
   
     {selectedSettings.includes("hero") && (
   <div className="mb-6 rounded-3xl bg-white p-6 shadow">
-  <label className="mb-2 block font-medium">Profilna slika</label>
+  <div className="mb-5">
+    <h2 className="text-xl font-bold">Naslovna slika</h2>
+    <p className="mt-1 text-sm text-gray-500">
+      Ova slika se prikazuje na vrhu stranice vašeg salona.
+    </p>
+  </div>
+
   {salon?.image_url && (
-  <img
-    src={salon.image_url}
-    alt="Profilna slika"
-    className="mb-4 h-36 w-full max-w-md rounded-2xl object-cover"
-  />
-)}
+    <div className="mb-5 max-w-2xl">
+      <p className="mb-2 text-sm font-medium text-gray-700">
+        Trenutna slika
+      </p>
+
+      <img
+        src={salon.image_url}
+        alt="Naslovna slika"
+        className="aspect-[1000/360] w-full rounded-2xl object-cover"
+      />
+    </div>
+  )}
 
 <input
   id="hero-image-upload"
@@ -1583,34 +1610,28 @@ style={{
     color: "white",
   }}
 >
-   Izaberi profilnu sliku
+   Izaberi naslovnu sliku
 </label>
 {selectedFile && (
-  <p
-    style={{
-      marginTop: "12px",
-      color: "#555",
-      fontSize: "15px",
-    }}
-  >
-    Odabrana slika: <strong>{selectedFile.name}</strong>
-  </p>
-)}
-{selectedFile && (
-  <p
-    style={{
-      marginTop: "4px",
-      color: "#777",
-      fontSize: "13px",
-      lineHeight: "1.5",
-    }}
-  >
-    Preporučeni format: široka fotografija (oko 1000 × 360 px ili sličan omjer).
-  </p>
+  <div className="mt-4">
+    <p className="text-sm text-gray-700">
+      Odabrana slika:{" "}
+      <span className="font-semibold">{selectedFile.name}</span>
+    </p>
+
+    <p className="mt-1 text-sm text-gray-500">
+      Preporučeni format: široka fotografija (oko 1000 × 360 px ili sličan omjer).
+    </p>
+  </div>
 )}
 
 {imagePreview && (
-  <div className="relative mt-4 h-[370px] w-full overflow-hidden rounded-2xl bg-gray-100">
+  <div className="mt-6">
+    <p className="mb-3 font-medium text-gray-700">
+      Prilagodi sliku
+    </p>
+
+    <div className="relative h-[320px] w-full max-w-2xl overflow-hidden rounded-2xl bg-gray-100">
     <Cropper
       image={imagePreview}
       crop={crop}
@@ -1634,44 +1655,40 @@ style={{
           console.error("Preview error:", error);
         }
       }}
-    />
+        />
+    </div>
   </div>
 )}
-<div className="mt-6">
-  <p className="mb-3 font-medium text-gray-700">
-    Ovako će izgledati na stranici
-  </p>
+{selectedFile && (
+  <div className="mt-6">
+    <p className="mb-3 font-medium text-gray-700">
+      Ovako će izgledati na stranici
+    </p>
 
-  <div
-  className="w-full overflow-hidden rounded-2xl bg-gray-200"
-  style={{
-    height: "360px",
-  }}
+    <div
+  className="aspect-[1000/360] w-full max-w-2xl overflow-hidden rounded-2xl bg-gray-200"
 >
-  {croppedPreviewUrl && (
-    <img
-      src={croppedPreviewUrl}
-      alt="Hero preview"
-      style={{
-  width: "100%",
-  height: "360px",
-  objectFit: "cover",
-  display: "block",
-}}
-    />
-  )}
-</div>
-</div>
+      {croppedPreviewUrl && (
+        <img
+          src={croppedPreviewUrl}
+          alt="Hero preview"
+          className="h-full w-full object-cover"
+        />
+      )}
+    </div>
+  </div>
+)}
   {selectedFile && (
   <div className="mt-4 flex gap-3">
     <button
   onClick={handleImageUpload}
   disabled={isUploadingImage}
   className={`rounded-xl px-5 py-3 font-medium text-white transition ${
-    isUploadingImage
-      ? "cursor-not-allowed bg-gray-500"
-      : "bg-black hover:opacity-90"
+    isUploadingImage ? "cursor-not-allowed" : "hover:opacity-90"
   }`}
+  style={{
+    backgroundColor: isUploadingImage ? "#6b7280" : "#611a1a",
+  }}
 >
   {isUploadingImage ? "Spremanje..." : "Sačuvaj sliku"}
 </button>
@@ -1706,10 +1723,11 @@ style={{
   accept="image/*"
   onChange={(e) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
+  const file = e.target.files[0];
 
-      setGalleryFile(file);
-    }
+  setGalleryFile(file);
+  setGalleryPreviewUrl(URL.createObjectURL(file));
+}
   }}
   style={{ display: "none" }}
 />
@@ -1731,19 +1749,40 @@ style={{
 </label>
 
 {galleryFile && (
-  <p className="mt-3 text-sm text-gray-600">
-    Odabrana slika: <strong>{galleryFile.name}</strong>
-  </p>
-)}
+  <div className="mt-4 max-w-sm">
+    <p className="text-sm text-gray-600">
+      Odabrana slika:{" "}
+      <span className="font-semibold text-gray-800">
+        {galleryFile.name}
+      </span>
+    </p>
 
-  {galleryFile && (
-  <button
-    onClick={handleGalleryImageUpload}
-    style={{ backgroundColor: "#611a1a" }}
-    className="mt-4 rounded px-4 py-2 text-white"
-  >
-    Sačuvaj u galeriju
-  </button>
+    {galleryPreviewUrl && (
+      <img
+  src={galleryPreviewUrl}
+  alt="Pregled odabrane slike"
+  style={{
+    marginTop: "12px",
+    width: "180px",
+height: "120px",
+    objectFit: "cover",
+    borderRadius: "12px",
+    display: "block",
+  }}
+/>
+    )}
+
+    <button
+  onClick={handleGalleryImageUpload}
+  style={{
+    backgroundColor: "#611a1a",
+    marginTop: "4px",
+  }}
+  className="rounded-xl px-5 py-3 font-medium text-white transition hover:opacity-90"
+>
+  Sačuvaj u galeriju
+</button>
+  </div>
 )}
 
   <div
@@ -1774,7 +1813,7 @@ style={{
         <button
           onClick={() => handleDeleteGalleryImage(image.id)}
           className="mt-4 w-full rounded-xl px-3 py-2 font-medium text-white transition hover:opacity-90"
-style={{ backgroundColor: "#611a1a" }}
+style={{ backgroundColor: "#ef4444" }}
         >
           Obriši
         </button>
@@ -1797,24 +1836,26 @@ style={{ backgroundColor: "#611a1a" }}
   <textarea
     value={description}
     onChange={(e) => setDescription(e.target.value)}
-    className="mb-6 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-    rows={3}
+    className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+  style={{ maxWidth: "450px" }}
   />
 
   <label className="mb-2 block font-medium">Telefon</label>
   <input
-    type="text"
-    value={phone}
-    onChange={(e) => setPhone(e.target.value)}
-    className="mb-4 w-full rounded border p-3"
-  />
+  type="text"
+  value={phone}
+  onChange={(e) => setPhone(e.target.value)}
+  className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+  style={{ maxWidth: "450px" }}
+/>
 
   <label className="mb-2 block font-medium">Adresa</label>
   <input
     type="text"
     value={address}
     onChange={(e) => setAddress(e.target.value)}
-    className="mb-4 w-full rounded border p-3"
+    className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+    style={{ maxWidth: "450px" }}
   />
 
   <label className="mb-2 block font-medium">Radno vrijeme</label>
@@ -1822,13 +1863,17 @@ style={{ backgroundColor: "#611a1a" }}
     type="text"
     value={openingHours}
     onChange={(e) => setOpeningHours(e.target.value)}
-    className="mb-4 w-full rounded border p-3"
+    className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+  style={{ maxWidth: "450px" }}
   />
 
   <button
   onClick={handleSalonInfoUpdate}
-  className="rounded-xl px-5 py-3 font-medium text-white transition hover:opacity-90"
-  style={{ backgroundColor: "#611a1a" }}
+  className="mt-4 rounded-xl px-5 py-3 font-medium text-white transition hover:opacity-90"
+  style={{
+    backgroundColor: "#611a1a",
+    display: "block",
+  }}
 >
   Sačuvaj informacije
 </button>
@@ -1925,38 +1970,42 @@ style={{ backgroundColor: "#611a1a" }}
 
   <div ref={serviceFormRef}></div>
   <input
-    type="text"
-    placeholder="Naziv usluge"
-    value={serviceName}
-    onChange={(e) => setServiceName(e.target.value)}
-    className="mb-3 w-full rounded border p-3"
-  />
+  type="text"
+  placeholder="Naziv usluge"
+  value={serviceName}
+  onChange={(e) => setServiceName(e.target.value)}
+  className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+  style={{ maxWidth: "450px" }}
+/>
   <textarea
   placeholder="Opis usluge (nije obavezno)"
   value={serviceDescription}
   onChange={(e) => setServiceDescription(e.target.value)}
-  className="mb-4 w-full rounded border p-3"
+  className="mb-4 block w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+  style={{ maxWidth: "450px" }}
   rows={3}
 />
 
   <input
-    type="text"
-    placeholder="Cijena"
-    value={servicePrice}
-    onChange={(e) => setServicePrice(e.target.value)}
-    className="mb-3 w-full rounded border p-3"
-  />
+  type="text"
+  placeholder="Cijena"
+  value={servicePrice}
+  onChange={(e) => setServicePrice(e.target.value)}
+  className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+  style={{ maxWidth: "450px" }}
+/>
   <input
   type="number"
   placeholder="Trajanje u minutama, npr. 30"
   value={hasServiceSteps ? totalDuration : serviceDuration}
   onChange={(e) => setServiceDuration(e.target.value)}
   disabled={hasServiceSteps}
-  className={`mb-3 w-full rounded border p-3 ${
+  className={`mb-3 block w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20 ${
     hasServiceSteps
-      ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+      ? "cursor-not-allowed bg-gray-100 text-gray-500"
       : ""
   }`}
+  style={{ maxWidth: "450px" }}
 />
 
 {hasServiceSteps && (
@@ -1967,19 +2016,31 @@ style={{ backgroundColor: "#611a1a" }}
 
 <label className="mb-2 flex items-center gap-2">
   <input
-    type="checkbox"
-    checked={showPrice}
-    onChange={(e) => setShowPrice(e.target.checked)}
-  />
+  type="checkbox"
+  checked={showPrice}
+  onChange={(e) => setShowPrice(e.target.checked)}
+  style={{
+    width: "18px",
+    height: "18px",
+    accentColor: "#611a1a",
+    cursor: "pointer",
+  }}
+/>
   Prikaži cijenu klijentima
 </label>
 
 <label className="mb-4 flex items-center gap-2">
   <input
-    type="checkbox"
-    checked={showDuration}
-    onChange={(e) => setShowDuration(e.target.checked)}
-  />
+  type="checkbox"
+  checked={showDuration}
+  onChange={(e) => setShowDuration(e.target.checked)}
+  style={{
+    width: "18px",
+    height: "18px",
+    accentColor: "#611a1a",
+    cursor: "pointer",
+  }}
+/>
   Prikaži trajanje klijentima
 </label>
 
@@ -1995,8 +2056,14 @@ style={{ backgroundColor: "#611a1a" }}
         className="flex items-center gap-2"
       >
         <input
-          type="checkbox"
-          checked={selectedServiceBarberIds.includes(barber.id)}
+  type="checkbox"
+  style={{
+    width: "18px",
+    height: "18px",
+    accentColor: "#611a1a",
+    cursor: "pointer",
+  }}
+  checked={selectedServiceBarberIds.includes(barber.id)}
           onChange={(e) => {
             if (e.target.checked) {
               setSelectedServiceBarberIds((prev) => [
@@ -2022,6 +2089,12 @@ style={{ backgroundColor: "#611a1a" }}
     type="checkbox"
     checked={hasServiceSteps}
     onChange={(e) => setHasServiceSteps(e.target.checked)}
+    style={{
+      width: "18px",
+      height: "18px",
+      accentColor: "#611a1a",
+      cursor: "pointer",
+    }}
   />
   Frizer nije zauzet tokom cijelog tretmana
 </label>
