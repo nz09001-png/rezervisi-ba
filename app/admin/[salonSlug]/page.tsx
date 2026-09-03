@@ -4,6 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Cropper from "react-easy-crop";
+import DatePicker, {
+  CalendarContainer,
+  registerLocale,
+} from "react-datepicker";
+import { format } from "date-fns";
+import { bs } from "date-fns/locale";
+import "react-datepicker/dist/react-datepicker.css";
+
+registerLocale("bs", bs);
 
 function createImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -113,6 +122,9 @@ const totalDuration = serviceSteps.reduce((total, step) => {
 }, 0);
 const [times, setTimes] = useState<any[]>([]);
 const [selectedDate, setSelectedDate] = useState("");
+const datePickerRef = useRef<DatePicker>(null);
+const scheduleStartDatePickerRef = useRef<DatePicker>(null);
+const scheduleEndDatePickerRef = useRef<DatePicker>(null);
 const [generatedTimes, setGeneratedTimes] = useState<any[]>([]);
 const [showPreview, setShowPreview] = useState(false);
 const [timesSaved, setTimesSaved] = useState(false);
@@ -1547,12 +1559,59 @@ style={{
       Datum:
     </span>
 
-    <input
-      type="date"
-      value={selectedDate}
-      onChange={(e) => setSelectedDate(e.target.value)}
-      className="rounded-xl border bg-white px-4 py-3"
-    />
+    <DatePicker
+  ref={datePickerRef}
+  selected={selectedDate ? new Date(`${selectedDate}T00:00:00`) : null}
+  onChange={(date: Date | null) => {
+    setSelectedDate(date ? format(date, "yyyy-MM-dd") : "");
+  }}
+  locale="bs"
+dateFormat="dd.MM.yyyy"
+placeholderText="Odaberite datum"
+formatWeekDay={(dayName) => {
+    const days: Record<string, string> = {
+      nedjelja: "ned",
+      ponedjeljak: "pon",
+      utorak: "uto",
+      srijeda: "sri",
+      sreda: "sri",
+      četvrtak: "čet",
+      petak: "pet",
+      subota: "sub",
+    };
+
+    return days[dayName.toLowerCase()] ?? dayName.slice(0, 3);
+  }}
+  calendarContainer={({ className, children }) => (
+    <CalendarContainer className={className}>
+      {children}
+
+      <div
+        style={{
+          padding: "8px",
+          borderTop: "1px solid #e5e7eb",
+          textAlign: "center",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => {
+  setSelectedDate("");
+  datePickerRef.current?.setOpen(false);
+}}
+          style={{
+            color: "#611a1a",
+            fontSize: "14px",
+            fontWeight: 600,
+          }}
+        >
+          Poništi
+        </button>
+      </div>
+    </CalendarContainer>
+  )}
+  className="mb-4 w-full rounded-lg border p-2"
+/>
   </div>
 </div>
 
@@ -1891,12 +1950,14 @@ style={{ backgroundColor: "#ef4444" }}
    {services.map((service) => (
   <div
   key={service.id}
-  className="rounded-xl border p-4 transition-all"
+  className="rounded-xl border p-3 transition-all"
   style={{
+    maxWidth: "600px",
+    width: "100%",
     backgroundColor:
       editingServiceId === service.id ? "#e5cccc" : "#ffffff",
     borderColor:
-      editingServiceId === service.id ? "#611a1a" : "#e5e7eb",
+  editingServiceId === service.id ? "#611a1a" : "#d8caca",
     borderWidth:
       editingServiceId === service.id ? "2px" : "1px",
   }}
@@ -1939,7 +2000,7 @@ style={{ backgroundColor: "#ef4444" }}
                 </div>
     </div>
 
-    <div className="mt-4 flex w-full gap-2">
+    <div className="mt-3 flex w-full gap-2">
       <button
   type="button"
   onClick={() => handleEditService(service)}
@@ -2100,7 +2161,13 @@ style={{ backgroundColor: "#ef4444" }}
 </label>
 
 {hasServiceSteps && (
-  <div className="mb-4 rounded-xl border bg-gray-50 p-4">
+  <div
+  className="mb-4 rounded-xl border bg-gray-50 p-4"
+  style={{
+    width: "770px",
+    maxWidth: "100%",
+  }}
+>
     <h3 className="mb-2 font-semibold">
       Koraci tretmana
     </h3>
@@ -2115,21 +2182,22 @@ style={{ backgroundColor: "#ef4444" }}
     </h4>
 
     <input
-      type="text"
-      placeholder="Naziv koraka"
-      value={step.name}
-      onChange={(e) => {
-        const updatedSteps = [...serviceSteps];
+  type="text"
+  placeholder="Naziv koraka"
+  value={step.name}
+  onChange={(e) => {
+    const updatedSteps = [...serviceSteps];
 
-        updatedSteps[index] = {
-          ...updatedSteps[index],
-          name: e.target.value,
-        };
+    updatedSteps[index] = {
+      ...updatedSteps[index],
+      name: e.target.value,
+    };
 
-        setServiceSteps(updatedSteps);
-      }}
-      className="mb-3 w-full rounded-lg border p-3"
-    />
+    setServiceSteps(updatedSteps);
+  }}
+  className="mb-3 block w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+  style={{ maxWidth: "450px" }}
+/>
 
     <input
   type="number"
@@ -2146,36 +2214,41 @@ style={{ backgroundColor: "#ef4444" }}
 
     setServiceSteps(updatedSteps);
   }}
-  className="mb-3 w-full rounded-lg border p-3"
+  className="mb-3 block w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+style={{ maxWidth: "450px" }}
 />
 
     <label className="flex items-center gap-2">
       <input
-        type="checkbox"
-        checked={step.is_barber_busy}
-        onChange={(e) => {
-          const updatedSteps = [...serviceSteps];
+  type="checkbox"
+  className="h-5 w-5"
+  style={{ accentColor: "#611a1a" }}
+  checked={step.is_barber_busy}
+  onChange={(e) => {
+    const updatedSteps = [...serviceSteps];
 
-          updatedSteps[index] = {
-            ...updatedSteps[index],
-            is_barber_busy: e.target.checked,
-          };
+    updatedSteps[index] = {
+      ...updatedSteps[index],
+      is_barber_busy: e.target.checked,
+    };
 
-          setServiceSteps(updatedSteps);
-        }}
-      />
+    setServiceSteps(updatedSteps);
+  }}
+/>
 
       Frizer je zauzet
     </label>
     {serviceSteps.length > 1 && (
   <div
-  className="mt-6"
-  style={{
-    display: "flex",
-    justifyContent: "flex-end",
-    width: "100%",
-  }}
->
+    className="mt-2"
+    style={{
+  display: "flex",
+  justifyContent: "flex-end",
+  width: "100%",
+  transform: "translateY(-75px)",
+  marginBottom: "-40px",
+}}
+  >
     <button
   type="button"
   onClick={() => {
@@ -2190,7 +2263,7 @@ style={{ backgroundColor: "#ef4444" }}
     );
   }}
   className="rounded-lg px-4 py-2 text-white"
-  style={{ backgroundColor: "#dc2626" }}
+  style={{ backgroundColor: "#ef4444" }}
 >
   Obriši korak
 </button>
@@ -2255,16 +2328,63 @@ style={{ backgroundColor: "#ef4444" }}
   Pregled i uređivanje termina
 </h3>
 
-<input
-  type="date"
-  value={selectedDate}
-  onChange={(e) => setSelectedDate(e.target.value)}
+<DatePicker
+  ref={datePickerRef}
+  selected={selectedDate ? new Date(`${selectedDate}T00:00:00`) : null}
+  onChange={(date: Date | null) => {
+    setSelectedDate(date ? format(date, "yyyy-MM-dd") : "");
+  }}
+  locale="bs"
+dateFormat="dd.MM.yyyy"
+placeholderText="Odaberite datum"
+formatWeekDay={(dayName) => {
+    const days: Record<string, string> = {
+      nedjelja: "ned",
+      ponedjeljak: "pon",
+      utorak: "uto",
+      srijeda: "sri",
+      sreda: "sri",
+      četvrtak: "čet",
+      petak: "pet",
+      subota: "sub",
+    };
+
+    return days[dayName.toLowerCase()] ?? dayName.slice(0, 3);
+  }}
+  calendarContainer={({ className, children }) => (
+    <CalendarContainer className={className}>
+      {children}
+
+      <div
+        style={{
+          padding: "8px",
+          borderTop: "1px solid #e5e7eb",
+          textAlign: "center",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => {
+  setSelectedDate("");
+  datePickerRef.current?.setOpen(false);
+}}
+          style={{
+            color: "#611a1a",
+            fontSize: "14px",
+            fontWeight: 600,
+          }}
+        >
+          Poništi
+        </button>
+      </div>
+    </CalendarContainer>
+  )}
   className="mb-4 w-full rounded-lg border p-2"
 />
 
 {selectedDate && (
   <h4 className="mb-3 text-lg font-semibold">
-    Termini za {selectedDate}
+    Termini za {format(new Date(`${selectedDate}T00:00:00`), "dd.MM.yyyy")}
   </h4>
 )}
   {selectedDate && (
@@ -2274,8 +2394,14 @@ style={{ backgroundColor: "#ef4444" }}
       Nema termina za odabrani datum.
     </div>
   ) : (
-    <div className="mb-4 space-y-2">
-    {times.map((item) => (
+    <div
+  className="mb-4 space-y-2"
+  style={{
+    width: "500px",
+    maxWidth: "100%",
+  }}
+>
+  {times.map((item) => (
       <div
         key={item.id}
         className="flex items-center justify-between rounded-xl bg-gray-50 p-3"
@@ -2305,12 +2431,20 @@ style={{ backgroundColor: "#ef4444" }}
   step="1800"
   value={newTime}
   onChange={(e) => setNewTime(e.target.value)}
-  className="w-full rounded-lg border p-2"
+  className="rounded-lg border p-2"
+  style={{
+    width: "500px",
+    maxWidth: "100%",
+  }}
 />
     <button
   type="button"
   onClick={handleAddTime}
-  className="mt-3 w-full rounded-lg border px-4 py-2 font-medium"
+  className="mt-3 rounded-lg border px-4 py-2 font-medium"
+  style={{
+    width: "500px",
+    maxWidth: "100%",
+  }}
 >
   Dodaj termin
 </button>
@@ -2318,7 +2452,11 @@ style={{ backgroundColor: "#ef4444" }}
 <button
   type="button"
   onClick={handleDeleteAllTimesForDate}
-  className="mt-3 w-full rounded-lg border border-red-500 px-4 py-2 font-medium text-red-600"
+  className="mt-3 rounded-lg border border-red-500 px-4 py-2 font-medium text-red-600"
+  style={{
+    width: "500px",
+    maxWidth: "100%",
+  }}
 >
   Obriši sve termine za datum
 </button>
@@ -2338,12 +2476,63 @@ style={{ backgroundColor: "#ef4444" }}
       Od datuma
     </label>
 
-    <input
-      type="date"
-      value={scheduleStartDate}
-      onChange={(e) => setScheduleStartDate(e.target.value)}
-      className="w-full rounded-xl border border-gray-300 bg-white p-3"
-    />
+    <DatePicker
+  ref={scheduleStartDatePickerRef}
+  selected={
+    scheduleStartDate
+      ? new Date(`${scheduleStartDate}T00:00:00`)
+      : null
+  }
+  onChange={(date: Date | null) => {
+    setScheduleStartDate(date ? format(date, "yyyy-MM-dd") : "");
+  }}
+  locale="bs"
+  dateFormat="dd.MM.yyyy"
+  placeholderText="Odaberite datum"
+  formatWeekDay={(dayName) => {
+    const days: Record<string, string> = {
+      nedjelja: "ned",
+      ponedjeljak: "pon",
+      utorak: "uto",
+      srijeda: "sri",
+      sreda: "sri",
+      četvrtak: "čet",
+      petak: "pet",
+      subota: "sub",
+    };
+
+    return days[dayName.toLowerCase()] ?? dayName.slice(0, 3);
+  }}
+  calendarContainer={({ className, children }) => (
+    <CalendarContainer className={className}>
+      {children}
+
+      <div
+        style={{
+          padding: "8px",
+          borderTop: "1px solid #e5e7eb",
+          textAlign: "center",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setScheduleStartDate("");
+            scheduleStartDatePickerRef.current?.setOpen(false);
+          }}
+          style={{
+            color: "#611a1a",
+            fontSize: "14px",
+            fontWeight: 600,
+          }}
+        >
+          Poništi
+        </button>
+      </div>
+    </CalendarContainer>
+  )}
+  className="w-full rounded-xl border border-gray-300 bg-white p-3"
+/>
   </div>
 
   <div>
@@ -2351,16 +2540,76 @@ style={{ backgroundColor: "#ef4444" }}
       Do datuma
     </label>
 
-    <input
-      type="date"
-      value={scheduleEndDate}
-      onChange={(e) => setScheduleEndDate(e.target.value)}
-      className="w-full rounded-xl border border-gray-300 bg-white p-3"
-    />
+    <DatePicker
+  ref={scheduleEndDatePickerRef}
+  selected={
+    scheduleEndDate
+      ? new Date(`${scheduleEndDate}T00:00:00`)
+      : null
+  }
+  onChange={(date: Date | null) => {
+    setScheduleEndDate(date ? format(date, "yyyy-MM-dd") : "");
+  }}
+  locale="bs"
+  dateFormat="dd.MM.yyyy"
+  placeholderText="Odaberite datum"
+  formatWeekDay={(dayName) => {
+    const days: Record<string, string> = {
+      nedjelja: "ned",
+      ponedjeljak: "pon",
+      utorak: "uto",
+      srijeda: "sri",
+      sreda: "sri",
+      četvrtak: "čet",
+      petak: "pet",
+      subota: "sub",
+    };
+
+    return days[dayName.toLowerCase()] ?? dayName.slice(0, 3);
+  }}
+  calendarContainer={({ className, children }) => (
+    <CalendarContainer className={className}>
+      {children}
+
+      <div
+        style={{
+          padding: "8px",
+          borderTop: "1px solid #e5e7eb",
+          textAlign: "center",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setScheduleEndDate("");
+            scheduleEndDatePickerRef.current?.setOpen(false);
+          }}
+          style={{
+            color: "#611a1a",
+            fontSize: "14px",
+            fontWeight: 600,
+          }}
+        >
+          Poništi
+        </button>
+      </div>
+    </CalendarContainer>
+  )}
+  className="w-full rounded-xl border border-gray-300 bg-white p-3"
+/>
   </div>
 </div>
 
-<div className="mt-4 grid gap-4 md:grid-cols-3">
+<div
+  className="mt-4"
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gap: "16px",
+    width: "400px",
+    maxWidth: "100%",
+  }}
+>
   <div>
     <label className="mb-1 block text-sm font-semibold">
       Od
@@ -2425,11 +2674,14 @@ style={{ backgroundColor: "#ef4444" }}
                   : [...currentDays, day]
               );
             }}
-            className={`rounded-xl px-4 py-2 text-sm font-semibold ${
-              isSelected
-                ? "bg-black text-white"
-                : "border border-gray-300 bg-white text-gray-700"
-            }`}
+            className="rounded-xl px-4 py-2 text-sm font-semibold"
+style={{
+  backgroundColor: isSelected ? "#611a1a" : "#ffffff",
+  color: isSelected ? "#ffffff" : "#374151",
+  border: isSelected
+    ? "1px solid #611a1a"
+    : "1px solid #d1d5db",
+}}
           >
             {day}
           </button>
@@ -2441,7 +2693,7 @@ style={{ backgroundColor: "#ef4444" }}
   <div
   style={{
     display: "flex",
-    justifyContent: "flex-end",
+    justifyContent: "flex-start",
     width: "100%",
     marginTop: "20px",
   }}
@@ -2450,7 +2702,7 @@ style={{ backgroundColor: "#ef4444" }}
     style={{
       display: "flex",
       flexDirection: "column",
-      alignItems: "flex-end",
+      alignItems: "flex-start",
       gap: "12px",
     }}
   >
@@ -2462,69 +2714,85 @@ style={{ backgroundColor: "#ef4444" }}
       Generiši termine
     </button>
 
-    <button
-  type="button"
-  onClick={handleSaveTimes}
-  disabled={generatedTimes.length === 0}
-  className="rounded-xl px-5 py-3 font-semibold"
-  style={{
-    backgroundColor:
-      generatedTimes.length === 0
-        ? "white"
-        : timesSaved
-        ? "#611a1a"
-        : "white",
-    color:
-      generatedTimes.length === 0
-        ? "#611a1a"
-        : timesSaved
-        ? "white"
-        : "#611a1a",
-    border: "1px solid #611a1a",
-    cursor:
-      generatedTimes.length === 0 ? "not-allowed" : "pointer",
-    opacity:
-      generatedTimes.length === 0 ? 0.5 : 1,
-  }}
->
-  {timesSaved ? "Sačuvano ✓" : "Sačuvaj termine"}
-</button>
-<button
-  type="button"
-  onClick={handleReplaceTimes}
-  disabled={generatedTimes.length === 0}
-  className="rounded-xl px-5 py-3 font-semibold"
-  style={{
-    backgroundColor: "#611a1a",
-    color: "white",
-    border: "1px solid #611a1a",
-    cursor:
-      generatedTimes.length === 0 ? "not-allowed" : "pointer",
-    opacity:
-      generatedTimes.length === 0 ? 0.5 : 1,
-  }}
->
-  Zamijeni termine
-</button>
+    {generatedTimes.length > 0 && (
+      <div>
+        <p className="text-sm text-gray-600">
+          Generisano termina: {generatedTimes.length}
+        </p>
+
+        <button
+          type="button"
+          onClick={() => setShowPreview(!showPreview)}
+          className="mt-2 text-sm font-semibold text-black underline"
+        >
+          {showPreview ? "Sakrij pregled" : "Prikaži pregled"}
+        </button>
+      </div>
+    )}
+
+    <div
+      style={{
+        display: "flex",
+        gap: "12px",
+      }}
+    >
+      <button
+        type="button"
+        onClick={handleSaveTimes}
+        disabled={generatedTimes.length === 0}
+        className="rounded-xl px-5 py-3 font-semibold"
+        style={{
+          backgroundColor:
+            generatedTimes.length === 0
+              ? "white"
+              : timesSaved
+              ? "#611a1a"
+              : "white",
+          color:
+            generatedTimes.length === 0
+              ? "#611a1a"
+              : timesSaved
+              ? "white"
+              : "#611a1a",
+          border: "1px solid #611a1a",
+          cursor:
+            generatedTimes.length === 0 ? "not-allowed" : "pointer",
+          opacity:
+            generatedTimes.length === 0 ? 0.5 : 1,
+        }}
+      >
+        {timesSaved ? "Sačuvano ✓" : "Sačuvaj termine"}
+      </button>
+
+      <button
+        type="button"
+        onClick={handleReplaceTimes}
+        disabled={generatedTimes.length === 0}
+        className="rounded-xl px-5 py-3 font-semibold"
+        style={{
+          backgroundColor: "#611a1a",
+          color: "white",
+          border: "1px solid #611a1a",
+          cursor:
+            generatedTimes.length === 0 ? "not-allowed" : "pointer",
+          opacity:
+            generatedTimes.length === 0 ? 0.5 : 1,
+        }}
+      >
+        Zamijeni termine
+      </button>
+    </div>
   </div>
 </div>
-{generatedTimes.length > 0 && (
-  <div className="mt-3">
-    <p className="text-sm text-gray-600">
-      Generisano termina: {generatedTimes.length}
-    </p>
 
-    <button
-      type="button"
-      onClick={() => setShowPreview(!showPreview)}
-      className="mt-2 text-sm font-semibold text-black underline"
-    >
-      {showPreview ? "Sakrij pregled" : "Prikaži pregled"}
-    </button>
-  </div>
-)}
 {showPreview && (
-  <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+  <div
+    className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4"
+    style={{
+      width: "500px",
+      maxWidth: "100%",
+    }}
+  >
     {Object.entries(
       generatedTimes.reduce((grouped: Record<string, string[]>, slot) => {
         if (!grouped[slot.date]) {
@@ -2538,7 +2806,9 @@ style={{ backgroundColor: "#ef4444" }}
       .slice(0, 5)
       .map(([date, times]) => (
         <div key={date} className="mb-4 last:mb-0">
-          <p className="mb-2 font-semibold">{date}</p>
+          <p className="mb-2 font-semibold">
+  {format(new Date(`${date}T00:00:00`), "dd.MM.yyyy")}
+</p>
 
           <div className="flex flex-wrap gap-2">
             {(times as string[]).map((time) => (
