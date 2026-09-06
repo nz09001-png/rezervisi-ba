@@ -152,6 +152,19 @@ const [closedReason, setClosedReason] = useState("");
 const [closedEndDate, setClosedEndDate] = useState("");
 const [closedBarberId, setClosedBarberId] = useState<number | null>(null);
 const [bookingTab, setBookingTab] = useState("aktivne");
+const [calendarWeekStart, setCalendarWeekStart] = useState(() => {
+  const today = new Date();
+  const monday = new Date(today);
+  const currentDay = today.getDay();
+
+  const diffToMonday =
+    currentDay === 0 ? -6 : 1 - currentDay;
+
+  monday.setDate(today.getDate() + diffToMonday);
+  monday.setHours(0, 0, 0, 0);
+
+  return monday;
+});
 const [showNotifications, setShowNotifications] = useState(false);
 const [showSettingsMenu, setShowSettingsMenu] = useState(false);
 const [selectedSettings, setSelectedSettings] = useState<string[]>([]);
@@ -1108,6 +1121,25 @@ const completedBookings = filteredBookings.filter(
   (booking) => getBookingEndDateTime(booking) <= now
 );
 
+const calendarWeekEnd = new Date(calendarWeekStart);
+calendarWeekEnd.setDate(calendarWeekStart.getDate() + 6);
+calendarWeekEnd.setHours(23, 59, 59, 999);
+
+const calendarWeekBookings = activeBookings.filter((booking) => {
+  const bookingDate = new Date(`${booking.booking_date}T00:00:00`);
+
+  return (
+    bookingDate >= calendarWeekStart &&
+    bookingDate <= calendarWeekEnd
+  );
+});
+
+console.log(
+  "Calendar week bookings:",
+  calendarWeekBookings.length,
+  calendarWeekBookings
+);
+
 const todaysBookings = bookings.filter(
   (booking) => booking.booking_date === today
 );
@@ -1555,16 +1587,39 @@ style={{
   }}
 >
   <button
-    onClick={() => setShowFilterMenu(!showFilterMenu)}
-    className="rounded-xl border px-5 py-3 text-sm font-medium transition hover:opacity-90"
-    style={{
-      backgroundColor: "#ffffff",
-      color: "#611a1a",
-      borderColor: "#611a1a",
-    }}
-  >
+  onClick={() => {
+    const willOpen = !showFilterMenu;
+
+    setShowFilterMenu(willOpen);
+
+    if (willOpen && selectedDate) {
+      setShowDateFilter(true);
+    }
+  }}
+  className="rounded-xl border px-5 py-3 text-sm font-medium transition hover:opacity-90"
+  style={{
+    backgroundColor: "#ffffff",
+    color: "#611a1a",
+    borderColor: "#611a1a",
+  }}
+>
+  <span className="flex items-center gap-2">
     Filter
-  </button>
+
+    {filter !== "all" && (
+      <span
+  style={{
+    width: "10px",
+    height: "10px",
+    borderRadius: "9999px",
+    backgroundColor: "#611a1a",
+    display: "inline-block",
+    flexShrink: 0,
+  }}
+/>
+    )}
+  </span>
+</button>
   
   {showFilterMenu && (
   <div
@@ -1581,10 +1636,17 @@ style={{
 }}
 >
  <button
-  onClick={() => {
+ onClick={() => {
   setSelectedDate("");
   setShowDateFilter(false);
-  setFilter("today");
+
+  if (filter === "today") {
+    setFilter("all");
+  } else {
+    setFilter("today");
+  }
+
+  setShowFilterMenu(false);
 }}
   className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-gray-100"
   style={{
@@ -1603,7 +1665,14 @@ style={{
   onClick={() => {
   setSelectedDate("");
   setShowDateFilter(false);
-  setFilter("week");
+
+  if (filter === "week") {
+    setFilter("all");
+  } else {
+    setFilter("week");
+  }
+
+  setShowFilterMenu(false);
 }}
   className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-gray-100"
   style={{
@@ -1622,7 +1691,14 @@ style={{
   onClick={() => {
   setSelectedDate("");
   setShowDateFilter(false);
-  setFilter("month");
+
+  if (filter === "month") {
+    setFilter("all");
+  } else {
+    setFilter("month");
+  }
+
+  setShowFilterMenu(false);
 }}
   className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-gray-100"
   style={{
@@ -1637,29 +1713,21 @@ style={{
   <span>Ovaj mjesec</span>
 </button>
 
-<button
-  onClick={() => {
-  setSelectedDate("");
-  setShowDateFilter(false);
-  setFilter("all");
-}}
-  className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-gray-100"
-  style={{
-    color: filter === "all" ? "#611a1a" : "#111827",
-    backgroundColor: filter === "all" ? "#f7eeee" : "#ffffff",
-  }}
->
-  <span className="mr-2 w-4">
-    {filter === "all" ? "✓" : ""}
-  </span>
 
-  <span>Sve</span>
-</button>
 
   <div className="mt-2 flex flex-col gap-2">
     <button
   type="button"
-  onClick={() => setShowDateFilter(!showDateFilter)}
+  onClick={() => {
+  if (selectedDate) {
+    setSelectedDate("");
+    setFilter("all");
+    setShowDateFilter(false);
+    setShowFilterMenu(false);
+  } else {
+    setShowDateFilter(!showDateFilter);
+  }
+}}
   className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-gray-100"
   style={{
     color: selectedDate ? "#611a1a" : "#111827",
@@ -1686,6 +1754,8 @@ style={{
 
   if (date) {
     setFilter("date");
+    setShowDateFilter(false);
+    setShowFilterMenu(false);
   }
 }}
     locale="bs"
@@ -3329,7 +3399,246 @@ style={{
     Završene rezervacije ({completedBookings.length})
   </button>
 </div>
-        <div className="grid gap-4">
+
+<div className="mb-3 flex items-center gap-2">
+  <button
+  onClick={() => {
+    const today = new Date();
+    const monday = new Date(today);
+    const currentDay = today.getDay();
+
+    const diffToMonday =
+      currentDay === 0 ? -6 : 1 - currentDay;
+
+    monday.setDate(today.getDate() + diffToMonday);
+    monday.setHours(0, 0, 0, 0);
+
+    setCalendarWeekStart(monday);
+  }}
+  className="rounded-xl border px-4 py-2 text-sm font-medium"
+  style={{
+    borderColor: "#611a1a",
+    color: "#611a1a",
+    backgroundColor: "white",
+  }}
+>
+  Danas
+</button>
+  <button
+    onClick={() => {
+      const previousWeek = new Date(calendarWeekStart);
+      previousWeek.setDate(calendarWeekStart.getDate() - 7);
+      setCalendarWeekStart(previousWeek);
+    }}
+    className="rounded-xl border px-4 py-2 text-sm font-medium"
+    style={{
+      borderColor: "#611a1a",
+      color: "#611a1a",
+      backgroundColor: "white",
+    }}
+  >
+    ←
+  </button>
+
+  <button
+    onClick={() => {
+      const nextWeek = new Date(calendarWeekStart);
+      nextWeek.setDate(calendarWeekStart.getDate() + 7);
+      setCalendarWeekStart(nextWeek);
+    }}
+    className="rounded-xl border px-4 py-2 text-sm font-medium"
+    style={{
+      borderColor: "#611a1a",
+      color: "#611a1a",
+      backgroundColor: "white",
+    }}
+  >
+    →
+  </button>
+  <div
+  className="ml-2 text-sm font-semibold"
+  style={{ color: "#611a1a" }}
+>
+  {(() => {
+    const weekEnd = new Date(calendarWeekStart);
+    weekEnd.setDate(calendarWeekStart.getDate() + 6);
+
+    const months = [
+      "jan",
+      "feb",
+      "mar",
+      "apr",
+      "maj",
+      "jun",
+      "jul",
+      "aug",
+      "sep",
+      "okt",
+      "nov",
+      "dec",
+    ];
+
+    return `${calendarWeekStart.getDate()}. ${
+      months[calendarWeekStart.getMonth()]
+    } – ${weekEnd.getDate()}. ${months[weekEnd.getMonth()]}`;
+  })()}
+</div>
+</div>
+
+<div className="mb-6 overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
+  <div className="min-w-[1000px]">
+    <div
+  className="grid text-sm font-semibold"
+  style={{
+    gridTemplateColumns: "90px repeat(7, minmax(120px, 1fr))",
+    backgroundColor: "#f8eeee",
+    color: "#611a1a",
+    borderBottom: "1px solid #ead1d1",
+    minHeight: "48px",
+    alignItems: "center",
+  }}
+>
+      <div className="border-r border-gray-200 px-3 py-4">
+        Vrijeme
+      </div>
+
+      {["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"].map(
+  (day, index) => {
+    const date = new Date(calendarWeekStart);
+date.setDate(calendarWeekStart.getDate() + index);
+
+    const bosnianMonths = [
+  "jan",
+  "feb",
+  "mar",
+  "apr",
+  "maj",
+  "jun",
+  "jul",
+  "aug",
+  "sep",
+  "okt",
+  "nov",
+  "dec",
+];
+
+const formattedDate = `${date.getDate()}. ${
+  bosnianMonths[date.getMonth()]
+}`;
+
+    return (
+      <div
+        key={day}
+        className="border-r border-gray-200 px-3 py-3 text-center last:border-r-0"
+      >
+        <div className="font-semibold">
+          {day}
+        </div>
+
+        <div className="mt-1 text-xs font-normal">
+          {formattedDate}
+        </div>
+      </div>
+    );
+  }
+)}
+    </div>
+
+    {[
+      "08:00",
+      "09:00",
+      "10:00",
+      "11:00",
+      "12:00",
+      "13:00",
+      "14:00",
+      "15:00",
+      "16:00",
+      "17:00",
+      "18:00",
+      "19:00",
+      "20:00",
+    ].map((time) => (
+      <div
+  key={time}
+  className="grid last:border-b-0"
+  style={{
+    gridTemplateColumns: "90px repeat(7, minmax(120px, 1fr))",
+    borderBottom: "1px solid #ead1d1",
+    minHeight: "64px",
+  }}
+>
+        <div className="border-r border-gray-200 px-3 py-5 text-sm font-medium text-gray-500">
+          {time}
+        </div>
+
+        {Array.from({ length: 7 }).map((_, index) => {
+  const cellDate = new Date(calendarWeekStart);
+  cellDate.setDate(calendarWeekStart.getDate() + index);
+
+  const cellDateString = [
+    cellDate.getFullYear(),
+    String(cellDate.getMonth() + 1).padStart(2, "0"),
+    String(cellDate.getDate()).padStart(2, "0"),
+  ].join("-");
+
+  const dayBookings = calendarWeekBookings.filter(
+    (booking) => booking.booking_date === cellDateString
+  );
+
+  return (
+    <div
+      key={index}
+      style={{
+  minHeight: "64px",
+  borderRight: index < 6 ? "1px solid #ead1d1" : "none",
+  position: "relative",
+}}
+    >
+      {dayBookings
+  .filter((booking) => booking.booking_time.startsWith(time.slice(0, 2)))
+  .map((booking) => {
+    const sameTimeBookings = dayBookings.filter(
+      (item) => item.booking_time === booking.booking_time
+    );
+
+    const bookingIndex = sameTimeBookings.findIndex(
+      (item) => item.id === booking.id
+    );
+
+    const bookingWidth = 100 / sameTimeBookings.length;
+
+    return (
+      <div
+        key={booking.id}
+        style={{
+          position: "absolute",
+          top: `${(Number(booking.booking_time.split(":")[1]) / 60) * 64}px`,
+          left: `calc(${bookingIndex * bookingWidth}% + 4px)`,
+          width: `calc(${bookingWidth}% - 8px)`,
+          backgroundColor: "#f8eeee",
+          color: "#611a1a",
+          border: "1px solid #ead1d1",
+          borderRadius: "8px",
+          padding: "5px 7px",
+          fontSize: "12px",
+          fontWeight: 600,
+          boxSizing: "border-box",
+        }}
+      >
+        {booking.customer_name}
+      </div>
+    );
+  })}
+    </div>
+  );
+})}
+      </div>
+    ))}
+  </div>
+</div>
+
+<div className="grid gap-4">
   {(bookingTab === "aktivne" ? activeBookings : completedBookings).map((booking) => (
     <div
   key={booking.id}
