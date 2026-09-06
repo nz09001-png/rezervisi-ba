@@ -125,6 +125,8 @@ const [selectedDate, setSelectedDate] = useState("");
 const datePickerRef = useRef<DatePicker>(null);
 const scheduleStartDatePickerRef = useRef<DatePicker>(null);
 const scheduleEndDatePickerRef = useRef<DatePicker>(null);
+const closedDatePickerRef = useRef<DatePicker>(null);
+const closedEndDatePickerRef = useRef<DatePicker>(null);
 const [generatedTimes, setGeneratedTimes] = useState<any[]>([]);
 const [showPreview, setShowPreview] = useState(false);
 const [timesSaved, setTimesSaved] = useState(false);
@@ -155,6 +157,8 @@ const [showSettingsMenu, setShowSettingsMenu] = useState(false);
 const [selectedSettings, setSelectedSettings] = useState<string[]>([]);
 const [isUploadingImage, setIsUploadingImage] = useState(false);
 const [selectedServiceBarberIds, setSelectedServiceBarberIds] = useState<number[]>([]);
+const [showFilterMenu, setShowFilterMenu] = useState(false);
+const [showDateFilter, setShowDateFilter] = useState(false);
 
 
 function handleCancelServiceEdit() {
@@ -1333,12 +1337,12 @@ if (!isLoggedIn) {
       <div className="mx-auto max-w-6xl">
         <div className="mb-8 flex items-start justify-between">
   <div>
-    <h1 className="text-4xl font-bold">
-      {salon?.salon_name} Admin
-    </h1>
+    <h1 className="text-3xl font-bold">
+  {salon?.salon_name} Admin
+</h1>
 
     <p className="mt-2 text-gray-600">
-      Administrera bokningar, tjänster, frisörer och salongsinformation.
+      Upravljajte rezervacijama, uslugama, frizerima i informacijama o salonu.
     </p>
   </div>
 {showNotifications && (
@@ -1385,12 +1389,15 @@ if (!isLoggedIn) {
   <div className="flex items-center gap-3">
   <div style={{ position: "relative", display: "inline-block" }}>
   <button
-    onClick={() => setShowSettingsMenu(!showSettingsMenu)}
-    className="h-12 rounded-xl bg-black px-5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
-  >
-    ⚙️ Postavke
-    {selectedSettings.length > 0 && ` (${selectedSettings.length})`}
-  </button>
+  onClick={() => setShowSettingsMenu(!showSettingsMenu)}
+  className="h-12 rounded-xl px-5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+  style={{
+    backgroundColor: "#611a1a",
+  }}
+>
+  ⚙️ Postavke
+  {selectedSettings.length > 0 && ` (${selectedSettings.length})`}
+</button>
 
   {showSettingsMenu && (
   <div
@@ -1481,138 +1488,257 @@ style={{
 </div>
 
   <button
-    onClick={() => setShowNotifications(!showNotifications)}
-    className="h-12 rounded-xl bg-black px-5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
-  >
-    🔔 Notifikacije
-  </button>
+  onClick={() => setShowNotifications(!showNotifications)}
+  className="h-12 rounded-xl px-5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+  style={{ backgroundColor: "#611a1a" }}
+>
+  🔔 Notifikacije
+</button>
 
   <button
-    onClick={() => setIsLoggedIn(false)}
-    className="h-12 rounded-xl bg-black px-5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
-  >
-    Odjavi se
-  </button>
+  onClick={() => setIsLoggedIn(false)}
+  className="h-12 rounded-xl border px-5 text-sm font-medium shadow-sm transition hover:opacity-90"
+  style={{
+    backgroundColor: "#ffffff",
+    color: "#611a1a",
+    borderColor: "#611a1a",
+  }}
+>
+  Odjavi se
+</button>
 </div>
 </div>
 <div className="mb-8 grid grid-cols-2 gap-6">
-  <div className="rounded-3xl bg-white p-6 shadow">
-    <p className="text-sm font-medium text-gray-500">
-      Današnje rezervacije
-    </p>
+  <div
+  className="rounded-3xl border bg-white p-6 shadow-sm"
+  style={{
+    borderColor: "#ead1d1",
+    borderLeft: "5px solid #611a1a",
+  }}
+>
+  <p className="text-sm font-semibold text-gray-500">
+    Današnje rezervacije
+  </p>
 
-    <p className="mt-3 text-5xl font-semibold">
-      {todaysBookings.length}
-    </p>
-  </div>
-
-  <div className="rounded-3xl bg-white p-6 shadow">
-    <p className="text-sm font-medium text-gray-500">
-      Ukupno rezervacija
-    </p>
-
-    <p className="mt-3 text-5xl font-semibold">
-      {filteredBookings.length}
-    </p>
-  </div>
+  <p
+    className="mt-3 text-5xl font-bold"
+    style={{
+      color: "#611a1a",
+    }}
+  >
+    {todaysBookings.length}
+  </p>
 </div>
 
-  <div className="mb-8 flex flex-wrap items-center gap-3">
-  <button
-    onClick={() => setFilter("today")}
-    className={`rounded-xl px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:opacity-90 ${
-      filter === "today" ? "bg-black" : "bg-gray-500"
-    }`}
-  >
-    Danas
-  </button>
-
-  <button
-    onClick={() => setFilter("week")}
-    className={`rounded-xl px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:opacity-90 ${
-      filter === "week" ? "bg-black" : "bg-gray-500"
-    }`}
-  >
-    Ova sedmica
-  </button>
-
-  <button
-    onClick={() => setFilter("month")}
-    className={`rounded-xl px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:opacity-90 ${
-      filter === "month" ? "bg-black" : "bg-gray-500"
-    }`}
-  >
-    Ovaj mjesec
-  </button>
-
-  <button
-    onClick={() => setFilter("all")}
-    className={`rounded-xl px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:opacity-90 ${
-      filter === "all" ? "bg-black" : "bg-gray-500"
-    }`}
-  >
-    Sve
-  </button>
-
-  <div className="ml-4 flex items-center gap-3">
-    <span className="text-sm font-medium text-gray-600">
-      Datum:
-    </span>
-
-    <DatePicker
-  ref={datePickerRef}
-  selected={selectedDate ? new Date(`${selectedDate}T00:00:00`) : null}
-  onChange={(date: Date | null) => {
-    setSelectedDate(date ? format(date, "yyyy-MM-dd") : "");
+  <div
+  className="rounded-3xl border bg-white p-6 shadow-sm"
+  style={{
+    borderColor: "#ead1d1",
+    borderLeft: "5px solid #611a1a",
   }}
-  locale="bs"
-dateFormat="dd.MM.yyyy"
-placeholderText="Odaberite datum"
-formatWeekDay={(dayName) => {
-    const days: Record<string, string> = {
-      nedjelja: "ned",
-      ponedjeljak: "pon",
-      utorak: "uto",
-      srijeda: "sri",
-      sreda: "sri",
-      četvrtak: "čet",
-      petak: "pet",
-      subota: "sub",
-    };
+>
+  <p className="text-sm font-semibold text-gray-500">
+    Ukupno rezervacija
+  </p>
 
-    return days[dayName.toLowerCase()] ?? dayName.slice(0, 3);
+  <p className="mt-3 text-5xl font-bold">
+    {filteredBookings.length}
+  </p>
+</div>
+</div>
+
+  <div
+  className="mb-4"
+  style={{
+    position: "relative",
+    display: "inline-block",
   }}
-  calendarContainer={({ className, children }) => (
-    <CalendarContainer className={className}>
-      {children}
-
-      <div
-        style={{
-          padding: "8px",
-          borderTop: "1px solid #e5e7eb",
-          textAlign: "center",
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => {
-  setSelectedDate("");
-  datePickerRef.current?.setOpen(false);
+>
+  <button
+    onClick={() => setShowFilterMenu(!showFilterMenu)}
+    className="rounded-xl border px-5 py-3 text-sm font-medium transition hover:opacity-90"
+    style={{
+      backgroundColor: "#ffffff",
+      color: "#611a1a",
+      borderColor: "#611a1a",
+    }}
+  >
+    Filter
+  </button>
+  
+  {showFilterMenu && (
+  <div
+  className="mb-8 flex flex-col items-stretch gap-2 rounded-2xl border bg-white p-3 shadow-sm"
+ style={{
+  position: "absolute",
+  top: "100%",
+  left: 0,
+  marginTop: "8px",
+  width: "max-content",
+  maxWidth: "calc(100vw - 80px)",
+  borderColor: "#ead1d1",
+  zIndex: 50,
 }}
+>
+ <button
+  onClick={() => {
+  setSelectedDate("");
+  setShowDateFilter(false);
+  setFilter("today");
+}}
+  className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-gray-100"
+  style={{
+    color: filter === "today" ? "#611a1a" : "#111827",
+    backgroundColor: filter === "today" ? "#f7eeee" : "#ffffff",
+  }}
+>
+  <span className="mr-2 w-4">
+    {filter === "today" ? "✓" : ""}
+  </span>
+
+  <span>Danas</span>
+</button>
+
+  <button
+  onClick={() => {
+  setSelectedDate("");
+  setShowDateFilter(false);
+  setFilter("week");
+}}
+  className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-gray-100"
+  style={{
+    color: filter === "week" ? "#611a1a" : "#111827",
+    backgroundColor: filter === "week" ? "#f7eeee" : "#ffffff",
+  }}
+>
+  <span className="mr-2 w-4">
+    {filter === "week" ? "✓" : ""}
+  </span>
+
+  <span>Ova sedmica</span>
+</button>
+
+<button
+  onClick={() => {
+  setSelectedDate("");
+  setShowDateFilter(false);
+  setFilter("month");
+}}
+  className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-gray-100"
+  style={{
+    color: filter === "month" ? "#611a1a" : "#111827",
+    backgroundColor: filter === "month" ? "#f7eeee" : "#ffffff",
+  }}
+>
+  <span className="mr-2 w-4">
+    {filter === "month" ? "✓" : ""}
+  </span>
+
+  <span>Ovaj mjesec</span>
+</button>
+
+<button
+  onClick={() => {
+  setSelectedDate("");
+  setShowDateFilter(false);
+  setFilter("all");
+}}
+  className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-gray-100"
+  style={{
+    color: filter === "all" ? "#611a1a" : "#111827",
+    backgroundColor: filter === "all" ? "#f7eeee" : "#ffffff",
+  }}
+>
+  <span className="mr-2 w-4">
+    {filter === "all" ? "✓" : ""}
+  </span>
+
+  <span>Sve</span>
+</button>
+
+  <div className="mt-2 flex flex-col gap-2">
+    <button
+  type="button"
+  onClick={() => setShowDateFilter(!showDateFilter)}
+  className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-gray-100"
+  style={{
+    color: selectedDate ? "#611a1a" : "#111827",
+    backgroundColor: selectedDate ? "#f7eeee" : "#ffffff",
+  }}
+>
+  <span className="mr-2 w-4">
+    {selectedDate ? "✓" : ""}
+  </span>
+
+  <span>Datum</span>
+</button>
+
+{showDateFilter && (
+  <DatePicker
+    ref={datePickerRef}
+    selected={
+      selectedDate
+        ? new Date(`${selectedDate}T00:00:00`)
+        : null
+    }
+    onChange={(date: Date | null) => {
+  setSelectedDate(date ? format(date, "yyyy-MM-dd") : "");
+
+  if (date) {
+    setFilter("date");
+  }
+}}
+    locale="bs"
+    dateFormat="dd.MM.yyyy"
+    placeholderText="Odaberite datum"
+    formatWeekDay={(dayName) => {
+      const days: Record<string, string> = {
+        nedjelja: "ned",
+        ponedjeljak: "pon",
+        utorak: "uto",
+        srijeda: "sri",
+        sreda: "sri",
+        četvrtak: "čet",
+        petak: "pet",
+        subota: "sub",
+      };
+
+      return days[dayName.toLowerCase()] ?? dayName.slice(0, 3);
+    }}
+    calendarContainer={({ className, children }) => (
+      <CalendarContainer className={className}>
+        {children}
+
+        <div
           style={{
-            color: "#611a1a",
-            fontSize: "14px",
-            fontWeight: 600,
+            padding: "8px",
+            borderTop: "1px solid #e5e7eb",
+            textAlign: "center",
           }}
         >
-          Poništi
-        </button>
-      </div>
-    </CalendarContainer>
-  )}
-  className="mb-4 w-full rounded-lg border p-2"
-/>
-  </div>
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedDate("");
+              datePickerRef.current?.setOpen(false);
+            }}
+            style={{
+              color: "#611a1a",
+              fontSize: "14px",
+              fontWeight: 600,
+            }}
+          >
+            Poništi
+          </button>
+        </div>
+      </CalendarContainer>
+    )}
+    className="w-full rounded-xl border border-gray-300 bg-white p-2"
+  />
+)}
+    </div>
+</div>
+)}
 </div>
 
 {selectedSettings.length > 0 && (
@@ -2403,14 +2529,21 @@ formatWeekDay={(dayName) => {
 >
   {times.map((item) => (
       <div
-        key={item.id}
-        className="flex items-center justify-between rounded-xl bg-gray-50 p-3"
-      >
+  key={item.id}
+  className="flex items-center justify-between rounded-xl p-2"
+  style={{
+    backgroundColor: "#ffffff",
+    border: "1px solid #ead1d1",
+  }}
+>
         <span>{item.time}</span>
 
-        <button
+       <button
   onClick={() => handleDeleteTime(item.id)}
-  className="rounded bg-red-500 px-3 py-1 text-white"
+  className="rounded-lg px-3 py-1 font-medium text-white"
+  style={{
+    backgroundColor: "#ef4444",
+  }}
 >
   Obriši
 </button>
@@ -2421,49 +2554,75 @@ formatWeekDay={(dayName) => {
   </>
 )}
 {selectedDate && (
-  <div className="mt-4">
+  <div
+    className="mt-4"
+    style={{
+      width: "500px",
+      maxWidth: "100%",
+    }}
+  >
     <label className="mb-2 block text-sm font-medium">
       Dodaj novi termin
     </label>
 
-    <input
-  type="time"
-  step="1800"
-  value={newTime}
-  onChange={(e) => setNewTime(e.target.value)}
-  className="rounded-lg border p-2"
-  style={{
-    width: "500px",
-    maxWidth: "100%",
-  }}
-/>
-    <button
-  type="button"
-  onClick={handleAddTime}
-  className="mt-3 rounded-lg border px-4 py-2 font-medium"
-  style={{
-    width: "500px",
-    maxWidth: "100%",
-  }}
->
-  Dodaj termin
-</button>
+    <div
+      style={{
+        display: "flex",
+        gap: "12px",
+        width: "100%",
+      }}
+    >
+      <input
+        type="time"
+        step="1800"
+        value={newTime}
+        onChange={(e) => setNewTime(e.target.value)}
+        className="rounded-lg border p-2"
+        style={{
+          width: "220px",
+          maxWidth: "100%",
+        }}
+      />
 
-<button
-  type="button"
-  onClick={handleDeleteAllTimesForDate}
-  className="mt-3 rounded-lg border border-red-500 px-4 py-2 font-medium text-red-600"
-  style={{
-    width: "500px",
-    maxWidth: "100%",
-  }}
->
-  Obriši sve termine za datum
-</button>
+      <button
+        type="button"
+        onClick={handleAddTime}
+        className="rounded-lg bg-black px-5 py-2 font-semibold text-white"
+        style={{
+  backgroundColor: "#611a1a",
+  color: "white",
+  border: "1px solid #611a1a",
+}}
+      >
+        Dodaj termin
+      </button>
+    </div>
+
+    <button
+      type="button"
+      onClick={handleDeleteAllTimesForDate}
+      className="rounded-lg px-4 py-2 font-medium"
+      style={{
+  width: "370px",
+  maxWidth: "100%",
+  marginTop: "12px",
+  marginBottom: "15px",
+  backgroundColor: "#ef4444",
+  color: "white",
+  border: "1px solid #ef4444",
+}}
+    >
+      Obriši sve termine za datum
+    </button>
   </div>
 )}
-
-  <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
+  <div
+  className="rounded-2xl border border-gray-200 bg-gray-50 p-4"
+  style={{
+    width: "500px",
+    maxWidth: "100%",
+  }}
+>
   <h3 className="text-lg font-bold">Standardni termini</h3>
 
   <p className="mt-1 text-sm text-gray-500">
@@ -2839,13 +2998,26 @@ style={{
 
     <div className="mb-4 space-y-2">
       {closedDays.map((day) => (
-        <div key={day.id} className="rounded-xl bg-gray-50 p-3">
+        <div
+  key={day.id}
+  className="rounded-xl border bg-white px-3 py-2"
+  style={{
+    width: "320px",
+    maxWidth: "100%",
+    borderColor: "#ead1d1",
+  }}
+>
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-semibold">{day.date}</p>
+              <p className="font-semibold">
+  {format(new Date(`${day.date}T00:00:00`), "dd.MM.yyyy")}
+</p>
               <p className="text-sm text-gray-600">
-                {day.reason || "Bez razloga"}
-              </p>
+  {day.reason || "Bez razloga"} ·{" "}
+  {day.barber_id
+    ? barbers.find((barber) => barber.id === day.barber_id)?.name || "Frizer"
+    : "Cijeli salon"}
+</p>
             </div>
 
             <button
@@ -2859,55 +3031,175 @@ style={{
       ))}
     </div>
 
-    <label className="mb-2 block font-medium">Početni datum</label>
-    <input
-      type="date"
-      value={closedDate}
-      onChange={(e) => setClosedDate(e.target.value)}
-      className="mb-3 w-full rounded border p-3"
-    />
+    <label className="mb-1 block font-medium">Početni datum</label>
 
-    <label className="mb-2 block font-medium">Završni datum</label>
-    <input
-      type="date"
-      value={closedEndDate}
-      onChange={(e) => setClosedEndDate(e.target.value)}
-      className="mb-3 w-full rounded border p-3"
-    />
-
-    <input
-      type="text"
-      placeholder="Razlog (npr. godišnji odmor)"
-      value={closedReason}
-      onChange={(e) => setClosedReason(e.target.value)}
-      className="mb-3 w-full rounded border p-3"
-    />
-
-    <label className="mb-2 block font-medium">Za koga?</label>
-
-<select
-  value={closedBarberId ?? ""}
-  onChange={(e) => {
-    const value = e.target.value;
-    setClosedBarberId(value ? Number(value) : null);
+<DatePicker
+  ref={closedDatePickerRef}
+  selected={
+    closedDate
+      ? new Date(`${closedDate}T00:00:00`)
+      : null
+  }
+  onChange={(date: Date | null) => {
+    setClosedDate(date ? format(date, "yyyy-MM-dd") : "");
   }}
-  className="mb-3 w-full rounded border p-3"
->
-  <option value="">Cijeli salon</option>
+  locale="bs"
+  dateFormat="dd.MM.yyyy"
+  placeholderText="Odaberite datum"
+  formatWeekDay={(dayName) => {
+    const days: Record<string, string> = {
+      nedjelja: "ned",
+      ponedjeljak: "pon",
+      utorak: "uto",
+      srijeda: "sri",
+      sreda: "sri",
+      četvrtak: "čet",
+      petak: "pet",
+      subota: "sub",
+    };
 
-  {barbers.map((barber) => (
-    <option key={barber.id} value={barber.id}>
-      {barber.name}
-    </option>
-  ))}
-</select>
+    return days[dayName.toLowerCase()] ?? dayName.slice(0, 3);
+  }}
+  calendarContainer={({ className, children }) => (
+    <CalendarContainer className={className}>
+      {children}
+
+      <div
+        style={{
+          padding: "8px",
+          borderTop: "1px solid #e5e7eb",
+          textAlign: "center",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setClosedDate("");
+            closedDatePickerRef.current?.setOpen(false);
+          }}
+          style={{
+            color: "#611a1a",
+            fontSize: "14px",
+            fontWeight: 600,
+          }}
+        >
+          Poništi
+        </button>
+      </div>
+    </CalendarContainer>
+  )}
+  className="mb-4 w-full rounded-xl border border-gray-300 bg-white p-3"
+/>
+
+    <label className="mb-1 block font-medium">Završni datum</label>
+
+<DatePicker
+  ref={closedEndDatePickerRef}
+  selected={
+    closedEndDate
+      ? new Date(`${closedEndDate}T00:00:00`)
+      : null
+  }
+  onChange={(date: Date | null) => {
+    setClosedEndDate(date ? format(date, "yyyy-MM-dd") : "");
+  }}
+  locale="bs"
+  dateFormat="dd.MM.yyyy"
+  placeholderText="Odaberite datum"
+  formatWeekDay={(dayName) => {
+    const days: Record<string, string> = {
+      nedjelja: "ned",
+      ponedjeljak: "pon",
+      utorak: "uto",
+      srijeda: "sri",
+      sreda: "sri",
+      četvrtak: "čet",
+      petak: "pet",
+      subota: "sub",
+    };
+
+    return days[dayName.toLowerCase()] ?? dayName.slice(0, 3);
+  }}
+  calendarContainer={({ className, children }) => (
+    <CalendarContainer className={className}>
+      {children}
+
+      <div
+        style={{
+          padding: "8px",
+          borderTop: "1px solid #e5e7eb",
+          textAlign: "center",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setClosedEndDate("");
+            closedEndDatePickerRef.current?.setOpen(false);
+          }}
+          style={{
+            color: "#611a1a",
+            fontSize: "14px",
+            fontWeight: 600,
+          }}
+        >
+          Poništi
+        </button>
+      </div>
+    </CalendarContainer>
+  )}
+  className="mb-4 w-full rounded-xl border border-gray-300 bg-white p-3"
+/>
+
+    <div>
+      <label className="mb-2 block font-medium">Razlog</label>
+  <input
+    type="text"
+    placeholder="Razlog (npr. godišnji odmor)"
+    value={closedReason}
+    onChange={(e) => setClosedReason(e.target.value)}
+    className="mb-3 rounded-xl border border-gray-300 bg-white p-3"
+    style={{
+      width: "320px",
+      maxWidth: "100%",
+    }}
+  />
+</div>
+
+    <label className="mb-1 block font-medium">Za koga?</label>
+
+<div>
+  <select
+    value={closedBarberId ?? ""}
+    onChange={(e) => {
+      const value = e.target.value;
+      setClosedBarberId(value ? Number(value) : null);
+    }}
+    className="mb-3 rounded-xl border border-gray-300 bg-white p-3"
+    style={{
+      width: "320px",
+      maxWidth: "100%",
+    }}
+  >
+    <option value="">Cijeli salon</option>
+
+    {barbers.map((barber) => (
+      <option key={barber.id} value={barber.id}>
+        {barber.name}
+      </option>
+    ))}
+  </select>
+</div>
 
     <button
-      onClick={handleAddClosedDay}
-      className="rounded bg-black px-4 py-2 text-white"
-    >
-      + Dodaj zatvoren dan
-    </button>
+  onClick={handleAddClosedDay}
+  className="rounded-lg px-4 py-2 font-medium text-white"
+  style={{
+    backgroundColor: "#611a1a",
+  }}
+>
+  + Dodaj zatvoren dan
+</button>
   </div>
 )}
 
@@ -2916,22 +3208,35 @@ style={{
     <h2 className="mb-4 text-xl font-bold">Frizeri</h2>
     <label className="mb-4 flex items-center gap-2">
   <input
-    type="checkbox"
-    checked={showBarbers}
-    onChange={(e) => setShowBarbers(e.target.checked)}
-  />
+  type="checkbox"
+  checked={showBarbers}
+  onChange={(e) => setShowBarbers(e.target.checked)}
+  style={{ accentColor: "#611a1a" }}
+/>
 
   Prikaži frizere na stranici
 </label>
 
 
 
-    <div className="mb-4 space-y-2">
+    <div
+  className="mb-4 space-y-2"
+  style={{
+    width: "500px",
+    maxWidth: "100%",
+  }}
+>
       {barbers.map((barber) => (
         <div
-          key={barber.id}
-          className="flex items-center justify-between rounded-xl bg-gray-50 p-3"
-        >
+  key={barber.id}
+  className="flex items-center justify-between rounded-xl p-2"
+  style={{
+    width: "320px",
+    maxWidth: "100%",
+    backgroundColor: "#ffffff",
+    border: "1px solid #ead1d1",
+  }}
+>
           <span>{barber.name}</span>
 
           <button
@@ -2944,46 +3249,61 @@ style={{
       ))}
     </div>
 
-    <input
-      type="text"
-      placeholder="Ime frizera"
-      value={newBarberName}
-      onChange={(e) => setNewBarberName(e.target.value)}
-      className="mb-3 w-full rounded border p-3"
-    />
-
-    <button
-      onClick={handleAddBarber}
-      className="rounded bg-black px-4 py-2 text-white"
-    >
-      + Dodaj frizera
-    </button>
-    <button
-  type="button"
-  onClick={async () => {
-    const { error } = await supabase
-      .from("salons")
-      .update({
-        show_barbers: showBarbers,
-      })
-      .eq("id", salon?.id);
-
-    if (error) {
-      alert("Greška pri spremanju postavke.");
-      console.error(error);
-      return;
-    }
-
-    alert("Postavka je uspješno spremljena.");
-  }}
-  className="rounded-xl px-5 py-3 font-medium text-white"
+    <div>
+  <input
+  type="text"
+  placeholder="Ime frizera"
+  value={newBarberName}
+  onChange={(e) => setNewBarberName(e.target.value)}
+  className="mb-3 rounded-lg border p-3"
   style={{
-    backgroundColor: "#611a1a",
+    width: "320px",
+    maxWidth: "100%",
+  }}
+/>
+
+  <div className="flex gap-2">
+   <button
+  onClick={handleAddBarber}
+  className="rounded-xl px-5 py-3 font-medium"
+  style={{
+    backgroundColor: "#ffffff",
+    color: "#611a1a",
+    border: "1px solid #611a1a",
   }}
 >
-  Sačuvaj postavku
+  + Dodaj frizera
 </button>
-  </div>
+
+    <button
+      type="button"
+      onClick={async () => {
+        const { error } = await supabase
+          .from("salons")
+          .update({
+            show_barbers: showBarbers,
+          })
+          .eq("id", salon?.id);
+
+        if (error) {
+          alert("Greška pri spremanju postavke.");
+          console.error(error);
+          return;
+        }
+
+        alert("Postavka je uspješno spremljena.");
+      }}
+      className="rounded-xl px-5 py-3 font-medium text-white"
+      style={{
+        backgroundColor: "#611a1a",
+      }}
+    >
+      Sačuvaj postavku
+    </button>
+    </div>
+</div>
+
+</div>
 )}
 
   </>
