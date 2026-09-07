@@ -3598,33 +3598,101 @@ const formattedDate = `${date.getDate()}. ${
       {dayBookings
   .filter((booking) => booking.booking_time.startsWith(time.slice(0, 2)))
   .map((booking) => {
-    const sameTimeBookings = dayBookings.filter(
-      (item) => item.booking_time === booking.booking_time
-    );
+   const [bookingHour, bookingMinute] = booking.booking_time
+  .split(":")
+  .map(Number);
 
-    const bookingIndex = sameTimeBookings.findIndex(
-      (item) => item.id === booking.id
-    );
+const bookingStart = bookingHour * 60 + bookingMinute;
+const bookingEnd =
+  bookingStart + (booking.duration_minutes || 30);
 
-    const bookingWidth = 100 / sameTimeBookings.length;
+let overlappingBookings = [booking];
+let groupChanged = true;
+
+while (groupChanged) {
+  groupChanged = false;
+
+  for (const item of dayBookings) {
+    if (overlappingBookings.some((groupItem) => groupItem.id === item.id)) {
+      continue;
+    }
+
+    const [itemHour, itemMinute] = item.booking_time
+      .split(":")
+      .map(Number);
+
+    const itemStart = itemHour * 60 + itemMinute;
+    const itemEnd =
+      itemStart + (item.duration_minutes || 30);
+
+    const overlapsGroup = overlappingBookings.some((groupItem) => {
+      const [groupHour, groupMinute] = groupItem.booking_time
+        .split(":")
+        .map(Number);
+
+      const groupStart = groupHour * 60 + groupMinute;
+      const groupEnd =
+        groupStart + (groupItem.duration_minutes || 30);
+
+      return itemStart < groupEnd && itemEnd > groupStart;
+    });
+
+    if (overlapsGroup) {
+      overlappingBookings.push(item);
+      groupChanged = true;
+    }
+  }
+}
+
+overlappingBookings = overlappingBookings.sort((a, b) => {
+  if (a.booking_time === b.booking_time) {
+    return a.id - b.id;
+  }
+
+  return a.booking_time.localeCompare(b.booking_time);
+});
+
+const barberColumns = new Map<string, number>();
+
+for (const item of overlappingBookings) {
+  const barberKey =
+    item.barber_id != null
+      ? `barber-${item.barber_id}`
+      : `booking-${item.id}`;
+
+  if (!barberColumns.has(barberKey)) {
+    barberColumns.set(barberKey, barberColumns.size);
+  }
+}
+
+const currentBarberKey =
+  booking.barber_id != null
+    ? `barber-${booking.barber_id}`
+    : `booking-${booking.id}`;
+
+const bookingColumn = barberColumns.get(currentBarberKey) ?? 0;
+
+const bookingWidth =
+  100 / Math.max(barberColumns.size, 1);
 
     return (
       <div
         key={booking.id}
         style={{
-          position: "absolute",
-          top: `${(Number(booking.booking_time.split(":")[1]) / 60) * 64}px`,
-          left: `calc(${bookingIndex * bookingWidth}% + 4px)`,
-          width: `calc(${bookingWidth}% - 8px)`,
-          backgroundColor: "#f8eeee",
-          color: "#611a1a",
-          border: "1px solid #ead1d1",
-          borderRadius: "8px",
-          padding: "5px 7px",
-          fontSize: "12px",
-          fontWeight: 600,
-          boxSizing: "border-box",
-        }}
+  position: "absolute",
+  top: `${(Number(booking.booking_time.split(":")[1]) / 60) * 64}px`,
+  left: `calc(${bookingColumn * bookingWidth}% + 4px)`,
+  width: `calc(${bookingWidth}% - 8px)`,
+  height: `${((booking.duration_minutes || 30) / 60) * 64}px`,
+  backgroundColor: "#f8eeee",
+  color: "#611a1a",
+  border: "1px solid #ead1d1",
+  borderRadius: "8px",
+  padding: "5px 7px",
+  fontSize: "12px",
+  fontWeight: 600,
+  boxSizing: "border-box",
+}}
       >
         {booking.customer_name}
       </div>
