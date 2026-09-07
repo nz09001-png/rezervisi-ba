@@ -152,6 +152,8 @@ const [closedReason, setClosedReason] = useState("");
 const [closedEndDate, setClosedEndDate] = useState("");
 const [closedBarberId, setClosedBarberId] = useState<number | null>(null);
 const [bookingTab, setBookingTab] = useState("aktivne");
+const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
+console.log("Selected booking:", selectedBooking);
 const [calendarWeekStart, setCalendarWeekStart] = useState(() => {
   const today = new Date();
   const monday = new Date(today);
@@ -3675,11 +3677,14 @@ const bookingColumn = barberColumns.get(currentBarberKey) ?? 0;
 const bookingWidth =
   100 / Math.max(barberColumns.size, 1);
 
-    return (
-      <div
-        key={booking.id}
-        style={{
-  position: "absolute",
+   return (
+  <div
+    key={booking.id}
+    onClick={() => {
+  setSelectedBooking(booking);
+}}
+    style={{
+      position: "absolute",
   top: `${(Number(booking.booking_time.split(":")[1]) / 60) * 64}px`,
   left: `calc(${bookingColumn * bookingWidth}% + 4px)`,
   width: `calc(${bookingWidth}% - 8px)`,
@@ -3691,10 +3696,24 @@ const bookingWidth =
   padding: "5px 7px",
   fontSize: "12px",
   fontWeight: 600,
-  boxSizing: "border-box",
+boxSizing: "border-box",
+cursor: "pointer",
 }}
       >
-        {booking.customer_name}
+        <div style={{ lineHeight: 1.05 }}>
+  <div>{booking.customer_name}</div>
+
+  <div
+    style={{
+      marginTop: "2px",
+      fontSize: "10px",
+      fontWeight: 500,
+      opacity: 0.75,
+    }}
+  >
+    {booking.barber_name || "Bilo koji frizer"}
+  </div>
+</div>
       </div>
     );
   })}
@@ -3705,6 +3724,98 @@ const bookingWidth =
     ))}
   </div>
 </div>
+
+{selectedBooking && (
+  <div
+    style={{
+      position: "fixed",
+      inset: 0,
+      backgroundColor: "rgba(0, 0, 0, 0.35)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      zIndex: 9999,
+    }}
+  >
+    <div
+      style={{
+        width: "420px",
+        maxWidth: "90%",
+        backgroundColor: "white",
+        borderRadius: "16px",
+        padding: "24px",
+        boxShadow: "0 20px 50px rgba(0,0,0,0.18)",
+      }}
+    >
+      <div className="flex items-start justify-between">
+        <h2
+          className="text-xl font-semibold"
+          style={{ color: "#611a1a" }}
+        >
+          {selectedBooking.customer_name}
+        </h2>
+
+        <button
+          onClick={() => setSelectedBooking(null)}
+          style={{
+            background: "none",
+            border: "none",
+            fontSize: "24px",
+            lineHeight: 1,
+            cursor: "pointer",
+            color: "#611a1a",
+          }}
+        >
+          ×
+        </button>
+      </div>
+      <div
+  style={{
+    marginTop: "20px",
+    display: "grid",
+    gap: "10px",
+    fontSize: "15px",
+  }}
+>
+  <div>
+    <strong>Usluga:</strong>{" "}
+    {selectedBooking.service || "Nije odabrano"}
+  </div>
+
+  <div>
+    <strong>Frizer:</strong>{" "}
+    {selectedBooking.barber_name || "Bilo koji frizer"}
+  </div>
+
+  <div>
+  <strong>Datum:</strong>{" "}
+  {selectedBooking.booking_date
+    ? `${selectedBooking.booking_date.split("-")[2]}.${
+        selectedBooking.booking_date.split("-")[1]
+      }.${selectedBooking.booking_date.split("-")[0]}.`
+    : ""}
+</div>
+
+  <div>
+    <strong>Vrijeme:</strong>{" "}
+    {selectedBooking.booking_time}
+  </div>
+  <div>
+  <strong>Telefon:</strong>{" "}
+  {selectedBooking.phone || "Nije uneseno"}
+</div>
+<div>
+  <strong>Email:</strong>{" "}
+  {selectedBooking.email || "Nije uneseno"}
+</div>
+<div>
+  <strong>Napomena:</strong>{" "}
+  {selectedBooking.note || "Nije uneseno"}
+</div>
+</div>
+    </div>
+  </div>
+)}
 
 <div className="grid gap-4">
   {(bookingTab === "aktivne" ? activeBookings : completedBookings).map((booking) => (

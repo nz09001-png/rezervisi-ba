@@ -498,8 +498,9 @@ if (hasOverlapForFinalBarber) {
   duration_minutes: service?.duration_minutes || 60,
   barber_name: finalBarberName,
 barber_id: finalBarberId,
-  email: email || null,
-  cancel_token: cancelToken,
+email: email || null,
+note: napomena || null,
+cancel_token: cancelToken,
 },
   ])
   .select()
