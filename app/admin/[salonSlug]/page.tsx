@@ -151,9 +151,9 @@ const [closedDate, setClosedDate] = useState("");
 const [closedReason, setClosedReason] = useState("");
 const [closedEndDate, setClosedEndDate] = useState("");
 const [closedBarberId, setClosedBarberId] = useState<number | null>(null);
-const [bookingTab, setBookingTab] = useState("aktivne");
 const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
-console.log("Selected booking:", selectedBooking);
+const [calendarBarberFilter, setCalendarBarberFilter] = useState<number | "all">("all");
+const [showBarberFilterMenu, setShowBarberFilterMenu] = useState(false);
 const [calendarWeekStart, setCalendarWeekStart] = useState(() => {
   const today = new Date();
   const monday = new Date(today);
@@ -376,6 +376,45 @@ async function fetchBarbers() {
   }
 
   setBarbers(data || []);
+}
+const barberColors = [
+  {
+    backgroundColor: "#dbeafe",
+    borderColor: "#93c5fd",
+    textColor: "#1e3a8a",
+  },
+  {
+    backgroundColor: "#fef3c7",
+    borderColor: "#fcd34d",
+    textColor: "#78350f",
+  },
+  {
+    backgroundColor: "#dcfce7",
+    borderColor: "#86efac",
+    textColor: "#14532d",
+  },
+  {
+    backgroundColor: "#f3e8ff",
+    borderColor: "#d8b4fe",
+    textColor: "#581c87",
+  },
+  {
+    backgroundColor: "#ffedd5",
+    borderColor: "#fdba74",
+    textColor: "#7c2d12",
+  },
+];
+
+function getBarberColor(barberId: number | null) {
+  if (!barberId) {
+    return {
+      backgroundColor: "#f7eeee",
+      borderColor: "#ead1d1",
+      textColor: "#611a1a",
+    };
+  }
+
+  return barberColors[Math.abs(Number(barberId)) % barberColors.length];
 }
 async function fetchClosedDays() {
   if (!salon?.id) return;
@@ -838,23 +877,26 @@ async function handleDeleteService(id: number) {
   fetchServices();
 }
 
-  async function handleDelete(id: number) {
-    const confirmDelete = confirm("Da li ste sigurni da želite obrisati rezervaciju??");
+ async function handleDelete(id: number) {
+  const confirmDelete = confirm(
+    "Da li ste sigurni da želite otkazati rezervaciju?"
+  );
 
-    if (!confirmDelete) return;
+  if (!confirmDelete) return;
 
-    const { error } = await supabase
-      .from("bookings")
-      .delete()
-      .eq("id", id);
+  const { error } = await supabase
+    .from("bookings")
+    .delete()
+    .eq("id", id);
 
-    if (error) {
-      alert("Nije moguće obrisati rezervaciju.");
-      return;
-    }
-
-    fetchBookings();
+  if (error) {
+    alert("Nije moguće obrisati rezervaciju.");
+    return;
   }
+
+  fetchBookings();
+  setSelectedBooking(null);
+}
 
 async function handleGalleryImageUpload() {
   if (!galleryFile) {
@@ -1119,9 +1161,7 @@ const activeBookings = filteredBookings.filter(
   (booking) => getBookingEndDateTime(booking) > now
 );
 
-const completedBookings = filteredBookings.filter(
-  (booking) => getBookingEndDateTime(booking) <= now
-);
+
 
 const calendarWeekEnd = new Date(calendarWeekStart);
 calendarWeekEnd.setDate(calendarWeekStart.getDate() + 6);
@@ -1130,17 +1170,18 @@ calendarWeekEnd.setHours(23, 59, 59, 999);
 const calendarWeekBookings = activeBookings.filter((booking) => {
   const bookingDate = new Date(`${booking.booking_date}T00:00:00`);
 
-  return (
+  const isInCurrentWeek =
     bookingDate >= calendarWeekStart &&
-    bookingDate <= calendarWeekEnd
-  );
+    bookingDate <= calendarWeekEnd;
+
+  const matchesBarber =
+    calendarBarberFilter === "all" ||
+    booking.barber_id === calendarBarberFilter;
+
+  return isInCurrentWeek && matchesBarber;
 });
 
-console.log(
-  "Calendar week bookings:",
-  calendarWeekBookings.length,
-  calendarWeekBookings
-);
+
 
 const todaysBookings = bookings.filter(
   (booking) => booking.booking_date === today
@@ -3382,27 +3423,11 @@ style={{
 )}
 
 
-       <div className="mb-6 flex gap-3">
-  <button
-    onClick={() => setBookingTab("aktivne")}
-    className={`rounded-xl px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:opacity-90 ${
-      bookingTab === "aktivne" ? "bg-black" : "bg-gray-500"
-    }`}
-  >
-    Aktivne rezervacije ({activeBookings.length})
-  </button>
+       
 
-  <button
-    onClick={() => setBookingTab("zavrsene")}
-    className={`rounded-xl px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:opacity-90 ${
-      bookingTab === "zavrsene" ? "bg-black" : "bg-gray-500"
-    }`}
-  >
-    Završene rezervacije ({completedBookings.length})
-  </button>
-</div>
+<div className="mb-3 flex items-center justify-between">
 
-<div className="mb-3 flex items-center gap-2">
+  <div className="flex items-center gap-2">
   <button
   onClick={() => {
     const today = new Date();
@@ -3485,6 +3510,119 @@ style={{
     } – ${weekEnd.getDate()}. ${months[weekEnd.getMonth()]}`;
   })()}
 </div>
+
+  </div>
+
+  <div
+    style={{
+      position: "relative",
+    }}
+  >
+    <button
+      onClick={() => setShowBarberFilterMenu(!showBarberFilterMenu)}
+      className="rounded-xl border px-5 py-2 text-sm font-medium transition hover:opacity-90"
+      style={{
+        backgroundColor: "#ffffff",
+        color: "#611a1a",
+        borderColor: "#611a1a",
+      }}
+    >
+      <span className="flex items-center gap-2">
+  {calendarBarberFilter === "all"
+    ? "Frizer"
+    : barbers.find((barber) => barber.id === calendarBarberFilter)?.name || "Frizer"}
+
+  {calendarBarberFilter !== "all" && (
+    <span
+      style={{
+        width: "10px",
+        height: "10px",
+        borderRadius: "9999px",
+        backgroundColor: getBarberColor(calendarBarberFilter as number).borderColor,
+        display: "inline-block",
+        flexShrink: 0,
+      }}
+    />
+  )}
+</span>
+    </button>
+    {showBarberFilterMenu && (
+  <div
+    className="flex flex-col items-stretch gap-2 rounded-2xl border bg-white p-3 shadow-sm"
+    style={{
+      position: "absolute",
+      top: "100%",
+      right: 0,
+      marginTop: "8px",
+      width: "max-content",
+      minWidth: "180px",
+      borderColor: "#ead1d1",
+      zIndex: 50,
+    }}
+  >
+    <button
+      onClick={() => {
+        setCalendarBarberFilter("all");
+        setShowBarberFilterMenu(false);
+      }}
+      className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-gray-100"
+      style={{
+        color:
+          calendarBarberFilter === "all" ? "#611a1a" : "#111827",
+        backgroundColor:
+          calendarBarberFilter === "all" ? "#f7eeee" : "#ffffff",
+      }}
+    >
+      <span className="mr-2 w-4">
+        {calendarBarberFilter === "all" ? "✓" : ""}
+      </span>
+
+      <span>Svi frizeri</span>
+    </button>
+
+    {barbers.map((barber) => (
+      <button
+        key={barber.id}
+        onClick={() => {
+          setCalendarBarberFilter(barber.id);
+          setShowBarberFilterMenu(false);
+        }}
+        className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-gray-100"
+        style={{
+          color:
+            calendarBarberFilter === barber.id
+              ? "#611a1a"
+              : "#111827",
+          backgroundColor:
+            calendarBarberFilter === barber.id
+              ? "#f7eeee"
+              : "#ffffff",
+        }}
+      >
+        <span className="mr-2 w-4">
+          {calendarBarberFilter === barber.id ? "✓" : ""}
+        </span>
+
+        <span className="flex items-center gap-2">
+  <span
+    style={{
+      width: "10px",
+      height: "10px",
+      borderRadius: "9999px",
+      backgroundColor: getBarberColor(barber.id).borderColor,
+      display: "inline-block",
+      flexShrink: 0,
+    }}
+  />
+
+  {barber.name}
+</span>
+      </button>
+    ))}
+  </div>
+)}
+  </div>
+
 </div>
 
 <div className="mb-6 overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
@@ -3677,6 +3815,8 @@ const bookingColumn = barberColumns.get(currentBarberKey) ?? 0;
 const bookingWidth =
   100 / Math.max(barberColumns.size, 1);
 
+  const barberColor = getBarberColor(booking.barber_id);
+
    return (
   <div
     key={booking.id}
@@ -3689,9 +3829,9 @@ const bookingWidth =
   left: `calc(${bookingColumn * bookingWidth}% + 4px)`,
   width: `calc(${bookingWidth}% - 8px)`,
   height: `${((booking.duration_minutes || 30) / 60) * 64}px`,
-  backgroundColor: "#f8eeee",
-  color: "#611a1a",
-  border: "1px solid #ead1d1",
+  backgroundColor: barberColor.backgroundColor,
+color: barberColor.textColor,
+border: `1px solid ${barberColor.borderColor}`,
   borderRadius: "8px",
   padding: "5px 7px",
   fontSize: "12px",
@@ -3812,70 +3952,36 @@ cursor: "pointer",
   <strong>Napomena:</strong>{" "}
   {selectedBooking.note || "Nije uneseno"}
 </div>
+<div
+  style={{
+    marginTop: "24px",
+    textAlign: "right",
+  }}
+>
+  <button
+    onClick={async () => {
+      await handleDelete(selectedBooking.id);
+    }}
+    style={{
+      backgroundColor: "#ef4444",
+      color: "white",
+      border: "none",
+      borderRadius: "12px",
+      padding: "10px 16px",
+      fontSize: "14px",
+      fontWeight: 600,
+      cursor: "pointer",
+    }}
+  >
+    Otkaži klijenta
+  </button>
+</div>
 </div>
     </div>
   </div>
 )}
 
-<div className="grid gap-4">
-  {(bookingTab === "aktivne" ? activeBookings : completedBookings).map((booking) => (
-    <div
-  key={booking.id}
-  className="rounded-3xl bg-white p-6 shadow"
->
-  <div className="mb-5 flex items-start justify-between">
-    <div>
-      <p className="text-2xl font-semibold">
-  {booking.booking_time}
 
-  <span className="inline-block px-6 text-gray-400">
-    •
-  </span>
-
-  {booking.booking_date}
-</p>
-    </div>
-
-    
-  </div>
-
-  <div className="space-y-1">
-  <p className="text-xl font-semibold">
-    {booking.customer_name}
-  </p>
-
-  <p className="text-base font-medium text-gray-600">
-    {booking.service || "Nije odabrano"} •{" "}
-    {booking.barber_name || "Bilo koji frizer"}
-  </p>
-
-  <p>
-    <strong>Telefon:</strong> {booking.phone}
-  </p>
-
-  <p>
-  <strong>Email:</strong> {booking.email || "Nije uneseno"}
-</p>
-</div>
-
-<div
-  style={{
-    textAlign: "right",
-    marginTop: "-40px",
-  }}
->
-  <button
-    onClick={() => handleDelete(booking.id)}
-    className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white"
-  >
-    Obriši
-  </button>
-</div>
-
-</div>
-))}
-
-</div>
       </div>
     </main>
   );
