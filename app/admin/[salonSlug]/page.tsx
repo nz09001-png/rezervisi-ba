@@ -403,6 +403,31 @@ const barberColors = [
     borderColor: "#fdba74",
     textColor: "#7c2d12",
   },
+  {
+    backgroundColor: "#cffafe",
+    borderColor: "#67e8f9",
+    textColor: "#164e63",
+  },
+  {
+    backgroundColor: "#fce7f3",
+    borderColor: "#f9a8d4",
+    textColor: "#831843",
+  },
+  {
+    backgroundColor: "#e0e7ff",
+    borderColor: "#a5b4fc",
+    textColor: "#312e81",
+  },
+  {
+    backgroundColor: "#ecfccb",
+    borderColor: "#bef264",
+    textColor: "#365314",
+  },
+  {
+    backgroundColor: "#fee2e2",
+    borderColor: "#fca5a5",
+    textColor: "#7f1d1d",
+  },
 ];
 
 function getBarberColor(barberId: number | null) {
@@ -3826,15 +3851,15 @@ const bookingWidth =
     style={{
       position: "absolute",
   top: `${(Number(booking.booking_time.split(":")[1]) / 60) * 64}px`,
-  left: `calc(${bookingColumn * bookingWidth}% + 4px)`,
-  width: `calc(${bookingWidth}% - 8px)`,
+  left: `calc(${bookingColumn * bookingWidth}% + 2px)`,
+width: `calc(${bookingWidth}% - 4px)`,
   height: `${((booking.duration_minutes || 30) / 60) * 64}px`,
   backgroundColor: barberColor.backgroundColor,
 color: barberColor.textColor,
 border: `1px solid ${barberColor.borderColor}`,
   borderRadius: "8px",
-  padding: "5px 7px",
-  fontSize: "12px",
+  padding: "7px 8px",
+fontSize: "13px",
   fontWeight: 600,
 boxSizing: "border-box",
 cursor: "pointer",
@@ -3842,6 +3867,17 @@ cursor: "pointer",
       >
         <div style={{ lineHeight: 1.05 }}>
   <div>{booking.customer_name}</div>
+
+  <div
+    style={{
+      marginTop: "2px",
+      fontSize: "10px",
+      fontWeight: 500,
+      opacity: 0.85,
+    }}
+  >
+    {booking.service}
+  </div>
 
   <div
     style={{
