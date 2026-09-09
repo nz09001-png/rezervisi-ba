@@ -1419,15 +1419,16 @@ if (!confirmed) {
 
 
   const uniqueDates = [...new Set(generatedTimes.map((slot) => slot.date))];
+ 
 
   for (const date of uniqueDates) {
     
 
     const { error } = await supabase
-      .from("available_times")
-      .delete({ count: "exact" })
-      .eq("salon_id", salon.id)
-      .eq("date", date);
+  .from("available_times")
+  .delete()
+  .eq("salon_id", salon.id)
+  .eq("date", date);
 
 
     if (error) {
@@ -1443,9 +1444,10 @@ if (!confirmed) {
     time: slot.time,
   }));
 
-  const { error: insertError } = await supabase
-    .from("available_times")
-    .insert(timesToSave);
+ const { error: insertError } = await supabase
+  .from("available_times")
+  .insert(timesToSave);
+
 
   if (insertError) {
     console.error(insertError);

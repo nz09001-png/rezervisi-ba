@@ -334,11 +334,11 @@ useEffect(() => {
       .order("time", { ascending: true });
 
     if (error) {
-      console.error(error);
-      return;
-    }
+  console.error(error);
+  return;
+}
 
-    setAvailableTimes(data || []);
+setAvailableTimes(data || []);
   }
 
   fetchAvailableTimes();
@@ -392,14 +392,19 @@ monday.setDate(today.getDate() + diff + weekOffset * 7);
 
 const weekDays = Array.from({ length: 7 }).map((_, index) => {
   const date = new Date(monday);
+
   date.setDate(monday.getDate() + index);
 
   const dayNames = ["Ned", "Pon", "Uto", "Sri", "Čet", "Pet", "Sub"];
 
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
   return {
     day: dayNames[date.getDay()],
     label: String(date.getDate()),
-    date: date.toISOString().split("T")[0],
+    date: `${year}-${month}-${day}`,
   };
 });
 const monthNames = [
