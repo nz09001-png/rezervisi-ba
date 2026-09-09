@@ -1206,7 +1206,74 @@ const calendarWeekBookings = activeBookings.filter((booking) => {
   return isInCurrentWeek && matchesBarber;
 });
 
+function hasThreeOrMoreOverlappingBookings(dateString: string) {
+  const dayBookings = calendarWeekBookings.filter(
+    (booking) => booking.booking_date === dateString
+  );
 
+  const events: { time: number; type: "start" | "end" }[] = [];
+
+  for (const booking of dayBookings) {
+    const [hour, minute] = booking.booking_time
+      .split(":")
+      .map(Number);
+
+    const start = hour * 60 + minute;
+    const end = start + (booking.duration_minutes || 30);
+
+    events.push({
+      time: start,
+      type: "start",
+    });
+
+    events.push({
+      time: end,
+      type: "end",
+    });
+  }
+
+  events.sort((a, b) => {
+    if (a.time !== b.time) {
+      return a.time - b.time;
+    }
+
+    return a.type === "end" ? -1 : 1;
+  });
+
+  let overlapping = 0;
+
+  for (const event of events) {
+    if (event.type === "start") {
+      overlapping++;
+
+      if (overlapping >= 3) {
+        return true;
+      }
+    } else {
+      overlapping--;
+    }
+  }
+
+  return false;
+}
+
+const calendarDayColumns = Array.from({ length: 7 }).map((_, index) => {
+  const date = new Date(calendarWeekStart);
+  date.setDate(calendarWeekStart.getDate() + index);
+
+  const dateString = [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+
+  return hasThreeOrMoreOverlappingBookings(dateString)
+  ? "1.4fr"
+  : "1fr";
+});
+
+const calendarGridTemplateColumns =
+  `90px ${calendarDayColumns.join(" ")}`;
 
 const todaysBookings = bookings.filter(
   (booking) => booking.booking_date === today
@@ -3655,7 +3722,7 @@ style={{
     <div
   className="grid text-sm font-semibold"
   style={{
-    gridTemplateColumns: "90px repeat(7, minmax(120px, 1fr))",
+    gridTemplateColumns: calendarGridTemplateColumns,
     backgroundColor: "#f8eeee",
     color: "#611a1a",
     borderBottom: "1px solid #ead1d1",
@@ -3728,9 +3795,9 @@ const formattedDate = `${date.getDate()}. ${
   key={time}
   className="grid last:border-b-0"
   style={{
-    gridTemplateColumns: "90px repeat(7, minmax(120px, 1fr))",
+    gridTemplateColumns: calendarGridTemplateColumns,
     borderBottom: "1px solid #ead1d1",
-    minHeight: "64px",
+    minHeight: "80px",
   }}
 >
         <div className="border-r border-gray-200 px-3 py-5 text-sm font-medium text-gray-500">
@@ -3755,7 +3822,7 @@ const formattedDate = `${date.getDate()}. ${
     <div
       key={index}
       style={{
-  minHeight: "64px",
+  minHeight: "80px",
   borderRight: index < 6 ? "1px solid #ead1d1" : "none",
   position: "relative",
 }}
@@ -3839,6 +3906,17 @@ const bookingColumn = barberColumns.get(currentBarberKey) ?? 0;
 
 const bookingWidth =
   100 / Math.max(barberColumns.size, 1);
+  const isThreeOrMoreOverlapping = barberColumns.size >= 3;
+
+const shortCustomerName = (() => {
+  const parts = booking.customer_name.trim().split(/\s+/);
+
+  if (parts.length === 1) {
+    return parts[0];
+  }
+
+  return `${parts[0]} ${parts[parts.length - 1].charAt(0)}`;
+})();
 
   const barberColor = getBarberColor(booking.barber_id);
 
@@ -3850,47 +3928,83 @@ const bookingWidth =
 }}
     style={{
       position: "absolute",
-  top: `${(Number(booking.booking_time.split(":")[1]) / 60) * 64}px`,
+  top: `${(Number(booking.booking_time.split(":")[1]) / 60) * 80}px`,
   left: `calc(${bookingColumn * bookingWidth}% + 2px)`,
 width: `calc(${bookingWidth}% - 4px)`,
-  height: `${((booking.duration_minutes || 30) / 60) * 64}px`,
+  height: `${((booking.duration_minutes || 30) / 60) * 80}px`,
   backgroundColor: barberColor.backgroundColor,
 color: barberColor.textColor,
 border: `1px solid ${barberColor.borderColor}`,
   borderRadius: "8px",
-  padding: "7px 8px",
+  padding:
+  (booking.duration_minutes || 30) <= 30
+    ? "4px 6px"
+    : "6px 7px",
 fontSize: "13px",
   fontWeight: 600,
 boxSizing: "border-box",
 cursor: "pointer",
 }}
       >
-        <div style={{ lineHeight: 1.05 }}>
-  <div>{booking.customer_name}</div>
+       <div
+  style={{
+    lineHeight: isThreeOrMoreOverlapping ? 1 : 1.1,
+    overflow: "hidden",
+  }}
+>
+  <div
+  style={{
+    fontSize: "11px",
+    fontWeight: 700,
+    whiteSpace: isThreeOrMoreOverlapping ? "nowrap" : "normal",
+    display: isThreeOrMoreOverlapping ? "block" : "-webkit-box",
+    WebkitLineClamp: isThreeOrMoreOverlapping ? undefined : 2,
+    WebkitBoxOrient: isThreeOrMoreOverlapping ? undefined : "vertical",
+    overflow: "hidden",
+  }}
+>
+  {isThreeOrMoreOverlapping
+    ? shortCustomerName
+    : booking.customer_name}
+</div>
 
   <div
     style={{
-      marginTop: "2px",
-      fontSize: "10px",
+      marginTop: isThreeOrMoreOverlapping ? "0px" : "2px",
+      fontSize: "9px",
       fontWeight: 500,
       opacity: 0.85,
+      display: "-webkit-box",
+      WebkitLineClamp: 1,
+      WebkitBoxOrient: "vertical",
+      overflow: "hidden",
     }}
   >
     {booking.service}
   </div>
 
-  <div
-    style={{
-      marginTop: "2px",
-      fontSize: "10px",
-      fontWeight: 500,
-      opacity: 0.75,
-    }}
-  >
-    {booking.barber_name || "Bilo koji frizer"}
-  </div>
+  {(
+  isThreeOrMoreOverlapping
+    ? (booking.duration_minutes || 30) > 30
+    : (booking.duration_minutes || 30) >= 60
+) && (
+    <div
+      style={{
+        marginTop: isThreeOrMoreOverlapping ? "0px" : "2px",
+        fontSize: "9px",
+        fontWeight: 500,
+        opacity: 0.75,
+        display: "-webkit-box",
+        WebkitLineClamp: 1,
+        WebkitBoxOrient: "vertical",
+        overflow: "hidden",
+      }}
+    >
+      {booking.barber_name || "Bilo koji frizer"}
+    </div>
+    )}
 </div>
-      </div>
+</div>
     );
   })}
     </div>
