@@ -154,6 +154,7 @@ const [closedBarberId, setClosedBarberId] = useState<number | null>(null);
 const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
 const [calendarBarberFilter, setCalendarBarberFilter] = useState<number | "all">("all");
 const [showBarberFilterMenu, setShowBarberFilterMenu] = useState(false);
+const [showPreviousBookings, setShowPreviousBookings] = useState(false);
 const [calendarWeekStart, setCalendarWeekStart] = useState(() => {
   const today = new Date();
   const monday = new Date(today);
@@ -1192,8 +1193,11 @@ const calendarWeekEnd = new Date(calendarWeekStart);
 calendarWeekEnd.setDate(calendarWeekStart.getDate() + 6);
 calendarWeekEnd.setHours(23, 59, 59, 999);
 
-const calendarWeekBookings = activeBookings.filter((booking) => {
+const calendarWeekBookings = filteredBookings.filter((booking) => {
   const bookingDate = new Date(`${booking.booking_date}T00:00:00`);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   const isInCurrentWeek =
     bookingDate >= calendarWeekStart &&
@@ -1203,7 +1207,13 @@ const calendarWeekBookings = activeBookings.filter((booking) => {
     calendarBarberFilter === "all" ||
     booking.barber_id === calendarBarberFilter;
 
-  return isInCurrentWeek && matchesBarber;
+  const isTodayOrFuture = bookingDate >= today;
+
+  return (
+    isInCurrentWeek &&
+    matchesBarber &&
+    (showPreviousBookings || isTodayOrFuture)
+  );
 });
 
 function hasThreeOrMoreOverlappingBookings(dateString: string) {
@@ -3552,6 +3562,37 @@ style={{
 >
   Danas
 </button>
+<button
+  onClick={() => {
+  if (showPreviousBookings) {
+    setShowPreviousBookings(false);
+
+    const today = new Date();
+    const monday = new Date(today);
+    const currentDay = today.getDay();
+
+    const diffToMonday =
+      currentDay === 0 ? -6 : 1 - currentDay;
+
+    monday.setDate(today.getDate() + diffToMonday);
+    monday.setHours(0, 0, 0, 0);
+
+    setCalendarWeekStart(monday);
+    return;
+  }
+
+  setShowPreviousBookings(true);
+}}
+  className="rounded-xl border px-4 py-2 text-sm font-medium"
+  style={{
+    borderColor: "#611a1a",
+    color: showPreviousBookings ? "#ffffff" : "#611a1a",
+    backgroundColor: showPreviousBookings ? "#611a1a" : "#ffffff",
+  }}
+>
+  Prethodne rezervacije
+</button>
+  {showPreviousBookings && (
   <button
     onClick={() => {
       const previousWeek = new Date(calendarWeekStart);
@@ -3567,6 +3608,7 @@ style={{
   >
     ←
   </button>
+)}
 
   <button
     onClick={() => {
@@ -3953,7 +3995,8 @@ const shortCustomerName = (() => {
   setSelectedBooking(booking);
 }}
     style={{
-      position: "absolute",
+  position: "absolute",
+  zIndex: 1,
   top: `${(Number(booking.booking_time.split(":")[1]) / 60) * 80}px`,
   left: `calc(${bookingColumn * bookingWidth}% + 2px)`,
 width: `calc(${bookingWidth}% - 4px)`,
