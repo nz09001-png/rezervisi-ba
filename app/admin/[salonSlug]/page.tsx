@@ -1261,6 +1261,13 @@ const calendarDayColumns = Array.from({ length: 7 }).map((_, index) => {
   const date = new Date(calendarWeekStart);
   date.setDate(calendarWeekStart.getDate() + index);
 
+  const today = new Date();
+
+const isToday =
+  date.getFullYear() === today.getFullYear() &&
+  date.getMonth() === today.getMonth() &&
+  date.getDate() === today.getDate();
+
   const dateString = [
     date.getFullYear(),
     String(date.getMonth() + 1).padStart(2, "0"),
@@ -3736,34 +3743,44 @@ style={{
         Vrijeme
       </div>
 
-      {["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"].map(
+     {["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"].map(
   (day, index) => {
     const date = new Date(calendarWeekStart);
-date.setDate(calendarWeekStart.getDate() + index);
+    date.setDate(calendarWeekStart.getDate() + index);
+
+    const today = new Date();
+
+    const isToday =
+      date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate();
 
     const bosnianMonths = [
-  "jan",
-  "feb",
-  "mar",
-  "apr",
-  "maj",
-  "jun",
-  "jul",
-  "aug",
-  "sep",
-  "okt",
-  "nov",
-  "dec",
-];
+      "jan",
+      "feb",
+      "mar",
+      "apr",
+      "maj",
+      "jun",
+      "jul",
+      "aug",
+      "sep",
+      "okt",
+      "nov",
+      "dec",
+    ];
 
-const formattedDate = `${date.getDate()}. ${
-  bosnianMonths[date.getMonth()]
-}`;
+    const formattedDate = `${date.getDate()}. ${
+      bosnianMonths[date.getMonth()]
+    }`;
 
     return (
       <div
         key={day}
         className="border-r border-gray-200 px-3 py-3 text-center last:border-r-0"
+        style={{
+          backgroundColor: isToday ? "#e8cccc" : "transparent",
+        }}
       >
         <div className="font-semibold">
           {day}
@@ -3809,6 +3826,12 @@ const formattedDate = `${date.getDate()}. ${
         {Array.from({ length: 7 }).map((_, index) => {
   const cellDate = new Date(calendarWeekStart);
   cellDate.setDate(calendarWeekStart.getDate() + index);
+  const today = new Date();
+
+const isToday =
+  cellDate.getFullYear() === today.getFullYear() &&
+  cellDate.getMonth() === today.getMonth() &&
+  cellDate.getDate() === today.getDate();
 
   const cellDateString = [
     cellDate.getFullYear(),
@@ -3822,13 +3845,14 @@ const formattedDate = `${date.getDate()}. ${
 
   return (
     <div
-      key={index}
-      style={{
-  minHeight: "80px",
-  borderRight: index < 6 ? "1px solid #ead1d1" : "none",
-  position: "relative",
-}}
-    >
+  key={index}
+  style={{
+    minHeight: "80px",
+    borderRight: index < 6 ? "1px solid #ead1d1" : "none",
+    position: "relative",
+    backgroundColor: isToday ? "#fdf8f8" : "transparent",
+  }}
+>
       {dayBookings
   .filter((booking) => booking.booking_time.startsWith(time.slice(0, 2)))
   .map((booking) => {
