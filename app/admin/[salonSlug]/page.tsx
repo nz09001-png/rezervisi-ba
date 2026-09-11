@@ -1216,51 +1216,91 @@ const calendarWeekBookings = filteredBookings.filter((booking) => {
   );
 });
 
+const currentTime = new Date();
+
+const currentTimeMinutes =
+  currentTime.getHours() * 60 + currentTime.getMinutes();
+
+const calendarStartMinutes = 8 * 60;
+const calendarEndMinutes = 20 * 60;
+
+const isCurrentTimeInsideCalendar =
+  currentTimeMinutes >= calendarStartMinutes &&
+  currentTimeMinutes <= calendarEndMinutes;
+
+const currentTimeTop =
+  ((currentTimeMinutes - calendarStartMinutes) / 60) * 80;
+
 function hasThreeOrMoreOverlappingBookings(dateString: string) {
   const dayBookings = calendarWeekBookings.filter(
     (booking) => booking.booking_date === dateString
   );
 
-  const events: { time: number; type: "start" | "end" }[] = [];
-
   for (const booking of dayBookings) {
-    const [hour, minute] = booking.booking_time
-      .split(":")
-      .map(Number);
+    let overlappingBookings = [booking];
+    let groupChanged = true;
 
-    const start = hour * 60 + minute;
-    const end = start + (booking.duration_minutes || 30);
+    while (groupChanged) {
+      groupChanged = false;
 
-    events.push({
-      time: start,
-      type: "start",
-    });
+      for (const item of dayBookings) {
+        if (
+          overlappingBookings.some(
+            (groupItem) => groupItem.id === item.id
+          )
+        ) {
+          continue;
+        }
 
-    events.push({
-      time: end,
-      type: "end",
-    });
-  }
+        const [itemHour, itemMinute] = item.booking_time
+          .split(":")
+          .map(Number);
 
-  events.sort((a, b) => {
-    if (a.time !== b.time) {
-      return a.time - b.time;
+        const itemStart = itemHour * 60 + itemMinute;
+        const itemEnd =
+          itemStart + (item.duration_minutes || 30);
+
+        const overlapsGroup = overlappingBookings.some(
+          (groupItem) => {
+            const [groupHour, groupMinute] =
+              groupItem.booking_time
+                .split(":")
+                .map(Number);
+
+            const groupStart =
+              groupHour * 60 + groupMinute;
+
+            const groupEnd =
+              groupStart +
+              (groupItem.duration_minutes || 30);
+
+            return (
+              itemStart < groupEnd &&
+              itemEnd > groupStart
+            );
+          }
+        );
+
+        if (overlapsGroup) {
+          overlappingBookings.push(item);
+          groupChanged = true;
+        }
+      }
     }
 
-    return a.type === "end" ? -1 : 1;
-  });
+    const barberColumns = new Set<string>();
 
-  let overlapping = 0;
+    for (const item of overlappingBookings) {
+      const barberKey =
+        item.barber_id != null
+          ? `barber-${item.barber_id}`
+          : `booking-${item.id}`;
 
-  for (const event of events) {
-    if (event.type === "start") {
-      overlapping++;
+      barberColumns.add(barberKey);
+    }
 
-      if (overlapping >= 3) {
-        return true;
-      }
-    } else {
-      overlapping--;
+    if (barberColumns.size >= 3) {
+      return true;
     }
   }
 
@@ -1285,7 +1325,7 @@ const isToday =
   ].join("-");
 
   return hasThreeOrMoreOverlappingBookings(dateString)
-  ? "1.4fr"
+  ? "1.5fr"
   : "1fr";
 });
 
@@ -3768,22 +3808,34 @@ style={{
 
 </div>
 
-<div className="mb-6 overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
-  <div className="min-w-[1000px]">
+<div
+  className="mb-6 rounded-2xl border bg-white shadow-sm"
+  style={{
+    borderColor: "#611a1a",
+    overflow: "hidden",
+  }}
+>
+  <div className="overflow-x-auto">
+    <div className="min-w-[1000px]">
     <div
   className="grid text-sm font-semibold"
   style={{
     gridTemplateColumns: calendarGridTemplateColumns,
     backgroundColor: "#f8eeee",
     color: "#611a1a",
-    borderBottom: "1px solid #ead1d1",
+    borderBottom: "1px solid rgba(97, 26, 26, 0.35)",
     minHeight: "48px",
     alignItems: "center",
   }}
 >
-      <div className="border-r border-gray-200 px-3 py-4">
-        Vrijeme
-      </div>
+      <div
+  className="px-3 py-4"
+  style={{
+    borderRight: "1px solid #ead1d1",
+  }}
+>
+  Vrijeme
+</div>
 
      {["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"].map(
   (day, index) => {
@@ -3861,9 +3913,47 @@ style={{
     minHeight: "80px",
   }}
 >
-        <div className="border-r border-gray-200 px-3 py-5 text-sm font-medium text-gray-500">
-          {time}
-        </div>
+        <div
+  className="px-3 py-5 text-sm font-medium text-gray-500"
+  style={{
+    position: "relative",
+    borderRight: "1px solid #ead1d1",
+  }}
+>
+  {time}
+
+  {isCurrentTimeInsideCalendar &&
+  time === `${String(currentTime.getHours()).padStart(2, "0")}:00` && (
+    <>
+      <div
+        style={{
+          position: "absolute",
+          left: "12px",
+          right: 0,
+          top: `${(currentTime.getMinutes() / 60) * 80}px`,
+          height: "0.5px",
+          backgroundColor: "#611a1a",
+          zIndex: 2,
+          pointerEvents: "none",
+        }}
+      />
+
+      <div
+        style={{
+          position: "absolute",
+          left: "8px",
+          top: `calc(${(currentTime.getMinutes() / 60) * 80}px - 4px)`,
+          width: "9px",
+          height: "9px",
+          borderRadius: "50%",
+          backgroundColor: "#611a1a",
+          zIndex: 3,
+          pointerEvents: "none",
+        }}
+      />
+    </>
+  )}
+</div>
 
         {Array.from({ length: 7 }).map((_, index) => {
   const cellDate = new Date(calendarWeekStart);
@@ -3895,6 +3985,21 @@ const isToday =
     backgroundColor: isToday ? "#fdf8f8" : "transparent",
   }}
 >
+  {isCurrentTimeInsideCalendar &&
+  time === `${String(currentTime.getHours()).padStart(2, "0")}:00` && (
+    <div
+      style={{
+        position: "absolute",
+        left: 0,
+        right: 0,
+        top: `${(currentTime.getMinutes() / 60) * 80}px`,
+        height: "0.5px",
+        backgroundColor: "#611a1a",
+        zIndex: 2,
+        pointerEvents: "none",
+      }}
+    />
+  )}
       {dayBookings
   .filter((booking) => booking.booking_time.startsWith(time.slice(0, 2)))
   .map((booking) => {
@@ -4025,22 +4130,27 @@ cursor: "pointer",
   style={{
     fontSize: "11px",
     fontWeight: 700,
-    whiteSpace: isThreeOrMoreOverlapping ? "nowrap" : "normal",
-    display: isThreeOrMoreOverlapping ? "block" : "-webkit-box",
-    WebkitLineClamp: isThreeOrMoreOverlapping ? undefined : 2,
-    WebkitBoxOrient: isThreeOrMoreOverlapping ? undefined : "vertical",
+    whiteSpace: "nowrap",
     overflow: "hidden",
+    lineHeight: 1.2,
+    letterSpacing: "-0.1px",
   }}
 >
-  {isThreeOrMoreOverlapping
-    ? shortCustomerName
-    : booking.customer_name}
+  {shortCustomerName}
 </div>
 
   <div
     style={{
-      marginTop: isThreeOrMoreOverlapping ? "0px" : "2px",
-      fontSize: "9px",
+      marginTop:
+  (booking.duration_minutes || 30) >= 60
+    ? "6px"
+    : isThreeOrMoreOverlapping
+    ? "0px"
+    : "2px",
+      fontSize:
+  (booking.duration_minutes || 30) >= 60
+    ? "10px"
+    : "9px",
       fontWeight: 500,
       opacity: 0.85,
       display: "-webkit-box",
@@ -4059,10 +4169,21 @@ cursor: "pointer",
 ) && (
     <div
       style={{
-        marginTop: isThreeOrMoreOverlapping ? "0px" : "2px",
-        fontSize: "9px",
+        marginTop:
+  (booking.duration_minutes || 30) >= 60
+    ? "6px"
+    : isThreeOrMoreOverlapping
+    ? "0px"
+    : "2px",
+        fontSize:
+  (booking.duration_minutes || 30) >= 60
+    ? "10px"
+    : "9px",
         fontWeight: 500,
-        opacity: 0.75,
+        opacity:
+  (booking.duration_minutes || 30) >= 60
+    ? 0.6
+    : 0.75,
         display: "-webkit-box",
         WebkitLineClamp: 1,
         WebkitBoxOrient: "vertical",
@@ -4079,8 +4200,9 @@ cursor: "pointer",
     </div>
   );
 })}
-      </div>
+            </div>
     ))}
+  </div>
   </div>
 </div>
 
