@@ -81,6 +81,7 @@ export default function AdminPage() {
 const salonSlug = params.salonSlug as string;
 const [salon, setSalon] = useState<any>(null);
   const [bookings, setBookings] = useState<any[]>([]);
+  const [calendarServiceSteps, setCalendarServiceSteps] = useState<any[]>([]);
   const [password, setPassword] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [error, setError] = useState(false);
@@ -309,6 +310,35 @@ function toggleSetting(setting: string) {
 
     setBookings(data || []);
   }
+
+async function fetchCalendarServiceSteps() {
+  const serviceIds = [
+    ...new Set(
+      bookings
+        .map((booking) => booking.service_id)
+        .filter((id) => id != null)
+    ),
+  ];
+
+  if (serviceIds.length === 0) {
+    setCalendarServiceSteps([]);
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("service_steps")
+    .select("service_id, duration_minutes, is_barber_busy, step_order")
+    .in("service_id", serviceIds)
+    .order("step_order", { ascending: true });
+
+  if (error) {
+    console.error("Greška pri učitavanju koraka tretmana:", error);
+    return;
+  }
+
+  setCalendarServiceSteps(data || []);
+}
+
   async function fetchSalonInfo() {
   const { data, error } = await supabase
     .from("salons")
@@ -1158,6 +1188,15 @@ useEffect(() => {
 
   fetchCalendarAvailableTimes();
 }, [calendarWeekStart, salon?.id]);
+
+useEffect(() => {
+  if (bookings.length === 0) {
+    setCalendarServiceSteps([]);
+    return;
+  }
+
+  fetchCalendarServiceSteps();
+}, [bookings]);
 
   useEffect(() => {
   if (isLoggedIn && salon?.id) {
@@ -4104,7 +4143,7 @@ const isToday =
     <div
   key={index}
   style={{
-    minHeight: "80px",
+    minHeight: `${(calendarIntervalMinutes / 60) * 80}px`,
     borderRight: index < 6 ? "1px solid #ead1d1" : "none",
     position: "relative",
     backgroundColor: isToday ? "#fdf8f8" : "transparent",
@@ -4221,6 +4260,47 @@ const shortCustomerName = (() => {
 })();
 
   const barberColor = getBarberColor(booking.barber_id);
+  const isParallelBooking = overlappingBookings.some((item) => {
+  if (item.id === booking.id) return false;
+
+  // Endast samma frisör
+  if (item.barber_id !== booking.barber_id) return false;
+
+  // Hämta stegen för den andra bokningens tjänst
+  const itemServiceSteps = calendarServiceSteps.filter(
+    (step) => step.service_id === item.service_id
+  );
+
+  // Ingen flerstegstjänst = ingen tillåten parallell bokning
+  if (itemServiceSteps.length === 0) return false;
+
+  const [itemHour, itemMinute] = item.booking_time
+    .split(":")
+    .map(Number);
+
+  const itemStart = itemHour * 60 + itemMinute;
+
+  let stepStart = itemStart;
+
+  for (const step of itemServiceSteps) {
+    const stepDuration = Number(step.duration_minutes) || 0;
+    const stepEnd = stepStart + stepDuration;
+
+    if (!step.is_barber_busy) {
+      const isInsideFreeStep =
+  bookingStart >= stepStart &&
+  bookingEnd <= stepEnd;
+
+if (isInsideFreeStep) {
+  return true;
+}
+    }
+
+    stepStart = stepEnd;
+  }
+
+  return false;
+});
 
    return (
   <div
@@ -4237,7 +4317,9 @@ const shortCustomerName = (() => {
   height: `${((booking.duration_minutes || 30) / 60) * 80}px`,
   backgroundColor: barberColor.backgroundColor,
 color: barberColor.textColor,
-border: `1px solid ${barberColor.borderColor}`,
+border: isParallelBooking
+  ? `3px solid ${barberColor.borderColor}`
+  : `1px solid ${barberColor.borderColor}`,
   borderRadius: "8px",
   padding:
   (booking.duration_minutes || 30) <= 30
