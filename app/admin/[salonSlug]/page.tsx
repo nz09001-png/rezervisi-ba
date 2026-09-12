@@ -121,6 +121,7 @@ const totalDuration = serviceSteps.reduce((total, step) => {
   return total + (Number(step.duration_minutes) || 0);
 }, 0);
 const [times, setTimes] = useState<any[]>([]);
+const [calendarAvailableTimes, setCalendarAvailableTimes] = useState<any[]>([]);
 const [selectedDate, setSelectedDate] = useState("");
 const datePickerRef = useRef<DatePicker>(null);
 const scheduleStartDatePickerRef = useRef<DatePicker>(null);
@@ -361,6 +362,41 @@ async function fetchTimes(date?: string) {
 
   setTimes(data || []);
 }
+
+async function fetchCalendarAvailableTimes() {
+  if (!salon?.id) return;
+
+  const weekStart = new Date(calendarWeekStart);
+  const weekEnd = new Date(calendarWeekStart);
+  weekEnd.setDate(calendarWeekStart.getDate() + 6);
+
+  const formatDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  };
+
+  const { data, error } = await supabase
+    .from("available_times")
+    .select("*")
+    .eq("salon_id", salon.id)
+    .gte("date", formatDate(weekStart))
+    .lte("date", formatDate(weekEnd))
+    .order("date", { ascending: true })
+    .order("time", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  setCalendarAvailableTimes(data || []);
+  
+}
+
+
   
 async function fetchBarbers() {
   if (!salon?.id) return;
@@ -1117,6 +1153,12 @@ useEffect(() => {
   fetchTimes(selectedDate);
 }, [selectedDate, salon?.id]);
 
+useEffect(() => {
+  if (!salon?.id) return;
+
+  fetchCalendarAvailableTimes();
+}, [calendarWeekStart, salon?.id]);
+
   useEffect(() => {
   if (isLoggedIn && salon?.id) {
     fetchBookings();
@@ -1193,6 +1235,24 @@ const calendarWeekEnd = new Date(calendarWeekStart);
 calendarWeekEnd.setDate(calendarWeekStart.getDate() + 6);
 calendarWeekEnd.setHours(23, 59, 59, 999);
 
+
+
+const currentWeekMonday = new Date(currentDate);
+const currentDay = currentDate.getDay();
+
+const diffToMonday =
+  currentDay === 0 ? -6 : 1 - currentDay;
+
+currentWeekMonday.setDate(
+  currentDate.getDate() + diffToMonday
+);
+currentWeekMonday.setHours(0, 0, 0, 0);
+
+const isCurrentCalendarWeek =
+  calendarWeekStart.getFullYear() === currentWeekMonday.getFullYear() &&
+  calendarWeekStart.getMonth() === currentWeekMonday.getMonth() &&
+  calendarWeekStart.getDate() === currentWeekMonday.getDate();
+
 const calendarWeekBookings = filteredBookings.filter((booking) => {
   const bookingDate = new Date(`${booking.booking_date}T00:00:00`);
 
@@ -1216,13 +1276,92 @@ const calendarWeekBookings = filteredBookings.filter((booking) => {
   );
 });
 
+const calendarAvailableTimeMinutes = calendarAvailableTimes.map((item) => {
+  const [hours, minutes] = item.time.split(":").map(Number);
+
+  return hours * 60 + minutes;
+});
+
+const earliestCalendarTime =
+  calendarAvailableTimeMinutes.length > 0
+    ? Math.min(...calendarAvailableTimeMinutes)
+    : 8 * 60;
+
+const latestCalendarTime =
+  calendarAvailableTimeMinutes.length > 0
+    ? Math.max(...calendarAvailableTimeMinutes)
+    : 20 * 60;
+
 const currentTime = new Date();
 
 const currentTimeMinutes =
   currentTime.getHours() * 60 + currentTime.getMinutes();
 
-const calendarStartMinutes = 8 * 60;
-const calendarEndMinutes = 20 * 60;
+const calendarStartMinutes =
+  calendarAvailableTimeMinutes.length > 0
+    ? earliestCalendarTime
+    : 8 * 60;
+
+const calendarTimeDifferences: number[] = [];
+
+const calendarTimesByDate = calendarAvailableTimes.reduce(
+  (groups: Record<string, number[]>, item) => {
+    const [hours, minutes] = item.time.split(":").map(Number);
+    const totalMinutes = hours * 60 + minutes;
+
+    if (!groups[item.date]) {
+      groups[item.date] = [];
+    }
+
+    groups[item.date].push(totalMinutes);
+
+    return groups;
+  },
+  {}
+);
+
+Object.values(calendarTimesByDate).forEach((dayTimes) => {
+  const sortedTimes = [...dayTimes].sort((a, b) => a - b);
+
+  for (let i = 1; i < sortedTimes.length; i++) {
+    const difference = sortedTimes[i] - sortedTimes[i - 1];
+
+    if (difference > 0) {
+      calendarTimeDifferences.push(difference);
+    }
+  }
+});
+
+const calendarIntervalMinutes =
+  calendarTimeDifferences.length > 0
+    ? Math.min(...calendarTimeDifferences)
+    : 60;
+
+const calendarEndMinutes =
+  calendarAvailableTimeMinutes.length > 0
+    ? latestCalendarTime + calendarIntervalMinutes + 60
+    : 20 * 60;
+
+const calendarTimeLabels = [];
+
+for (
+  let minutes = calendarStartMinutes;
+  minutes <= calendarEndMinutes;
+  minutes += calendarIntervalMinutes
+) {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+
+  calendarTimeLabels.push(
+    `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`
+  );
+}
+const getCalendarTimeMinutes = (time: string) => {
+  const [hours, minutes] = time.split(":").map(Number);
+
+  return hours * 60 + minutes;
+};
+
 
 const isCurrentTimeInsideCalendar =
   currentTimeMinutes >= calendarStartMinutes &&
@@ -1475,25 +1614,18 @@ if (!confirmed) {
   }
 
 
-  const uniqueDates = [...new Set(generatedTimes.map((slot) => slot.date))];
- 
-
-  for (const date of uniqueDates) {
-    
-
-    const { error } = await supabase
+  const { error: deleteError } = await supabase
   .from("available_times")
   .delete()
   .eq("salon_id", salon.id)
-  .eq("date", date);
+  .gte("date", scheduleStartDate)
+  .lte("date", scheduleEndDate);
 
-
-    if (error) {
-      console.error(error);
-      alert("Greška pri brisanju termina.");
-      return;
-    }
-  }
+if (deleteError) {
+  console.error(deleteError);
+  alert("Greška pri brisanju termina.");
+  return;
+}
 
   const timesToSave = generatedTimes.map((slot) => ({
     salon_id: salon.id,
@@ -1513,6 +1645,7 @@ if (!confirmed) {
   }
 
   await fetchTimes(scheduleStartDate);
+await fetchCalendarAvailableTimes();
 
 alert("Termini uspješno zamijenjeni.");
 setTimesSaved(true);
@@ -3632,7 +3765,7 @@ style={{
 >
   Prethodne rezervacije
 </button>
-  {showPreviousBookings && (
+  {(showPreviousBookings || !isCurrentCalendarWeek) && (
   <button
     onClick={() => {
       const previousWeek = new Date(calendarWeekStart);
@@ -3889,28 +4022,14 @@ style={{
 )}
     </div>
 
-    {[
-      "08:00",
-      "09:00",
-      "10:00",
-      "11:00",
-      "12:00",
-      "13:00",
-      "14:00",
-      "15:00",
-      "16:00",
-      "17:00",
-      "18:00",
-      "19:00",
-      "20:00",
-    ].map((time) => (
+    {calendarTimeLabels.map((time) => (
       <div
   key={time}
   className="grid last:border-b-0"
   style={{
     gridTemplateColumns: calendarGridTemplateColumns,
     borderBottom: "1px solid #ead1d1",
-    minHeight: "80px",
+    minHeight: `${(calendarIntervalMinutes / 60) * 80}px`,
   }}
 >
         <div
@@ -3923,14 +4042,18 @@ style={{
   {time}
 
   {isCurrentTimeInsideCalendar &&
-  time === `${String(currentTime.getHours()).padStart(2, "0")}:00` && (
+currentTimeMinutes >= getCalendarTimeMinutes(time) &&
+currentTimeMinutes <
+  getCalendarTimeMinutes(time) + calendarIntervalMinutes && (
     <>
       <div
         style={{
           position: "absolute",
           left: "12px",
           right: 0,
-          top: `${(currentTime.getMinutes() / 60) * 80}px`,
+          top: `${
+  ((currentTimeMinutes - getCalendarTimeMinutes(time)) / 60) * 80
+}px`,
           height: "0.5px",
           backgroundColor: "#611a1a",
           zIndex: 2,
@@ -3942,7 +4065,9 @@ style={{
         style={{
           position: "absolute",
           left: "8px",
-          top: `calc(${(currentTime.getMinutes() / 60) * 80}px - 4px)`,
+          top: `calc(${
+  ((currentTimeMinutes - getCalendarTimeMinutes(time)) / 60) * 80
+}px - 4px)`,
           width: "9px",
           height: "9px",
           borderRadius: "50%",
@@ -3985,14 +4110,18 @@ const isToday =
     backgroundColor: isToday ? "#fdf8f8" : "transparent",
   }}
 >
-  {isCurrentTimeInsideCalendar &&
-  time === `${String(currentTime.getHours()).padStart(2, "0")}:00` && (
+ {isCurrentTimeInsideCalendar &&
+  currentTimeMinutes >= getCalendarTimeMinutes(time) &&
+  currentTimeMinutes <
+    getCalendarTimeMinutes(time) + calendarIntervalMinutes && (
     <div
       style={{
         position: "absolute",
         left: 0,
         right: 0,
-        top: `${(currentTime.getMinutes() / 60) * 80}px`,
+        top: `${
+          ((currentTimeMinutes - getCalendarTimeMinutes(time)) / 60) * 80
+        }px`,
         height: "0.5px",
         backgroundColor: "#611a1a",
         zIndex: 2,
@@ -4001,7 +4130,7 @@ const isToday =
     />
   )}
       {dayBookings
-  .filter((booking) => booking.booking_time.startsWith(time.slice(0, 2)))
+  .filter((booking) => booking.booking_time.slice(0, 5) === time)
   .map((booking) => {
    const [bookingHour, bookingMinute] = booking.booking_time
   .split(":")
@@ -4102,9 +4231,9 @@ const shortCustomerName = (() => {
     style={{
   position: "absolute",
   zIndex: 1,
-  top: `${(Number(booking.booking_time.split(":")[1]) / 60) * 80}px`,
+  top: "0px",
   left: `calc(${bookingColumn * bookingWidth}% + 2px)`,
-width: `calc(${bookingWidth}% - 4px)`,
+  width: `calc(${bookingWidth}% - 4px)`,
   height: `${((booking.duration_minutes || 30) / 60) * 80}px`,
   backgroundColor: barberColor.backgroundColor,
 color: barberColor.textColor,
