@@ -155,6 +155,7 @@ const [closedEndDate, setClosedEndDate] = useState("");
 const [closedBarberId, setClosedBarberId] = useState<number | null>(null);
 const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
 const [calendarBarberFilter, setCalendarBarberFilter] = useState<number | "all">("all");
+const isSingleBarberFiltered = calendarBarberFilter !== "all";
 const [showBarberFilterMenu, setShowBarberFilterMenu] = useState(false);
 const [showPreviousBookings, setShowPreviousBookings] = useState(false);
 const [calendarWeekStart, setCalendarWeekStart] = useState(() => {
@@ -1743,45 +1744,7 @@ if (!isLoggedIn) {
       Upravljajte rezervacijama, uslugama, frizerima i informacijama o salonu.
     </p>
   </div>
-{showNotifications && (
-  <div className="mb-8 mt-6 rounded-2xl bg-white p-6 shadow">
-  <h2 className="mb-4 text-2xl font-bold">
-    🔔 Notiser
-  </h2>
 
-  {notifications.length === 0 ? (
-    <p>Inga notiser.</p>
-  ) : (
-    <div className="space-y-3">
-      {notifications.map((notification) => (
-  <div
-    key={notification.id}
-    className="rounded-xl border p-4"
-  >
-    <p className="font-semibold">
-      {notification.title}
-    </p>
-
-    <p className="text-gray-600">
-      {notification.message}
-    </p>
-
-    {!notification.is_read && (
-      <button
-        onClick={() =>
-          markNotificationAsRead(notification.id)
-        }
-        className="mt-3 rounded-lg bg-black px-4 py-2 text-white"
-      >
-        ✓ Markera som läst
-      </button>
-    )}
-  </div>
-))}
-    </div>
-  )}
-</div>
-)}
   
 
   <div className="flex items-center gap-3">
@@ -1885,13 +1848,63 @@ style={{
 )}
 </div>
 
+  <div style={{ position: "relative", display: "inline-block" }}>
   <button
-  onClick={() => setShowNotifications(!showNotifications)}
-  className="h-12 rounded-xl px-5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
-  style={{ backgroundColor: "#611a1a" }}
->
-  🔔 Notifikacije
-</button>
+    onClick={() => setShowNotifications(!showNotifications)}
+    className="h-12 rounded-xl px-5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+    style={{ backgroundColor: "#611a1a" }}
+  >
+    🔔 Notifikacije
+  </button>
+  {showNotifications && (
+  <div
+    className="z-50 rounded-2xl bg-white p-6 shadow"
+    style={{
+      position: "absolute",
+      top: "100%",
+      right: 0,
+      marginTop: "8px",
+      width: "360px",
+    }}
+  >
+  <h2 className="mb-4 text-2xl font-bold">
+    🔔 Notiser
+  </h2>
+
+  {notifications.length === 0 ? (
+    <p>Inga notiser.</p>
+  ) : (
+    <div className="space-y-3">
+      {notifications.map((notification) => (
+  <div
+    key={notification.id}
+    className="rounded-xl border p-4"
+  >
+    <p className="font-semibold">
+      {notification.title}
+    </p>
+
+    <p className="text-gray-600">
+      {notification.message}
+    </p>
+
+    {!notification.is_read && (
+      <button
+        onClick={() =>
+          markNotificationAsRead(notification.id)
+        }
+        className="mt-3 rounded-lg bg-black px-4 py-2 text-white"
+      >
+        ✓ Markera som läst
+      </button>
+    )}
+  </div>
+))}
+    </div>
+  )}
+</div>
+)}
+</div>
 
   <button
   onClick={() => setIsLoggedIn(false)}
@@ -4072,13 +4085,26 @@ style={{
   }}
 >
         <div
-  className="px-3 py-5 text-sm font-medium text-gray-500"
+  className="px-3 text-sm font-medium text-gray-500"
   style={{
     position: "relative",
     borderRight: "1px solid #ead1d1",
   }}
 >
+  <span
+  style={{
+    position: "absolute",
+    left: "12px",
+    top: "0px",
+transform: "translateY(-50%)",
+    zIndex: 4,
+    backgroundColor: "white",
+    paddingRight: "6px",
+    lineHeight: 1,
+  }}
+>
   {time}
+</span>
 
   {isCurrentTimeInsideCalendar &&
 currentTimeMinutes >= getCalendarTimeMinutes(time) &&
@@ -4239,15 +4265,49 @@ for (const item of overlappingBookings) {
   }
 }
 
+const singleBarberColumns = new Map<number, number>();
+const singleBarberColumnEnds: number[] = [];
+
+if (isSingleBarberFiltered) {
+  for (const item of overlappingBookings) {
+    const [itemHour, itemMinute] = item.booking_time
+      .split(":")
+      .map(Number);
+
+    const itemStart = itemHour * 60 + itemMinute;
+    const itemEnd =
+      itemStart + (item.duration_minutes || 30);
+
+    let columnIndex = singleBarberColumnEnds.findIndex(
+      (columnEnd) => columnEnd <= itemStart
+    );
+
+    if (columnIndex === -1) {
+      columnIndex = singleBarberColumnEnds.length;
+      singleBarberColumnEnds.push(itemEnd);
+    } else {
+      singleBarberColumnEnds[columnIndex] = itemEnd;
+    }
+
+    singleBarberColumns.set(item.id, columnIndex);
+  }
+}
+
 const currentBarberKey =
   booking.barber_id != null
     ? `barber-${booking.barber_id}`
     : `booking-${booking.id}`;
 
-const bookingColumn = barberColumns.get(currentBarberKey) ?? 0;
+const bookingColumn = isSingleBarberFiltered
+  ? singleBarberColumns.get(booking.id) ?? 0
+  : barberColumns.get(currentBarberKey) ?? 0;
 
-const bookingWidth =
-  100 / Math.max(barberColumns.size, 1);
+const bookingWidth = isSingleBarberFiltered
+  ? 100 / Math.max(singleBarberColumnEnds.length, 1)
+  : 100 / Math.max(barberColumns.size, 1);
+
+
+  
   const isThreeOrMoreOverlapping = barberColumns.size >= 3;
 
 const shortCustomerName = (() => {
@@ -4261,6 +4321,40 @@ const shortCustomerName = (() => {
 })();
 
   const barberColor = getBarberColor(booking.barber_id);
+  const isAllBarbersView = calendarBarberFilter === "all";
+
+const isMultiStepBooking = calendarServiceSteps.some(
+  (step) => step.service_id === booking.service_id
+);
+
+const isLaterOverlappingMultiStepBooking =
+  isAllBarbersView &&
+  isMultiStepBooking &&
+  overlappingBookings.some((item) => {
+    if (item.id === booking.id) return false;
+
+    // Måste vara samma frisör
+    if (item.barber_id !== booking.barber_id) return false;
+
+    // Den andra bokningen måste också vara en flerstegstjänst
+    const itemIsMultiStep = calendarServiceSteps.some(
+      (step) => step.service_id === item.service_id
+    );
+
+    if (!itemIsMultiStep) return false;
+
+    const [itemHour, itemMinute] = item.booking_time
+      .split(":")
+      .map(Number);
+
+    const itemStart = itemHour * 60 + itemMinute;
+
+    // Den här bokningen måste börja senare
+    return itemStart < bookingStart;
+  });
+  const multiStepOverlapInset =
+  isLaterOverlappingMultiStepBooking ? 4 : 0;
+
   const isParallelBooking = overlappingBookings.some((item) => {
   if (item.id === booking.id) return false;
 
@@ -4303,13 +4397,62 @@ const shortCustomerName = (() => {
   return false;
 });
 
-const isMultiStepBooking = calendarServiceSteps.some(
-  (step) => step.service_id === booking.service_id
-);
+const shouldInsetParallelBooking =
+  isAllBarbersView && isParallelBooking;
 
-   return (
+const parallelInset = shouldInsetParallelBooking ? 6 : 0;
+
+const hasParallelBookingInside = (() => {
+  if (!isAllBarbersView || !isMultiStepBooking) {
+    return false;
+  }
+
+  const bookingServiceSteps = calendarServiceSteps.filter(
+    (step) => step.service_id === booking.service_id
+  );
+
+  if (bookingServiceSteps.length === 0) {
+    return false;
+  }
+
+  let stepStart = bookingStart;
+
+  for (const step of bookingServiceSteps) {
+    const stepDuration = Number(step.duration_minutes) || 0;
+    const stepEnd = stepStart + stepDuration;
+
+    if (!step.is_barber_busy) {
+      const hasBookingInFreeStep = overlappingBookings.some((item) => {
+        if (item.id === booking.id) return false;
+
+        // Bara samma frisör
+        if (item.barber_id !== booking.barber_id) return false;
+
+        const [itemHour, itemMinute] = item.booking_time
+          .split(":")
+          .map(Number);
+
+        const itemStart = itemHour * 60 + itemMinute;
+        const itemEnd =
+          itemStart + (item.duration_minutes || 30);
+
+        return itemStart >= stepStart && itemEnd <= stepEnd;
+      });
+
+      if (hasBookingInFreeStep) {
+        return true;
+      }
+    }
+
+    stepStart = stepEnd;
+  }
+
+  return false;
+})();
+
+   return [
   <div
-    key={booking.id}
+    key={`booking-${booking.id}`}
     onClick={() => {
   setSelectedBooking(booking);
 }}
@@ -4317,18 +4460,23 @@ const isMultiStepBooking = calendarServiceSteps.some(
   position: "absolute",
   zIndex: 1,
   top: "0px",
-  left: `calc(${bookingColumn * bookingWidth}% + 2px)`,
-  width: `calc(${bookingWidth}% - 4px)`,
+  left: `calc(${bookingColumn * bookingWidth}% + ${
+  2 + parallelInset + multiStepOverlapInset
+}px)`,
+
+width: `calc(${bookingWidth}% - ${
+  4 + parallelInset * 2 + multiStepOverlapInset * 2
+}px)`,
   height: `${((booking.duration_minutes || 30) / 60) * 80}px`,
   backgroundColor: barberColor.backgroundColor,
 color: barberColor.textColor,
-border: isParallelBooking
-  ? `3px solid ${barberColor.borderColor}`
-  : `1px solid ${barberColor.borderColor}`,
+border:
+  hasParallelBookingInside
+    ? `1px solid ${barberColor.textColor}`
+    : isAllBarbersView && isParallelBooking
+    ? `1px solid ${barberColor.textColor}`
+    : `1px solid ${barberColor.borderColor}`,
 
-borderBottom: isMultiStepBooking
-  ? `4px solid ${barberColor.borderColor}`
-  : undefined,
 
 borderRadius: "8px",
   padding:
@@ -4429,8 +4577,33 @@ cursor: "pointer",
   </div>
 )}
 </div>
-</div>
-    );
+</div>,
+
+hasParallelBookingInside && !isLaterOverlappingMultiStepBooking ? (
+  <div
+    key={`end-line-${booking.id}`}
+    style={{
+      position: "absolute",
+      zIndex: 3,
+      top: `${((booking.duration_minutes || 30) / 60) * 80 - 6}px`,
+      left: `calc(${bookingColumn * bookingWidth}% + 2px)`,
+      width: `calc(${bookingWidth}% - 4px)`,
+      height: "6px",
+
+      borderLeft: `1px solid ${barberColor.textColor}`,
+      borderRight: `1px solid ${barberColor.textColor}`,
+      borderBottom: `1px solid ${barberColor.textColor}`,
+
+      borderBottomLeftRadius: "8px",
+      borderBottomRightRadius: "8px",
+
+      boxSizing: "border-box",
+      pointerEvents: "none",
+    }}
+  />
+) : null,
+
+];
   })}
     </div>
   );
