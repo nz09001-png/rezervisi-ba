@@ -4144,7 +4144,8 @@ const isToday =
   key={index}
   style={{
     minHeight: `${(calendarIntervalMinutes / 60) * 80}px`,
-    borderRight: index < 6 ? "1px solid #ead1d1" : "none",
+    borderRight:
+  index < 6 ? "1.5px solid rgba(97, 26, 26, 0.35)" : "none",
     position: "relative",
     backgroundColor: isToday ? "#fdf8f8" : "transparent",
   }}
@@ -4288,12 +4289,12 @@ const shortCustomerName = (() => {
 
     if (!step.is_barber_busy) {
       const isInsideFreeStep =
-  bookingStart >= stepStart &&
-  bookingEnd <= stepEnd;
+        bookingStart >= stepStart &&
+        bookingEnd <= stepEnd;
 
-if (isInsideFreeStep) {
-  return true;
-}
+      if (isInsideFreeStep) {
+        return true;
+      }
     }
 
     stepStart = stepEnd;
@@ -4301,6 +4302,10 @@ if (isInsideFreeStep) {
 
   return false;
 });
+
+const isMultiStepBooking = calendarServiceSteps.some(
+  (step) => step.service_id === booking.service_id
+);
 
    return (
   <div
@@ -4320,7 +4325,12 @@ color: barberColor.textColor,
 border: isParallelBooking
   ? `3px solid ${barberColor.borderColor}`
   : `1px solid ${barberColor.borderColor}`,
-  borderRadius: "8px",
+
+borderBottom: isMultiStepBooking
+  ? `4px solid ${barberColor.borderColor}`
+  : undefined,
+
+borderRadius: "8px",
   padding:
   (booking.duration_minutes || 30) <= 30
     ? "4px 6px"
@@ -4365,7 +4375,8 @@ cursor: "pointer",
       fontWeight: 500,
       opacity: 0.85,
       display: "-webkit-box",
-      WebkitLineClamp: 1,
+      WebkitLineClamp:
+  (booking.duration_minutes || 30) >= 60 ? 2 : 1,
       WebkitBoxOrient: "vertical",
       overflow: "hidden",
     }}
@@ -4404,6 +4415,19 @@ cursor: "pointer",
       {booking.barber_name || "Bilo koji frizer"}
     </div>
     )}
+    {(booking.duration_minutes || 30) >= 60 && (
+  <div
+    style={{
+      marginTop: "3px",
+      fontSize: "9px",
+      fontWeight: 500,
+      opacity: 0.55,
+      lineHeight: 1.1,
+    }}
+  >
+    {booking.duration_minutes || 30} min
+  </div>
+)}
 </div>
 </div>
     );
@@ -4470,15 +4494,22 @@ cursor: "pointer",
   }}
 >
   <div>
-    <strong>Usluga:</strong>{" "}
-    {selectedBooking.service || "Nije odabrano"}
-  </div>
+  <strong>Usluga:</strong>{" "}
+  {selectedBooking.service || "Nije odabrano"}
+  {calendarServiceSteps.some(
+    (step) => step.service_id === selectedBooking.service_id
+  ) && " (usluga s više koraka)"}
+</div>
 
-  <div>
-    <strong>Frizer:</strong>{" "}
-    {selectedBooking.barber_name || "Bilo koji frizer"}
-  </div>
+<div>
+  <strong>Trajanje usluge:</strong>{" "}
+  {selectedBooking.duration_minutes || 30} minuta
+</div>
 
+<div>
+  <strong>Frizer:</strong>{" "}
+  {selectedBooking.barber_name || "Bilo koji frizer"}
+</div>
   <div>
   <strong>Datum:</strong>{" "}
   {selectedBooking.booking_date
