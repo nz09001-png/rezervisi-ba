@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { createPortal } from "react-dom";
+import { FaInstagram, FaFacebookF, FaTiktok } from "react-icons/fa";
 
 
 export default function SalonPage() {
@@ -13,6 +14,7 @@ export default function SalonPage() {
 const [serviceBarbers, setServiceBarbers] = useState<any[]>([]);
   const [salon, setSalon] = useState<any>(null);
   const [services, setServices] = useState<any[]>([]);
+  const [serviceCategories, setServiceCategories] = useState<any[]>([]);
   const [times, setTimes] = useState<any[]>([]);
   const [salonImages, setSalonImages] = useState<any[]>([]);
   const [galleryIndex, setGalleryIndex] = useState(0);
@@ -85,7 +87,26 @@ useEffect(() => {
   }
 
   fetchServices();
+  fetchServiceCategories();
 }, [salon]);
+
+async function fetchServiceCategories() {
+  if (!salon?.id) return;
+
+  const { data, error } = await supabase
+    .from("service_categories")
+    .select("*")
+    .eq("salon_id", salon.id)
+    .order("sort_order", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  setServiceCategories(data || []);
+}
+
 useEffect(() => {
   async function fetchSalonImages() {
     if (!salon?.id) return;
@@ -304,16 +325,95 @@ return (
 </div>
 
         <div style={{ marginBottom: "48px" }}>
+  <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: "18px",
+  }}
+>
   <h2
     style={{
       color: "#611a1a",
       fontSize: "28px",
       fontWeight: "600",
-      marginBottom: "18px",
+      margin: 0,
     }}
   >
     Lokacija
   </h2>
+
+  {(salon.instagram_url || salon.facebook_url || salon.tiktok_url) && (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "12px",
+      }}
+    >
+      {salon.instagram_url && (
+        <a
+          href={salon.instagram_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Instagram"
+          title="Instagram"
+          style={{
+            color: "#611a1a",
+            textDecoration: "none",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "26px",
+          }}
+        >
+          <FaInstagram />
+        </a>
+      )}
+
+      {salon.facebook_url && (
+        <a
+          href={salon.facebook_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Facebook"
+          title="Facebook"
+          style={{
+            color: "#611a1a",
+            textDecoration: "none",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "26px",
+          }}
+        >
+          <FaFacebookF />
+        </a>
+      )}
+
+      {salon.tiktok_url && (
+        <a
+          href={salon.tiktok_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="TikTok"
+          title="TikTok"
+          style={{
+            color: "#611a1a",
+            textDecoration: "none",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "26px",
+          }}
+        >
+          <FaTiktok />
+        </a>
+      )}
+    </div>
+  )}
+</div>
 
   <div
     style={{
@@ -381,16 +481,21 @@ return (
     </div>
 
     {/* INFORMACIJE - DESNO */}
-    <div
-      style={{
-  height: isMobile ? "auto" : "360px",
-  display: "grid",
-  gridTemplateColumns: isMobile ? "1fr 1fr" : "1fr",
-gridTemplateRows: isMobile ? "auto auto" : "repeat(3, 1fr)",
-  gap: "14px",
-  order: isMobile ? 1 : 2,
-}}
-    >
+<div
+  style={{
+    height: isMobile ? "auto" : "360px",
+    display: "grid",
+    gridTemplateColumns: isMobile ? "1fr 1fr" : "1fr",
+    gridTemplateRows: isMobile
+      ? "auto auto auto"
+      : "auto repeat(3, 1fr)",
+    gap: "14px",
+    order: isMobile ? 1 : 2,
+  }}
+>
+
+
+
       <div
         style={{
           border: "1px solid rgba(97, 26, 26, 0.18)",
@@ -728,8 +833,37 @@ gap: "24px",
   Usluge
 </h2>
 
-<div className="mb-8 space-y-4">
-  {services.map((service) => (
+<div className="mb-8 space-y-12">
+  {serviceCategories.map((category) => {
+    const categoryServices = services.filter(
+      (service) => service.category_id === category.id
+    );
+
+    if (categoryServices.length === 0) return null;
+
+    return (
+      <div
+  key={category.id}
+  style={{
+    marginTop: "32px",
+  }}
+>
+        <h2
+  style={{
+    fontSize: "18px",
+    fontWeight: "700",
+    color: "#611a1a",
+    marginBottom: "14px",
+    paddingBottom: "8px",
+    borderBottom: "2px solid rgba(97, 26, 26, 0.22)",
+    letterSpacing: "0.2px",
+  }}
+>
+  {category.name}
+</h2>
+
+        <div className="space-y-4">
+          {categoryServices.map((service) => (
     <div
       key={service.id}
       style={{
@@ -931,8 +1065,12 @@ gap: "24px",
       >
         Rezerviši
       </Link>
-    </div>
-  ))}
+        </div>
+          ))}
+        </div>
+      </div>
+    );
+  })}
 </div>
 
 

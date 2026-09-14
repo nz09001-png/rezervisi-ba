@@ -99,10 +99,17 @@ const [galleryPreviewUrl, setGalleryPreviewUrl] = useState<string | null>(null);
 const [phone, setPhone] = useState("");
 const [address, setAddress] = useState("");
 const [openingHours, setOpeningHours] = useState("");
+
+const [instagramUrl, setInstagramUrl] = useState("");
+const [facebookUrl, setFacebookUrl] = useState("");
+const [tiktokUrl, setTiktokUrl] = useState("");
 const [showBarbers, setShowBarbers] = useState(false);
 const [heroPosition, setHeroPosition] = useState("center");
 const [services, setServices] = useState<any[]>([]);
+const [serviceCategories, setServiceCategories] = useState<any[]>([]);
+const [newServiceCategoryName, setNewServiceCategoryName] = useState("");
 const [serviceName, setServiceName] = useState("");
+const [selectedServiceCategoryId, setSelectedServiceCategoryId] = useState<number | "">("");
 const [editingServiceId, setEditingServiceId] = useState<number | null>(null);
 const [serviceDescription, setServiceDescription] = useState("");
 const serviceFormRef = useRef<HTMLDivElement | null>(null);
@@ -183,6 +190,7 @@ const [showDateFilter, setShowDateFilter] = useState(false);
 function handleCancelServiceEdit() {
   setEditingServiceId(null);
   setServiceName("");
+  setSelectedServiceCategoryId("");
   setServiceDescription("");
   setServicePrice("");
   setServiceDuration("60");
@@ -202,6 +210,7 @@ function handleCancelServiceEdit() {
 async function handleEditService(service: any) {
   setEditingServiceId(service.id);
   setServiceName(service.name || "");
+  setSelectedServiceCategoryId(service.category_id ?? "");
   setServiceDescription(service.description || "");
   setServicePrice(
     service.price !== null && service.price !== undefined
@@ -340,10 +349,12 @@ async function fetchCalendarServiceSteps() {
   setCalendarServiceSteps(data || []);
 }
 
-  async function fetchSalonInfo() {
+ async function fetchSalonInfo() {
   const { data, error } = await supabase
     .from("salons")
-    .select("description, phone, address, opening_hours, hero_position")
+    .select(
+      "description, phone, address, opening_hours, hero_position, instagram_url, facebook_url, tiktok_url"
+    )
     .eq("id", salon?.id)
     .single();
 
@@ -357,6 +368,10 @@ async function fetchCalendarServiceSteps() {
   setAddress(data.address || "");
   setOpeningHours(data.opening_hours || "");
   setHeroPosition(data.hero_position || "center");
+
+  setInstagramUrl(data.instagram_url || "");
+  setFacebookUrl(data.facebook_url || "");
+  setTiktokUrl(data.tiktok_url || "");
 }
 async function fetchServices() {
   const { data, error } = await supabase
@@ -372,6 +387,77 @@ async function fetchServices() {
 
   setServices(data || []);
 }
+
+async function fetchServiceCategories() {
+  const { data, error } = await supabase
+    .from("service_categories")
+    .select("*")
+    .eq("salon_id", salon?.id)
+    .order("sort_order", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  setServiceCategories(data || []);
+}
+
+async function handleAddServiceCategory() {
+  if (!newServiceCategoryName.trim() || !salon?.id) return;
+
+  const nextSortOrder =
+    serviceCategories.length > 0
+      ? Math.max(...serviceCategories.map((category) => category.sort_order || 0)) + 1
+      : 1;
+
+  const { error } = await supabase
+    .from("service_categories")
+    .insert({
+      salon_id: salon.id,
+      name: newServiceCategoryName.trim(),
+      sort_order: nextSortOrder,
+    });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  setNewServiceCategoryName("");
+  fetchServiceCategories();
+}
+
+async function handleDeleteServiceCategory(id: number) {
+  const { data: linkedServices, error: servicesError } = await supabase
+    .from("services")
+    .select("id")
+    .eq("category_id", id)
+    .limit(1);
+
+  if (servicesError) {
+    console.error(servicesError);
+    return;
+  }
+
+  if (linkedServices && linkedServices.length > 0) {
+    alert("Kategorija se ne može obrisati jer sadrži usluge.");
+    return;
+  }
+
+  const { error } = await supabase
+    .from("service_categories")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  fetchServiceCategories();
+}
+
 async function fetchTimes(date?: string) {
   let query = supabase
     .from("available_times")
@@ -770,6 +856,11 @@ async function handleDeleteClosedDay(id: number) {
 }
 
 async function handleAddService() {
+  if (!selectedServiceCategoryId) {
+    alert("Izaberite kategoriju.");
+    return;
+  }
+
   if (!serviceName.trim()) {
     alert("Unesite naziv usluge.");
     return;
@@ -789,7 +880,8 @@ async function handleAddService() {
         ? Number(serviceDuration)
         : null,
     show_price: showPrice,
-    show_duration: showDuration,
+show_duration: showDuration,
+category_id: selectedServiceCategoryId || null,
   })
   .eq("id", editingServiceId)
   .select();
@@ -890,6 +982,7 @@ return;
 
   show_price: showPrice,
 show_duration: showDuration,
+category_id: selectedServiceCategoryId || null,
 })
 .select()
 .single();
@@ -936,15 +1029,27 @@ if (selectedServiceBarberIds.length > 0) {
   }
 }
 
-setServiceName("");
+
 
   setServiceName("");
+setSelectedServiceCategoryId("");
 setServiceDescription("");
 setServicePrice("");
 setServiceDuration("60");
-
 setShowPrice(true);
 setShowDuration(true);
+
+setHasServiceSteps(false);
+
+setServiceSteps([
+  {
+    name: "",
+    duration_minutes: "",
+    is_barber_busy: true,
+  },
+]);
+
+setSelectedServiceBarberIds([]);
 
 fetchServices();
 }
@@ -1130,14 +1235,18 @@ async function handleDeleteGalleryImage(id: number) {
 async function handleSalonInfoUpdate() {
   const { data: updatedSalon, error } = await supabase
   .from("salons")
-  .update({
-    description: description,
-    phone: phone,
-    address: address,
-    opening_hours: openingHours,
-    hero_position: heroPosition,
-    show_barbers: showBarbers,
-  })
+.update({
+  description: description,
+  phone: phone,
+  address: address,
+  opening_hours: openingHours,
+  hero_position: heroPosition,
+  show_barbers: showBarbers,
+
+  instagram_url: instagramUrl,
+  facebook_url: facebookUrl,
+  tiktok_url: tiktokUrl,
+})
   .eq("id", salon?.id)
   .select("id, show_barbers")
   .single();
@@ -1204,11 +1313,12 @@ useEffect(() => {
     fetchBookings();
     fetchSalonInfo();
     fetchServices();
+    fetchServiceCategories();
     fetchTimes();
     fetchBarbers();
     fetchClosedDays();
-fetchNotifications();
-fetchGalleryImages();
+    fetchNotifications();
+    fetchGalleryImages();
   }
 }, [isLoggedIn, salon]);
 
@@ -1803,6 +1913,17 @@ style={{
 }}
     >
       {selectedSettings.includes("info") ? "✓  " : ""}Informacije o salonu
+    </button>
+
+        <button
+      onClick={() => toggleSetting("serviceCategories")}
+      className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-100"
+      style={{
+        padding: "8px 12px",
+      }}
+    >
+      {selectedSettings.includes("serviceCategories") ? "✓  " : ""}
+      Kategorije usluga
     </button>
 
     <button
@@ -2501,6 +2622,36 @@ style={{ backgroundColor: "#ef4444" }}
   style={{ maxWidth: "450px" }}
   />
 
+<label className="mb-2 block font-medium">Instagram</label>
+<input
+  type="text"
+  placeholder="https://instagram.com/..."
+  value={instagramUrl}
+  onChange={(e) => setInstagramUrl(e.target.value)}
+  className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+  style={{ maxWidth: "450px" }}
+/>
+
+<label className="mb-2 block font-medium">Facebook</label>
+<input
+  type="text"
+  placeholder="https://facebook.com/..."
+  value={facebookUrl}
+  onChange={(e) => setFacebookUrl(e.target.value)}
+  className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+  style={{ maxWidth: "450px" }}
+/>
+
+<label className="mb-2 block font-medium">TikTok</label>
+<input
+  type="text"
+  placeholder="https://tiktok.com/@..."
+  value={tiktokUrl}
+  onChange={(e) => setTiktokUrl(e.target.value)}
+  className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+  style={{ maxWidth: "450px" }}
+/>
+
   <button
   onClick={handleSalonInfoUpdate}
   className="mt-4 rounded-xl px-5 py-3 font-medium text-white transition hover:opacity-90"
@@ -2511,6 +2662,73 @@ style={{ backgroundColor: "#ef4444" }}
 >
   Sačuvaj informacije
 </button>
+</div>
+)}
+
+{selectedSettings.includes("serviceCategories") && (
+  <div className="mb-6 rounded-2xl bg-white p-4 shadow">
+    <h2 className="mb-4 text-xl font-bold">Kategorije usluga</h2>
+
+    <p className="mb-6 text-sm text-gray-500">
+      Dodajte kategorije za organizaciju usluga na stranici salona.
+    </p>
+
+    <div
+  className="mb-4 space-y-2"
+  style={{
+    width: "500px",
+    maxWidth: "100%",
+  }}
+>
+  {serviceCategories.map((category) => (
+    <div
+      key={category.id}
+      className="flex items-center justify-between rounded-xl p-2"
+      style={{
+        width: "320px",
+        maxWidth: "100%",
+        backgroundColor: "#ffffff",
+        border: "1px solid #ead1d1",
+      }}
+    >
+      <span>{category.name}</span>
+
+      <button
+        type="button"
+        onClick={() => handleDeleteServiceCategory(category.id)}
+        className="rounded bg-red-500 px-3 py-1 text-white"
+      >
+        Obriši
+      </button>
+    </div>
+  ))}
+</div>
+
+<div className="flex items-center gap-3">
+  <input
+    type="text"
+    placeholder="Naziv kategorije"
+    value={newServiceCategoryName}
+    onChange={(e) => setNewServiceCategoryName(e.target.value)}
+    className="rounded-lg border p-3"
+    style={{
+      width: "320px",
+      maxWidth: "100%",
+    }}
+  />
+
+  <button
+  type="button"
+  onClick={handleAddServiceCategory}
+  className="rounded-xl px-5 py-3 font-medium text-white"
+  style={{
+    backgroundColor: "#611a1a",
+  }}
+>
+  + Dodaj kategoriju
+</button>
+</div>
+
 </div>
 )}
 
@@ -2538,6 +2756,18 @@ style={{ backgroundColor: "#ef4444" }}
   }}
 >
     <div>
+        
+        <p
+  className="mb-1 text-xs font-semibold"
+  style={{ color: "#611a1a" }}
+>
+  {
+    serviceCategories.find(
+      (category) => category.id === service.category_id
+    )?.name
+  }
+</p>
+
         <p className="text-lg font-semibold">
           {service.name}
         </p>
@@ -2605,6 +2835,26 @@ style={{ backgroundColor: "#ef4444" }}
   </div>
 
   <div ref={serviceFormRef}></div>
+  <div className="mb-3">
+  <select
+    value={selectedServiceCategoryId}
+    onChange={(e) =>
+      setSelectedServiceCategoryId(
+        e.target.value ? Number(e.target.value) : ""
+      )
+    }
+    className="w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+    style={{ maxWidth: "450px" }}
+  >
+    <option value="">Izaberi kategoriju</option>
+
+    {serviceCategories.map((category) => (
+      <option key={category.id} value={category.id}>
+        {category.name}
+      </option>
+    ))}
+  </select>
+</div>
   <input
   type="text"
   placeholder="Naziv usluge"
@@ -2770,7 +3020,7 @@ style={{ backgroundColor: "#ef4444" }}
 
     setServiceSteps(updatedSteps);
   }}
-  className="mb-3 block w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+  className="mb-3 block w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-4 focus:ring-[#611a1a]/25"
   style={{ maxWidth: "450px" }}
 />
 
@@ -2789,7 +3039,7 @@ style={{ backgroundColor: "#ef4444" }}
 
     setServiceSteps(updatedSteps);
   }}
-  className="mb-3 block w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+  className="mb-3 block w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-4 focus:ring-[#611a1a]/25"
 style={{ maxWidth: "450px" }}
 />
 
