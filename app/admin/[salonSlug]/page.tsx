@@ -140,6 +140,7 @@ const [generatedTimes, setGeneratedTimes] = useState<any[]>([]);
 const [showPreview, setShowPreview] = useState(false);
 const [timesSaved, setTimesSaved] = useState(false);
 const [newTime, setNewTime] = useState("");
+const [manualTimeBarberId, setManualTimeBarberId] = useState<number | "all">("all");
 const [startTime, setStartTime] = useState("09:00");
 const [endTime, setEndTime] = useState("17:00");
 const [intervalMinutes, setIntervalMinutes] = useState("30");
@@ -152,6 +153,7 @@ const [selectedDays, setSelectedDays] = useState([
 ]);
 const [scheduleStartDate, setScheduleStartDate] = useState("");
 const [scheduleEndDate, setScheduleEndDate] = useState("");
+const [selectedScheduleBarberIds, setSelectedScheduleBarberIds] = useState<number[]>([]);
 const [notifications, setNotifications] = useState<any[]>([]);
 const [barbers, setBarbers] = useState<any[]>([]);
 const [newBarberName, setNewBarberName] = useState("");
@@ -466,6 +468,10 @@ async function fetchTimes(date?: string) {
 
   if (date) {
     query = query.eq("date", date);
+  }
+
+  if (manualTimeBarberId !== "all") {
+    query = query.eq("barber_id", manualTimeBarberId);
   }
 
   const { data, error } = await query.order("time", {
@@ -1322,6 +1328,12 @@ useEffect(() => {
   }
 }, [isLoggedIn, salon]);
 
+useEffect(() => {
+  if (!selectedDate || !salon?.id) return;
+
+  fetchTimes(selectedDate);
+}, [manualTimeBarberId]);
+
 
 
 const today = new Date().toISOString().split("T")[0];
@@ -1626,6 +1638,11 @@ const todaysBookings = bookings.filter(
 );
 
 function handleGenerateTimes() {
+  if (selectedScheduleBarberIds.length === 0) {
+    alert("Izaberite najmanje jednog frizera.");
+    return;
+  }
+
   if (!scheduleStartDate || !scheduleEndDate) {
     alert("Odaberite početni i završni datum.");
     return;
@@ -1754,22 +1771,31 @@ if (!confirmed) {
   return;
 }
   if (!salon?.id) {
-    alert("Salon nije pronađen.");
-    return;
-  }
+  alert("Salon nije pronađen.");
+  return;
+}
 
-  if (generatedTimes.length === 0) {
-    alert("Nema generisanih termina.");
-    return;
-  }
+if (selectedScheduleBarberIds.length === 0) {
+  alert("Izaberite najmanje jednog frizera.");
+  return;
+}
+
+if (generatedTimes.length === 0) {
+  alert("Nema generisanih termina.");
+  return;
+}
 
 
-  const { error: deleteError } = await supabase
+const generatedDates = [
+  ...new Set(generatedTimes.map((slot) => slot.date)),
+];
+
+const { error: deleteError } = await supabase
   .from("available_times")
   .delete()
   .eq("salon_id", salon.id)
-  .gte("date", scheduleStartDate)
-  .lte("date", scheduleEndDate);
+  .in("barber_id", selectedScheduleBarberIds)
+  .in("date", generatedDates);
 
 if (deleteError) {
   console.error(deleteError);
@@ -1777,11 +1803,14 @@ if (deleteError) {
   return;
 }
 
-  const timesToSave = generatedTimes.map((slot) => ({
+  const timesToSave = selectedScheduleBarberIds.flatMap((barberId) =>
+  generatedTimes.map((slot) => ({
     salon_id: salon.id,
+    barber_id: barberId,
     date: slot.date,
     time: slot.time,
-  }));
+  }))
+);
 
  const { error: insertError } = await supabase
   .from("available_times")
@@ -3207,6 +3236,36 @@ formatWeekDay={(dayName) => {
   className="mb-4 w-full rounded-lg border p-2"
 />
 
+<div
+  className="mb-4"
+  style={{
+    width: "500px",
+    maxWidth: "100%",
+  }}
+>
+  <label className="mb-2 block text-sm font-medium">
+    Frizer
+  </label>
+
+  <select
+    value={manualTimeBarberId}
+    onChange={(e) =>
+      setManualTimeBarberId(
+        e.target.value === "all" ? "all" : Number(e.target.value)
+      )
+    }
+    className="w-full rounded-lg border p-2"
+  >
+    <option value="all">Cijeli salon</option>
+
+    {barbers.map((barber) => (
+      <option key={barber.id} value={barber.id}>
+        {barber.name}
+      </option>
+    ))}
+  </select>
+</div>
+
 {selectedDate && (
   <h4 className="mb-3 text-lg font-semibold">
     Termini za {format(new Date(`${selectedDate}T00:00:00`), "dd.MM.yyyy")}
@@ -3226,7 +3285,13 @@ formatWeekDay={(dayName) => {
     maxWidth: "100%",
   }}
 >
-  {times.map((item) => (
+  {times
+  .filter(
+    (item, index, array) =>
+      manualTimeBarberId !== "all" ||
+      index === array.findIndex((other) => other.time === item.time)
+  )
+  .map((item) => (
       <div
   key={item.id}
   className="flex items-center justify-between rounded-xl p-2"
@@ -3327,6 +3392,38 @@ formatWeekDay={(dayName) => {
   <p className="mt-1 text-sm text-gray-500">
     Odaberite radno vrijeme, interval i dane u sedmici.
   </p>
+
+  <div className="mt-4">
+  <p className="mb-2 font-semibold">Frizeri</p>
+
+  <div className="flex flex-wrap gap-4">
+    {barbers.map((barber) => (
+      <label
+        key={barber.id}
+        className="flex items-center gap-2 cursor-pointer"
+      >
+        <input
+          type="checkbox"
+          checked={selectedScheduleBarberIds.includes(barber.id)}
+          onChange={(e) => {
+            if (e.target.checked) {
+              setSelectedScheduleBarberIds((prev) => [
+                ...prev,
+                barber.id,
+              ]);
+            } else {
+              setSelectedScheduleBarberIds((prev) =>
+                prev.filter((id) => id !== barber.id)
+              );
+            }
+          }}
+        />
+
+        <span>{barber.name}</span>
+      </label>
+    ))}
+  </div>
+</div>
 
   <div className="mt-4 grid gap-4 md:grid-cols-2">
   <div>
@@ -3594,51 +3691,25 @@ style={{
         gap: "12px",
       }}
     >
-      <button
-        type="button"
-        onClick={handleSaveTimes}
-        disabled={generatedTimes.length === 0}
-        className="rounded-xl px-5 py-3 font-semibold"
-        style={{
-          backgroundColor:
-            generatedTimes.length === 0
-              ? "white"
-              : timesSaved
-              ? "#611a1a"
-              : "white",
-          color:
-            generatedTimes.length === 0
-              ? "#611a1a"
-              : timesSaved
-              ? "white"
-              : "#611a1a",
-          border: "1px solid #611a1a",
-          cursor:
-            generatedTimes.length === 0 ? "not-allowed" : "pointer",
-          opacity:
-            generatedTimes.length === 0 ? 0.5 : 1,
-        }}
-      >
-        {timesSaved ? "Sačuvano ✓" : "Sačuvaj termine"}
-      </button>
+      
 
       <button
-        type="button"
-        onClick={handleReplaceTimes}
-        disabled={generatedTimes.length === 0}
-        className="rounded-xl px-5 py-3 font-semibold"
-        style={{
-          backgroundColor: "#611a1a",
-          color: "white",
-          border: "1px solid #611a1a",
-          cursor:
-            generatedTimes.length === 0 ? "not-allowed" : "pointer",
-          opacity:
-            generatedTimes.length === 0 ? 0.5 : 1,
-        }}
-      >
-        Zamijeni termine
-      </button>
+  type="button"
+  onClick={handleReplaceTimes}
+  disabled={generatedTimes.length === 0}
+  className="rounded-xl px-5 py-3 font-semibold"
+  style={{
+    backgroundColor: "#611a1a",
+    color: "white",
+    border: "1px solid #611a1a",
+    cursor:
+      generatedTimes.length === 0 ? "not-allowed" : "pointer",
+    opacity:
+      generatedTimes.length === 0 ? 0.5 : 1,
+  }}
+>
+  {timesSaved ? "Sačuvano ✓" : "Sačuvaj termine"}
+</button>
     </div>
   </div>
 </div>

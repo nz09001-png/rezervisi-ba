@@ -324,14 +324,21 @@ useEffect(() => {
     const weekStart = formatDate(mondayDate);
     const weekEnd = formatDate(sundayDate);
 
-    const { data, error } = await supabase
-      .from("available_times")
-      .select("*")
-      .eq("salon_id", salonData.id)
-      .gte("date", weekStart)
-      .lte("date", weekEnd)
-      .order("date", { ascending: true })
-      .order("time", { ascending: true });
+let query = supabase
+  .from("available_times")
+  .select("*")
+  .eq("salon_id", salonData.id)
+  .gte("date", weekStart)
+  .lte("date", weekEnd);
+
+if (barberId) {
+  query = query.eq("barber_id", Number(barberId));
+}
+
+const { data, error } = await query
+  .order("date", { ascending: true })
+  .order("time", { ascending: true });
+  
 
     if (error) {
   console.error(error);
@@ -342,7 +349,7 @@ setAvailableTimes(data || []);
   }
 
   fetchAvailableTimes();
-}, [salonSlug, weekOffset]);
+}, [salonSlug, weekOffset, barberId]);
 useEffect(() => {
  async function fetchBookedTimes() {
   if (!salon) return;
@@ -852,7 +859,19 @@ isSelectedBarberIneligible ? (
 
   if (slot.date !== item.date) return null;
 
-  
+  if (!barberId) {
+  const firstMatchingSlotIndex = availableTimes.findIndex(
+    (availableSlot) =>
+      availableSlot.date === slot.date &&
+      availableSlot.time === slot.time
+  );
+
+  const currentSlotIndex = availableTimes.indexOf(slot);
+
+  if (currentSlotIndex !== firstMatchingSlotIndex) {
+    return null;
+  }
+}
 
 const slotMinutes = timeToMinutes(slot.time);
 const now = new Date();
@@ -898,23 +917,60 @@ const relevantBarbers =
       )
     : barbers;
 
+const hasEligibleBarberAvailable = barberId
+  ? true
+  : relevantBarbers.some((barber) =>
+      availableTimes.some(
+        (availableSlot) =>
+          availableSlot.date === item.date &&
+          availableSlot.time === slot.time &&
+          availableSlot.barber_id === barber.id
+      )
+    );
+
+if (!hasEligibleBarberAvailable) return null;
+
+const scheduledBarbersForSlot = relevantBarbers.filter((barber) =>
+  Array.from({ length: slotsNeeded }).every((_, index) => {
+    const nextTime = slotMinutes + index * 30;
+
+    return availableTimes.some(
+      (availableSlot) =>
+        availableSlot.date === item.date &&
+        availableSlot.barber_id === barber.id &&
+        timeToMinutes(availableSlot.time) === nextTime
+    );
+  })
+);
+
 const isBooked = barberId
   ? bookingsForSlot.length > 0
-  : relevantBarbers.length > 0 &&
-    relevantBarbers.every((barber) =>
+  : scheduledBarbersForSlot.length > 0 &&
+    scheduledBarbersForSlot.every((barber) =>
       busyBarberIds.includes(barber.id)
     );
-const hasEnoughSlots = Array.from({ length: slotsNeeded }).every((_, index) => {
-  const nextTime = slotMinutes + index * 30;
+const hasEnoughSlots = barberId
+  ? Array.from({ length: slotsNeeded }).every((_, index) => {
+      const nextTime = slotMinutes + index * 30;
 
-  const exists = availableTimes.some((availableSlot) => {
-    if (availableSlot.date !== item.date) return false;
+      return availableTimes.some(
+        (availableSlot) =>
+          availableSlot.date === item.date &&
+          timeToMinutes(availableSlot.time) === nextTime
+      );
+    })
+  : relevantBarbers.some((barber) =>
+      Array.from({ length: slotsNeeded }).every((_, index) => {
+        const nextTime = slotMinutes + index * 30;
 
-    return timeToMinutes(availableSlot.time) === nextTime;
-  });
-
-  return exists;
-});
+        return availableTimes.some(
+          (availableSlot) =>
+            availableSlot.date === item.date &&
+            availableSlot.barber_id === barber.id &&
+            timeToMinutes(availableSlot.time) === nextTime
+        );
+      })
+    );
   if (isBooked) return null;
 
 if (slotsNeeded > 1 && !hasEnoughSlots) return null;
