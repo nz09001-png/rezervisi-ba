@@ -92,12 +92,12 @@ useEffect(() => {
   async function fetchAvailableTimes() {
     if (!salonId || !date) return;
 
-    const { data, error } = await supabase
-      .from("available_times")
-      .select("time")
-      .eq("salon_id", salonId)
-      .eq("date", date)
-      .order("time", { ascending: true });
+const { data, error } = await supabase
+  .from("available_times")
+  .select("time, barber_id")
+  .eq("salon_id", salonId)
+  .eq("date", date)
+  .order("time", { ascending: true });
 
     if (error) {
       console.error(error);
@@ -329,27 +329,32 @@ if (
   return;
 }
 
-  setTimeTaken(false);
-  setLoading(true);
-
-  setTimeTaken(false);
-  setLoading(true);
+setTimeTaken(false);
+setLoading(true);
 
  
   const cancelToken = crypto.randomUUID();
   const requestedStart = timeToMinutes(time || "00:00");
 const serviceDuration = service?.duration_minutes || 30;
 const slotsNeeded = Math.ceil(serviceDuration / 30);
-const hasEnoughAvailableSlots = Array.from(
-  { length: slotsNeeded }
-).every((_, index) => {
-  const nextTime = requestedStart + index * 30;
+const barbersWithEnoughAvailableSlots = barbers.filter((barber) =>
+  Array.from({ length: slotsNeeded }).every((_, index) => {
+    const nextTime = requestedStart + index * 30;
 
-  return availableTimes.some(
-    (availableSlot) =>
-      timeToMinutes(availableSlot.time) === nextTime
-  );
-});
+    return availableTimes.some(
+      (availableSlot) =>
+        availableSlot.barber_id === barber.id &&
+        timeToMinutes(availableSlot.time) === nextTime
+    );
+  })
+);
+
+const hasEnoughAvailableSlots = barberId
+  ? barbersWithEnoughAvailableSlots.some(
+      (barber) => barber.id === Number(barberId)
+    )
+  : barbersWithEnoughAvailableSlots.length > 0;
+
 if (!hasEnoughAvailableSlots) {
   alert("Odabrani termin nije dostupan za cijelo trajanje usluge.");
   setLoading(false);
@@ -456,6 +461,9 @@ const busyBarberIds = overlappingBookings
 const availableBarber = !barberId
   ? relevantBarbers.find(
       (barber) =>
+        barbersWithEnoughAvailableSlots.some(
+          (availableBarber) => availableBarber.id === barber.id
+        ) &&
         !busyBarberIds.includes(barber.id) &&
         !closedBarberIdsForDay.includes(barber.id)
     )
@@ -538,7 +546,7 @@ router.replace(
   `/uspjesno?salon=${encodeURIComponent(salon || "")}&salonSlug=${encodeURIComponent(
     salonSlug || ""
   )}&service=${encodeURIComponent(service?.name || "")}&barber=${encodeURIComponent(
-    finalBarberName || ""
+    barberId ? finalBarberName || "" : "Bilo koji frizer"
   )}&price=${encodeURIComponent(
     service?.price?.toString() || ""
   )}&duration=${encodeURIComponent(

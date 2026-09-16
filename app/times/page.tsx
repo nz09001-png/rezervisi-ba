@@ -374,7 +374,7 @@ useEffect(() => {
 }
 
   fetchBookedTimes();
-}, [salon]);
+}, [salon, barberId]);
 
 useEffect(() => {
   const checkMobile = () => {
