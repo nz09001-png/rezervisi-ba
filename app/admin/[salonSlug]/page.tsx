@@ -675,26 +675,63 @@ async function handleAddTime() {
     alert("Unesite vrijeme.");
     return;
   }
-  if (times.some((item) => item.time === newTime)) {
-  alert("Ovo vrijeme već postoji.");
-  return;
-}
 
-  const { error } = await supabase.from("available_times").insert({
-  salon_id: salon?.id,
-  date: selectedDate,
-  time: newTime,
-})
+  if (!salon?.id || !selectedDate) return;
 
-  if (error) {
-    alert("Greška pri dodavanju vremena.");
-    console.error(error);
-    return;
+  if (manualTimeBarberId === "all") {
+    const existingBarberIds = times
+      .filter((item) => item.time === newTime)
+      .map((item) => item.barber_id);
+
+    const barbersToAdd = barbers.filter(
+      (barber) => !existingBarberIds.includes(barber.id)
+    );
+
+    if (barbersToAdd.length === 0) {
+      alert("Ovo vrijeme već postoji.");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("available_times")
+      .insert(
+        barbersToAdd.map((barber) => ({
+          salon_id: salon.id,
+          barber_id: barber.id,
+          date: selectedDate,
+          time: newTime,
+        }))
+      );
+
+    if (error) {
+      alert("Greška pri dodavanju vremena.");
+      console.error(error);
+      return;
+    }
+  } else {
+    if (times.some((item) => item.time === newTime)) {
+      alert("Ovo vrijeme već postoji.");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("available_times")
+      .insert({
+        salon_id: salon.id,
+        barber_id: manualTimeBarberId,
+        date: selectedDate,
+        time: newTime,
+      });
+
+    if (error) {
+      alert("Greška pri dodavanju vremena.");
+      console.error(error);
+      return;
+    }
   }
-  
 
   setNewTime("");
-fetchTimes(selectedDate);
+  fetchTimes(selectedDate);
 }
 async function handleDeleteTime(id: number) {
   const confirmDelete = confirm(
@@ -703,31 +740,59 @@ async function handleDeleteTime(id: number) {
 
   if (!confirmDelete) return;
 
-  const { error } = await supabase
-    .from("available_times")
-    .delete()
-    .eq("id", id);
+  if (manualTimeBarberId === "all") {
+    const selectedTime = times.find((item) => item.id === id)?.time;
 
-  if (error) {
-    alert("Greška pri brisanju vremena.");
-    console.error(error);
-    return;
+    if (!selectedTime) return;
+
+    const { error } = await supabase
+      .from("available_times")
+      .delete()
+      .eq("salon_id", salon?.id)
+      .eq("date", selectedDate)
+      .eq("time", selectedTime);
+
+    if (error) {
+      alert("Greška pri brisanju vremena.");
+      console.error(error);
+      return;
+    }
+  } else {
+    const { error } = await supabase
+      .from("available_times")
+      .delete()
+      .eq("id", id)
+      .eq("barber_id", manualTimeBarberId);
+
+    if (error) {
+      alert("Greška pri brisanju vremena.");
+      console.error(error);
+      return;
+    }
   }
 
   fetchTimes(selectedDate);
 }
 async function handleDeleteAllTimesForDate() {
   const confirmDelete = confirm(
-    "Da li ste sigurni da želite obrisati sve termine za ovaj datum?"
+    manualTimeBarberId === "all"
+      ? "Da li ste sigurni da želite obrisati sve termine za ovaj datum za cijeli salon?"
+      : "Da li ste sigurni da želite obrisati sve termine za ovaj datum za odabranog frizera?"
   );
 
   if (!confirmDelete) return;
 
-  const { error } = await supabase
+  let query = supabase
     .from("available_times")
     .delete()
     .eq("salon_id", salon?.id)
     .eq("date", selectedDate);
+
+  if (manualTimeBarberId !== "all") {
+    query = query.eq("barber_id", manualTimeBarberId);
+  }
+
+  const { error } = await query;
 
   if (error) {
     alert("Greška pri brisanju termina.");
@@ -1718,47 +1783,6 @@ console.log("currentDate =", currentDate);
 setTimesSaved(false);
 
 console.log("Generisani termini:", generatedSlots);
-}
-async function handleSaveTimes() {
-  if (!salon?.id) {
-    alert("Salon nije pronađen.");
-    return;
-  }
-
-  if (generatedTimes.length === 0) {
-    alert("Nema generisanih termina za spremanje.");
-    return;
-  }
-
-  const timesToSave = generatedTimes.map((slot) => ({
-    salon_id: salon.id,
-    date: slot.date,
-    time: slot.time,
-  }));
-
-  const { data, error } = await supabase
-  .from("available_times")
-  .upsert(timesToSave, {
-    onConflict: "salon_id,date,time",
-    ignoreDuplicates: true,
-  })
-  .select("date, time");
-
-console.log("Sparade tider:", data);
-
-  if (error) {
-    console.error("Greška pri spremanju termina:", error);
-    alert("Došlo je do greške pri spremanju termina.");
-    return;
-  }
-
-  if (!data || data.length === 0) {
-  alert("Svi ovi termini već postoje.");
-  return;
-}
-
-alert(`Sačuvano termina: ${data.length}`);
-setTimesSaved(true);
 }
 
 
