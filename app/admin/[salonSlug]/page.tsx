@@ -139,7 +139,7 @@ const closedEndDatePickerRef = useRef<DatePicker>(null);
 const [generatedTimes, setGeneratedTimes] = useState<any[]>([]);
 const [showPreview, setShowPreview] = useState(false);
 const [timesSaved, setTimesSaved] = useState(false);
-const [newTime, setNewTime] = useState("");
+const [newTime, setNewTime] = useState("09:00");
 const [manualTimeBarberId, setManualTimeBarberId] = useState<number | "all">("all");
 const [startTime, setStartTime] = useState("09:00");
 const [endTime, setEndTime] = useState("17:00");
@@ -671,10 +671,10 @@ async function markNotificationAsRead(id: number) {
 }
 
 async function handleAddTime() {
-  if (!newTime.trim()) {
-    alert("Unesite vrijeme.");
-    return;
-  }
+  if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(newTime)) {
+  alert("Unesite vrijeme u formatu HH:MM, npr. 15:30.");
+  return;
+}
 
   if (!salon?.id || !selectedDate) return;
 
@@ -730,7 +730,7 @@ async function handleAddTime() {
     }
   }
 
-  setNewTime("");
+  setNewTime("09:00");
   fetchTimes(selectedDate);
 }
 async function handleDeleteTime(id: number) {
@@ -3361,16 +3361,15 @@ formatWeekDay={(dayName) => {
       }}
     >
       <input
-        type="time"
-        step="1800"
-        value={newTime}
-        onChange={(e) => setNewTime(e.target.value)}
-        className="rounded-lg border p-2"
-        style={{
-          width: "220px",
-          maxWidth: "100%",
-        }}
-      />
+  type="time"
+  value={newTime}
+  onChange={(e) => setNewTime(e.currentTarget.value)}
+  className="rounded-lg border p-2"
+  style={{
+    width: "220px",
+    maxWidth: "100%",
+  }}
+/>
 
       <button
         type="button"
