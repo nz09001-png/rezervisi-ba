@@ -1895,17 +1895,24 @@ if (!isLoggedIn) {
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f3ee] p-8">
+    <main className="min-h-screen bg-white p-8">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-8 flex items-start justify-between">
+        <div className="mb-6 flex items-start justify-between">
   <div>
-    <h1 className="text-3xl font-bold">
+    <h1 className="text-3xl font-semibold">
   {salon?.salon_name} Admin
 </h1>
 
-    <p className="mt-2 text-gray-600">
-      Upravljajte rezervacijama, uslugama, frizerima i informacijama o salonu.
-    </p>
+    <p
+  className="mt-2"
+  style={{
+    color: "#6b7280",
+    fontSize: "15px",
+    fontWeight: 400,
+  }}
+>
+  Upravljajte rezervacijama, uslugama, frizerima i informacijama o salonu.
+</p>
   </div>
 
   
@@ -1919,7 +1926,7 @@ if (!isLoggedIn) {
     backgroundColor: "#611a1a",
   }}
 >
-  ⚙️ Postavke
+   Postavke
   {selectedSettings.length > 0 && ` (${selectedSettings.length})`}
 </button>
 
@@ -1931,26 +1938,23 @@ if (!isLoggedIn) {
     top: "100%",
     left: 0,
     marginTop: "8px",
-    width: "180px",
+    width: "210px",
   }}
 >
     <button
       onClick={() => toggleSetting("hero")}
-      className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-100"
+      className="flex w-full items-center rounded-lg px-3 py-1.5 text-left text-sm font-medium hover:bg-gray-100"
 style={{
   padding: "8px 12px",
 }}
     >
-      <span className="mr-2 w-4">
-  {selectedSettings.includes("hero") ? "✓  " : ""}
-</span>
-
-<span>Naslovna slika</span>
+    
+  {selectedSettings.includes("hero") ? "✓  " : ""}Naslovna slika
     </button>
 
     <button
       onClick={() => toggleSetting("gallery")}
-     className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-100"
+     className="flex w-full items-center rounded-lg px-3 py-1.5 text-left text-sm font-medium hover:bg-gray-100"
 style={{
   padding: "8px 12px",
 }}
@@ -1960,7 +1964,7 @@ style={{
 
     <button
       onClick={() => toggleSetting("info")}
-      className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-100"
+      className="flex w-full items-center rounded-lg px-3 py-1.5 text-left text-sm font-medium hover:bg-gray-100"
 style={{
   padding: "8px 12px",
 }}
@@ -1970,7 +1974,7 @@ style={{
 
         <button
       onClick={() => toggleSetting("serviceCategories")}
-      className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-100"
+      className="flex w-full items-center rounded-lg px-3 py-1.5 text-left text-sm font-medium hover:bg-gray-100"
       style={{
         padding: "8px 12px",
       }}
@@ -1981,7 +1985,7 @@ style={{
 
     <button
       onClick={() => toggleSetting("services")}
-      className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-100"
+      className="flex w-full items-center rounded-lg px-3 py-1.5 text-left text-sm font-medium hover:bg-gray-100"
 style={{
   padding: "8px 12px",
 }}
@@ -1991,7 +1995,7 @@ style={{
 
     <button
       onClick={() => toggleSetting("times")}
-      className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-100"
+      className="flex w-full items-center rounded-lg px-3 py-1.5 text-left text-sm font-medium hover:bg-gray-100"
 style={{
   padding: "8px 12px",
 }}
@@ -2001,7 +2005,7 @@ style={{
 
     <button
       onClick={() => toggleSetting("barbers")}
-      className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-100"
+      className="flex w-full items-center rounded-lg px-3 py-1.5 text-left text-sm font-medium hover:bg-gray-100"
 style={{
   padding: "8px 12px",
 }}
@@ -2011,7 +2015,7 @@ style={{
 
     <button
       onClick={() => toggleSetting("closed")}
-      className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm hover:bg-gray-100"
+      className="flex w-full items-center rounded-lg px-3 py-1.5 text-left text-sm font-medium hover:bg-gray-100"
 style={{
   padding: "8px 12px",
 }}
@@ -2028,7 +2032,7 @@ style={{
     className="h-12 rounded-xl px-5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
     style={{ backgroundColor: "#611a1a" }}
   >
-    🔔 Notifikacije
+     Notifikacije
   </button>
   {showNotifications && (
   <div
@@ -2093,12 +2097,12 @@ style={{
 </button>
 </div>
 </div>
-<div className="mb-8 grid grid-cols-2 gap-6">
+<div className="mb-3 grid grid-cols-2 gap-6">
   <div
-  className="rounded-3xl border bg-white p-6 shadow-sm"
+  className="rounded-2xl border bg-white p-5 shadow-sm"
   style={{
     borderColor: "#ead1d1",
-    borderLeft: "5px solid #611a1a",
+    borderLeft: "4px solid #611a1a",
   }}
 >
   <p className="text-sm font-semibold text-gray-500">
@@ -2106,7 +2110,7 @@ style={{
   </p>
 
   <p
-    className="mt-3 text-5xl font-bold"
+    className="mt-2 text-4xl font-bold"
     style={{
       color: "#611a1a",
     }}
@@ -2116,24 +2120,24 @@ style={{
 </div>
 
   <div
-  className="rounded-3xl border bg-white p-6 shadow-sm"
+  className="rounded-2xl border bg-white p-5 shadow-sm"
   style={{
     borderColor: "#ead1d1",
-    borderLeft: "5px solid #611a1a",
+    borderLeft: "4px solid #611a1a",
   }}
 >
   <p className="text-sm font-semibold text-gray-500">
     Ukupno rezervacija
   </p>
 
-  <p className="mt-3 text-5xl font-bold">
+  <p className="mt-2 text-4xl font-bold">
     {filteredBookings.length}
   </p>
 </div>
 </div>
 
   <div
-  className="mb-4"
+  className="mb-7"
   style={{
     position: "relative",
     display: "inline-block",
@@ -2149,7 +2153,7 @@ style={{
       setShowDateFilter(true);
     }
   }}
-  className="rounded-xl border px-5 py-3 text-sm font-medium transition hover:opacity-90"
+  className="rounded-xl border px-4 py-2 text-sm font-medium transition hover:opacity-90"
   style={{
     backgroundColor: "#ffffff",
     color: "#611a1a",
@@ -2176,7 +2180,7 @@ style={{
   
   {showFilterMenu && (
   <div
-  className="mb-8 flex flex-col items-stretch gap-2 rounded-2xl border bg-white p-3 shadow-sm"
+  className="mb-8 flex flex-col items-stretch gap-1 rounded-2xl border bg-white p-3 shadow-sm"
  style={{
   position: "absolute",
   top: "100%",
