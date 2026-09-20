@@ -99,7 +99,8 @@ const [galleryPreviewUrl, setGalleryPreviewUrl] = useState<string | null>(null);
 const [phone, setPhone] = useState("");
 const [address, setAddress] = useState("");
 const [openingHours, setOpeningHours] = useState("");
-
+const [openingHoursFrom, setOpeningHoursFrom] = useState("");
+const [openingHoursTo, setOpeningHoursTo] = useState("");
 const [instagramUrl, setInstagramUrl] = useState("");
 const [facebookUrl, setFacebookUrl] = useState("");
 const [tiktokUrl, setTiktokUrl] = useState("");
@@ -368,8 +369,16 @@ async function fetchCalendarServiceSteps() {
   setDescription(data.description || "");
   setPhone(data.phone || "");
   setAddress(data.address || "");
-  setOpeningHours(data.opening_hours || "");
-  setHeroPosition(data.hero_position || "center");
+  const savedOpeningHours = data.opening_hours || "";
+
+setOpeningHours(savedOpeningHours);
+
+const [fromTime = "", toTime = ""] = savedOpeningHours.split("-");
+
+setOpeningHoursFrom(fromTime.trim());
+setOpeningHoursTo(toTime.trim());
+
+setHeroPosition(data.hero_position || "center");
 
   setInstagramUrl(data.instagram_url || "");
   setFacebookUrl(data.facebook_url || "");
@@ -1310,7 +1319,10 @@ async function handleSalonInfoUpdate() {
   description: description,
   phone: phone,
   address: address,
-  opening_hours: openingHours,
+  opening_hours:
+    openingHoursFrom && openingHoursTo
+      ? `${openingHoursFrom}-${openingHoursTo}`
+      : "",
   hero_position: heroPosition,
   show_barbers: showBarbers,
 
@@ -2388,10 +2400,10 @@ style={{
       </p>
 
       <img
-        src={salon.image_url}
-        alt="Naslovna slika"
-        className="aspect-[1000/360] w-full rounded-2xl object-cover"
-      />
+  src={salon.image_url}
+  alt="Naslovna slika"
+  className="aspect-[1000/360] w-full rounded-2xl border border-gray-200 object-cover shadow-sm"
+/>
     </div>
   )}
 
@@ -2438,6 +2450,7 @@ style={{
   </div>
 )}
 
+
 {imagePreview && (
   <div className="mt-6">
     <p className="mb-3 font-medium text-gray-700">
@@ -2470,6 +2483,7 @@ style={{
       }}
         />
     </div>
+    
   </div>
 )}
 {selectedFile && (
@@ -2555,18 +2569,19 @@ style={{
     cursor: "pointer",
     alignItems: "center",
     borderRadius: "12px",
-    backgroundColor: "#611a1a",
+    backgroundColor: "#ffffff",
+    border: "1px solid #611a1a",
     padding: "12px 20px",
     fontWeight: 500,
-    color: "white",
+    color: "#611a1a",
   }}
 >
   Izaberi sliku za galeriju
 </label>
 
 {galleryFile && (
-  <div className="mt-4 max-w-sm">
-    <p className="text-sm text-gray-600">
+  <div className="mt-5">
+    <p className="mb-3 text-sm text-gray-600">
       Odabrana slika:{" "}
       <span className="font-semibold text-gray-800">
         {galleryFile.name}
@@ -2575,29 +2590,27 @@ style={{
 
     {galleryPreviewUrl && (
       <img
-  src={galleryPreviewUrl}
-  alt="Pregled odabrane slike"
-  style={{
-    marginTop: "12px",
-    width: "180px",
-height: "120px",
-    objectFit: "cover",
-    borderRadius: "12px",
-    display: "block",
-  }}
-/>
+        src={galleryPreviewUrl}
+        alt="Pregled odabrane slike"
+        style={{
+          width: "180px",
+          height: "120px",
+          objectFit: "cover",
+          borderRadius: "12px",
+          display: "block",
+        }}
+      />
     )}
 
     <button
-  onClick={handleGalleryImageUpload}
-  style={{
-    backgroundColor: "#611a1a",
-    marginTop: "4px",
-  }}
-  className="rounded-xl px-5 py-3 font-medium text-white transition hover:opacity-90"
->
-  Sačuvaj u galeriju
-</button>
+      onClick={handleGalleryImageUpload}
+      className="mt-3 rounded-xl px-5 py-3 font-medium text-white transition hover:opacity-90"
+      style={{
+        backgroundColor: "#611a1a",
+      }}
+    >
+      Sačuvaj u galeriju
+    </button>
   </div>
 )}
 
@@ -2646,12 +2659,12 @@ style={{ backgroundColor: "#ef4444" }}
 {selectedSettings.includes("info") && (
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
     <div className="mx-auto max-w-2xl">
-      <h2 className="mb-4 text-xl font-bold">Informacije o salonu</h2>
+      <h2 className="mb-1 text-xl font-bold">Informacije o salonu</h2>
   <p className="mb-6 text-sm text-gray-500">
   Ovdje možete urediti osnovne informacije koje će biti prikazane na stranici salona.
 </p>
 
-  <label className="mb-2 block font-medium">Opis</label>
+  <label className="mb-1 block font-medium">Opis</label>
   <textarea
     value={description}
     onChange={(e) => setDescription(e.target.value)}
@@ -2659,7 +2672,7 @@ style={{ backgroundColor: "#ef4444" }}
   style={{ maxWidth: "450px" }}
   />
 
-  <label className="mb-2 block font-medium">Telefon</label>
+  <label className="mb-1 block font-medium">Telefon</label>
   <input
   type="text"
   value={phone}
@@ -2668,7 +2681,7 @@ style={{ backgroundColor: "#ef4444" }}
   style={{ maxWidth: "450px" }}
 />
 
-  <label className="mb-2 block font-medium">Adresa</label>
+  <label className="mb-1 block font-medium">Adresa</label>
   <input
     type="text"
     value={address}
@@ -2677,16 +2690,31 @@ style={{ backgroundColor: "#ef4444" }}
     style={{ maxWidth: "450px" }}
   />
 
-  <label className="mb-2 block font-medium">Radno vrijeme</label>
-  <input
-    type="text"
-    value={openingHours}
-    onChange={(e) => setOpeningHours(e.target.value)}
-    className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-  style={{ maxWidth: "450px" }}
-  />
+  <label className="mb-1 block font-medium">Radno vrijeme</label>
 
-<label className="mb-2 block font-medium">Instagram</label>
+<div className="mb-3 flex gap-3" style={{ maxWidth: "450px" }}>
+  <div className="flex-1">
+    <label className="mb-1 block text-sm text-gray-500">Od</label>
+    <input
+      type="time"
+      value={openingHoursFrom}
+      onChange={(e) => setOpeningHoursFrom(e.target.value)}
+      className="w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+    />
+  </div>
+
+  <div className="flex-1">
+    <label className="mb-1 block text-sm text-gray-500">Do</label>
+    <input
+      type="time"
+      value={openingHoursTo}
+      onChange={(e) => setOpeningHoursTo(e.target.value)}
+      className="w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+    />
+  </div>
+</div>
+
+<label className="mb-1 block font-medium">Instagram</label>
 <input
   type="text"
   placeholder="https://instagram.com/..."
@@ -2696,7 +2724,7 @@ style={{ backgroundColor: "#ef4444" }}
   style={{ maxWidth: "450px" }}
 />
 
-<label className="mb-2 block font-medium">Facebook</label>
+<label className="mb-1 block font-medium">Facebook</label>
 <input
   type="text"
   placeholder="https://facebook.com/..."
@@ -2706,7 +2734,7 @@ style={{ backgroundColor: "#ef4444" }}
   style={{ maxWidth: "450px" }}
 />
 
-<label className="mb-2 block font-medium">TikTok</label>
+<label className="mb-1 block font-medium">TikTok</label>
 <input
   type="text"
   placeholder="https://tiktok.com/@..."
@@ -2734,7 +2762,7 @@ style={{ backgroundColor: "#ef4444" }}
 {selectedSettings.includes("serviceCategories") && (
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
     <div className="mx-auto max-w-2xl">
-      <h2 className="mb-4 text-xl font-bold">Kategorije usluga</h2>
+      <h2 className="mb-1 text-xl font-bold">Kategorije usluga</h2>
 
     <p className="mb-6 text-sm text-gray-500">
       Dodajte kategorije za organizaciju usluga na stranici salona.
@@ -2771,7 +2799,7 @@ style={{ backgroundColor: "#ef4444" }}
   ))}
 </div>
 
-<div className="flex items-center gap-3">
+<div className="flex flex-col items-start gap-3">
   <input
     type="text"
     placeholder="Naziv kategorije"
@@ -2803,7 +2831,7 @@ style={{ backgroundColor: "#ef4444" }}
 {selectedSettings.includes("services") && (
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
     <div className="mx-auto max-w-3xl">
-      <h2 className="mb-4 text-xl font-bold">Usluge</h2>
+      <h2 className="mb-1 text-xl font-bold">Usluge</h2>
   <p className="mb-6 text-sm text-gray-500">
   Dodajte i uredite usluge koje nudite u svom salonu.
 </p>
@@ -2912,8 +2940,8 @@ style={{ backgroundColor: "#ef4444" }}
         e.target.value ? Number(e.target.value) : ""
       )
     }
-    className="w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-    style={{ maxWidth: "450px" }}
+    className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+    style={{ maxWidth: "220px" }}
   >
     <option value="">Izaberi kategoriju</option>
 
@@ -3058,7 +3086,7 @@ style={{ backgroundColor: "#ef4444" }}
   <div
   className="mb-4 rounded-xl border bg-gray-50 p-4"
   style={{
-    width: "600px",
+    width: "500px",
     maxWidth: "100%",
   }}
 >
@@ -3090,7 +3118,7 @@ style={{ backgroundColor: "#ef4444" }}
     setServiceSteps(updatedSteps);
   }}
   className="mb-3 block w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-4 focus:ring-[#611a1a]/25"
-  style={{ maxWidth: "450px" }}
+  style={{ maxWidth: "420px" }}
 />
 
     <input
@@ -3109,7 +3137,7 @@ style={{ backgroundColor: "#ef4444" }}
     setServiceSteps(updatedSteps);
   }}
   className="mb-3 block w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-4 focus:ring-[#611a1a]/25"
-style={{ maxWidth: "450px" }}
+style={{ maxWidth: "420px" }}
 />
 
     <label className="flex items-center gap-2">
@@ -3134,15 +3162,14 @@ style={{ maxWidth: "450px" }}
     </label>
     {serviceSteps.length > 1 && (
   <div
-    className="mt-2"
-    style={{
+ style={{
   display: "flex",
   justifyContent: "flex-end",
   width: "100%",
-  transform: "translateY(-75px)",
-  marginBottom: "-40px",
+  marginTop: "-22px",
+  paddingRight: "15px",
 }}
-  >
+>
     <button
   type="button"
   onClick={() => {
