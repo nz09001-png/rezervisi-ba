@@ -115,7 +115,7 @@ const [editingServiceId, setEditingServiceId] = useState<number | null>(null);
 const [serviceDescription, setServiceDescription] = useState("");
 const serviceFormRef = useRef<HTMLDivElement | null>(null);
 const [servicePrice, setServicePrice] = useState("");
-const [serviceDuration, setServiceDuration] = useState("60");
+const [serviceDuration, setServiceDuration] = useState("");
 const [showPrice, setShowPrice] = useState(true);
 const [showDuration, setShowDuration] = useState(true);
 const [hasServiceSteps, setHasServiceSteps] = useState(false);
@@ -3028,11 +3028,11 @@ style={{ backgroundColor: "#ef4444" }}
 </label>
 
 <div className="mb-4">
-  <p className="mb-2 font-medium">
-    Izaberi frizere za ovu uslugu
-  </p>
+  <p className="mb-1 font-medium">
+  Izaberi frizere za ovu uslugu
+</p>
 
-  <div className="space-y-2">
+<div className="space-y-1">
     {barbers.map((barber) => (
       <label
         key={barber.id}
@@ -3067,7 +3067,7 @@ style={{ backgroundColor: "#ef4444" }}
   </div>
 </div>
 
-<label className="mb-4 flex items-center gap-2">
+<label className="mt-5 mb-4 flex items-center gap-2">
   <input
     type="checkbox"
     checked={hasServiceSteps}
@@ -3084,10 +3084,12 @@ style={{ backgroundColor: "#ef4444" }}
 
 {hasServiceSteps && (
   <div
-  className="mb-4 rounded-xl border bg-gray-50 p-4"
+  className="mb-4 rounded-xl border p-4"
   style={{
     width: "500px",
     maxWidth: "100%",
+    backgroundColor: "#fdfdfd",
+    borderColor: "#c9a3a3",
   }}
 >
     <h3 className="mb-2 font-semibold">
@@ -3096,9 +3098,12 @@ style={{ backgroundColor: "#ef4444" }}
 
     {serviceSteps.map((step, index) => (
   <div
-    key={index}
-    className="mt-4 rounded-xl border bg-white p-4"
-  >
+  key={index}
+  className="mt-4 rounded-xl border bg-white p-4"
+  style={{
+    borderColor: "#d8caca",
+  }}
+>
     <h4 className="mb-4 text-lg font-semibold">
       Korak {index + 1}
     </h4>
@@ -3248,9 +3253,22 @@ style={{ maxWidth: "420px" }}
     <div className="mx-auto max-w-3xl">
       <h2 className="mb-4 text-xl font-bold">Termini</h2>
 
-  <h3 className="mb-2 text-lg font-semibold">
-  Pregled i uređivanje termina
-</h3>
+  <div
+  className="mb-4 rounded-xl border p-4"
+  style={{
+    width: "500px",
+    maxWidth: "100%",
+    backgroundColor: "#fdfdfd",
+    borderColor: "#c9a3a3",
+  }}
+>
+  <h3 className="mb-1 text-lg font-semibold">
+    Posebni termini
+  </h3>
+
+<p className="mb-4 text-sm text-gray-500">
+  Pregledajte, dodajte ili uklonite pojedinačne termine.
+</p>
 
 <DatePicker
   ref={datePickerRef}
@@ -3349,9 +3367,9 @@ formatWeekDay={(dayName) => {
     </div>
   ) : (
     <div
-  className="mb-4 space-y-2"
+  className="mb-4 space-y-1"
   style={{
-    width: "500px",
+    width: "350px",
     maxWidth: "100%",
   }}
 >
@@ -3364,7 +3382,7 @@ formatWeekDay={(dayName) => {
   .map((item) => (
       <div
   key={item.id}
-  className="flex items-center justify-between rounded-xl p-2"
+  className="flex items-center justify-between rounded-xl px-2 py-1.5"
   style={{
     backgroundColor: "#ffffff",
     border: "1px solid #ead1d1",
@@ -3412,7 +3430,7 @@ formatWeekDay={(dayName) => {
   onChange={(e) => setNewTime(e.currentTarget.value)}
   className="rounded-lg border p-2"
   style={{
-    width: "220px",
+    width: "200px",
     maxWidth: "100%",
   }}
 />
@@ -3436,7 +3454,7 @@ formatWeekDay={(dayName) => {
       onClick={handleDeleteAllTimesForDate}
       className="rounded-lg px-4 py-2 font-medium"
       style={{
-  width: "370px",
+  width: "355px",
   maxWidth: "100%",
   marginTop: "12px",
   marginBottom: "15px",
@@ -3449,11 +3467,16 @@ formatWeekDay={(dayName) => {
     </button>
   </div>
 )}
-  <div
-  className="rounded-2xl border border-gray-200 bg-gray-50 p-4"
+  
+</div>
+
+<div
+  className="rounded-xl border p-4"
   style={{
     width: "500px",
     maxWidth: "100%",
+    backgroundColor: "#fdfdfd",
+    borderColor: "#c9a3a3",
   }}
 >
   <h3 className="text-lg font-bold">Standardni termini</h3>
@@ -3463,7 +3486,7 @@ formatWeekDay={(dayName) => {
   </p>
 
   <div className="mt-4">
-  <p className="mb-2 font-semibold">Frizeri</p>
+  <p className="mb-1 font-semibold">Frizeri</p>
 
   <div className="flex flex-wrap gap-4">
     {barbers.map((barber) => (
@@ -3474,6 +3497,7 @@ formatWeekDay={(dayName) => {
         <input
           type="checkbox"
           checked={selectedScheduleBarberIds.includes(barber.id)}
+          style={{ accentColor: "#611a1a" }}
           onChange={(e) => {
             if (e.target.checked) {
               setSelectedScheduleBarberIds((prev) => [
@@ -3494,8 +3518,17 @@ formatWeekDay={(dayName) => {
   </div>
 </div>
 
-  <div className="mt-4 grid gap-4 md:grid-cols-2">
-  <div>
+  <div
+  className="mt-3"
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gap: "16px",
+    width: "400px",
+    maxWidth: "100%",
+  }}
+>
+  <div style={{ width: "194px", maxWidth: "100%" }}>
     <label className="mb-1 block text-sm font-semibold">
       Od datuma
     </label>
@@ -3559,7 +3592,7 @@ formatWeekDay={(dayName) => {
 />
   </div>
 
-  <div>
+  <div style={{ width: "194px", maxWidth: "100%" }}>
     <label className="mb-1 block text-sm font-semibold">
       Do datuma
     </label>
@@ -3619,6 +3652,7 @@ formatWeekDay={(dayName) => {
       </div>
     </CalendarContainer>
   )}
+  
   className="w-full rounded-xl border border-gray-300 bg-white p-3"
 />
   </div>
@@ -3803,7 +3837,7 @@ style={{
     )
       .slice(0, 5)
       .map(([date, times]) => (
-        <div key={date} className="mb-4 last:mb-0">
+        <div key={date} className="mb-3 last:mb-0">
           <p className="mb-2 font-semibold">
   {format(new Date(`${date}T00:00:00`), "dd.MM.yyyy")}
 </p>
