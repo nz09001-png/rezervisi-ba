@@ -2373,7 +2373,8 @@ style={{
   
     {selectedSettings.includes("hero") && (
   <div className="mb-6 rounded-3xl bg-white p-6 shadow">
-  <div className="mb-5">
+    <div className="mx-auto max-w-2xl">
+      <div className="mb-5">
     <h2 className="text-xl font-bold">Naslovna slika</h2>
     <p className="mt-1 text-sm text-gray-500">
       Ova slika se prikazuje na vrhu stranice vašeg salona.
@@ -2521,10 +2522,13 @@ style={{
   </div>
 )}
 </div>
+</div>
 )}
+
 {selectedSettings.includes("gallery") && (
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
-  <h2 className="mb-4 text-xl font-bold">Galerija slika</h2>
+    <div className="mx-auto max-w-5xl">
+      <h2 className="mb-4 text-xl font-bold">Galerija slika</h2>
   <p className="mb-6 text-sm text-gray-500">
   Dodajte slike koje će se prikazivati na stranici salona.
 </p>
@@ -2631,15 +2635,18 @@ style={{ backgroundColor: "#ef4444" }}
         </button>
       </div>
     ))}
+        </div>
+
     </div>
-</div>
+  </div>
 )}
 
   
 
 {selectedSettings.includes("info") && (
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
-  <h2 className="mb-4 text-xl font-bold">Informacije o salonu</h2>
+    <div className="mx-auto max-w-2xl">
+      <h2 className="mb-4 text-xl font-bold">Informacije o salonu</h2>
   <p className="mb-6 text-sm text-gray-500">
   Ovdje možete urediti osnovne informacije koje će biti prikazane na stranici salona.
 </p>
@@ -2709,22 +2716,25 @@ style={{ backgroundColor: "#ef4444" }}
   style={{ maxWidth: "450px" }}
 />
 
-  <button
-  onClick={handleSalonInfoUpdate}
-  className="mt-4 rounded-xl px-5 py-3 font-medium text-white transition hover:opacity-90"
-  style={{
-    backgroundColor: "#611a1a",
-    display: "block",
-  }}
->
-  Sačuvaj informacije
-</button>
-</div>
+    <button
+    onClick={handleSalonInfoUpdate}
+    className="mt-4 rounded-xl px-5 py-3 font-medium text-white transition hover:opacity-90"
+    style={{
+      backgroundColor: "#611a1a",
+      display: "block",
+    }}
+  >
+    Sačuvaj informacije
+  </button>
+
+    </div>
+  </div>
 )}
 
 {selectedSettings.includes("serviceCategories") && (
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
-    <h2 className="mb-4 text-xl font-bold">Kategorije usluga</h2>
+    <div className="mx-auto max-w-2xl">
+      <h2 className="mb-4 text-xl font-bold">Kategorije usluga</h2>
 
     <p className="mb-6 text-sm text-gray-500">
       Dodajte kategorije za organizaciju usluga na stranici salona.
@@ -2786,12 +2796,14 @@ style={{ backgroundColor: "#ef4444" }}
 </button>
 </div>
 
-</div>
+    </div>
+  </div>
 )}
 
 {selectedSettings.includes("services") && (
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
-  <h2 className="mb-4 text-xl font-bold">Usluge</h2>
+    <div className="mx-auto max-w-3xl">
+      <h2 className="mb-4 text-xl font-bold">Usluge</h2>
   <p className="mb-6 text-sm text-gray-500">
   Dodajte i uredite usluge koje nudite u svom salonu.
 </p>
@@ -3046,7 +3058,7 @@ style={{ backgroundColor: "#ef4444" }}
   <div
   className="mb-4 rounded-xl border bg-gray-50 p-4"
   style={{
-    width: "770px",
+    width: "600px",
     maxWidth: "100%",
   }}
 >
@@ -3185,26 +3197,29 @@ style={{ maxWidth: "450px" }}
     }}
   >
     {editingServiceId !== null ? "Sačuvaj izmjene" : "+ Dodaj uslugu"}
-  </button>
+    </button>
 
   {editingServiceId !== null && (
     <button
-  onClick={handleCancelServiceEdit}
-  className="rounded-lg px-5 py-3 font-medium"
-  style={{
-    border: "2px solid #dc2626",
-    color: "#dc2626",
-  }}
->
-  Otkaži editovanje
-</button>
+      onClick={handleCancelServiceEdit}
+      className="rounded-lg px-5 py-3 font-medium"
+      style={{
+        border: "2px solid #dc2626",
+        color: "#dc2626",
+      }}
+    >
+      Otkaži editovanje
+    </button>
   )}
 </div>
-</div>
+
+    </div>
+  </div>
 )}
 {selectedSettings.includes("times") && (
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
-  <h2 className="mb-4 text-xl font-bold">Termini</h2>
+    <div className="mx-auto max-w-3xl">
+      <h2 className="mb-4 text-xl font-bold">Termini</h2>
 
   <h3 className="mb-2 text-lg font-semibold">
   Pregled i uređivanje termina
@@ -3261,13 +3276,13 @@ formatWeekDay={(dayName) => {
       </div>
     </CalendarContainer>
   )}
-  className="mb-4 w-full rounded-lg border p-2"
+  className="mb-4 w-full rounded-xl border border-gray-300 bg-white p-3"
 />
 
 <div
   className="mb-4"
   style={{
-    width: "500px",
+    width: "220px",
     maxWidth: "100%",
   }}
 >
@@ -3282,7 +3297,7 @@ formatWeekDay={(dayName) => {
         e.target.value === "all" ? "all" : Number(e.target.value)
       )
     }
-    className="w-full rounded-lg border p-2"
+    className="w-full rounded-xl border border-gray-300 bg-white p-3"
   >
     <option value="all">Cijeli salon</option>
 
@@ -3779,19 +3794,21 @@ style={{
         </div>
       ))}
 
-    <p className="mt-4 text-xs text-gray-500">
-      Prikazano prvih 5 dana.
-    </p>
-  </div>
+      <p className="mt-4 text-xs text-gray-500">
+    Prikazano prvih 5 dana.
+  </p>
+</div>
 )}
 </div>
 
-</div>
+    </div>
+  </div>
 )}
 
 {selectedSettings.includes("closed") && (
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
-    <h2 className="mb-4 text-xl font-bold">Zatvoreni dani</h2>
+    <div className="mx-auto max-w-3xl">
+      <h2 className="mb-4 text-xl font-bold">Zatvoreni dani</h2>
 
     <div className="mb-4 space-y-2">
       {closedDays.map((day) => (
@@ -3988,21 +4005,24 @@ style={{
   </select>
 </div>
 
-    <button
-  onClick={handleAddClosedDay}
-  className="rounded-lg px-4 py-2 font-medium text-white"
-  style={{
-    backgroundColor: "#611a1a",
-  }}
->
-  + Dodaj zatvoren dan
-</button>
+      <button
+    onClick={handleAddClosedDay}
+    className="rounded-lg px-4 py-2 font-medium text-white"
+    style={{
+      backgroundColor: "#611a1a",
+    }}
+  >
+    + Dodaj zatvoren dan
+  </button>
+
+    </div>
   </div>
 )}
 
 {selectedSettings.includes("barbers") && (
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
-    <h2 className="mb-4 text-xl font-bold">Frizeri</h2>
+    <div className="mx-auto max-w-3xl">
+      <h2 className="mb-4 text-xl font-bold">Frizeri</h2>
     <label className="mb-4 flex items-center gap-2">
   <input
   type="checkbox"
@@ -4097,10 +4117,11 @@ style={{
     >
       Sačuvaj postavku
     </button>
-    </div>
-</div>
+        </div>
+  </div>
 
-</div>
+    </div>
+  </div>
 )}
 
   </>
