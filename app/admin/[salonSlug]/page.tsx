@@ -101,6 +101,7 @@ const [address, setAddress] = useState("");
 const [openingHours, setOpeningHours] = useState("");
 const [openingHoursFrom, setOpeningHoursFrom] = useState("");
 const [openingHoursTo, setOpeningHoursTo] = useState("");
+const [closedWeekdays, setClosedWeekdays] = useState<string[]>([]);
 const [instagramUrl, setInstagramUrl] = useState("");
 const [facebookUrl, setFacebookUrl] = useState("");
 const [tiktokUrl, setTiktokUrl] = useState("");
@@ -356,8 +357,8 @@ async function fetchCalendarServiceSteps() {
   const { data, error } = await supabase
     .from("salons")
     .select(
-      "description, phone, address, opening_hours, hero_position, instagram_url, facebook_url, tiktok_url"
-    )
+  "description, phone, address, opening_hours, closed_weekdays, hero_position, instagram_url, facebook_url, tiktok_url"
+)
     .eq("id", salon?.id)
     .single();
 
@@ -377,6 +378,7 @@ const [fromTime = "", toTime = ""] = savedOpeningHours.split("-");
 
 setOpeningHoursFrom(fromTime.trim());
 setOpeningHoursTo(toTime.trim());
+setClosedWeekdays(data.closed_weekdays || []);
 
 setHeroPosition(data.hero_position || "center");
 
@@ -1323,6 +1325,7 @@ async function handleSalonInfoUpdate() {
     openingHoursFrom && openingHoursTo
       ? `${openingHoursFrom}-${openingHoursTo}`
       : "",
+      closed_weekdays: closedWeekdays,
   hero_position: heroPosition,
   show_barbers: showBarbers,
 
@@ -2429,13 +2432,14 @@ style={{
     cursor: "pointer",
     alignItems: "center",
     borderRadius: "12px",
-    backgroundColor: "#611a1a",
+    backgroundColor: "#ffffff",
+    border: "1px solid #611a1a",
     padding: "12px 20px",
     fontWeight: 500,
-    color: "white",
+    color: "#611a1a",
   }}
 >
-   Izaberi naslovnu sliku
+  Izaberi naslovnu sliku
 </label>
 {selectedFile && (
   <div className="mt-4">
@@ -2529,7 +2533,7 @@ style={{
     setCrop({ x: 0, y: 0 });
     setCroppedAreaPixels(null);
   }}
-  className="rounded-xl border border-gray-300 bg-white px-5 py-3 font-medium text-black transition hover:bg-gray-100"
+  className="rounded-xl bg-red-500 px-5 py-3 font-medium text-white transition hover:bg-red-600"
 >
   Otkaži
 </button>
@@ -2712,6 +2716,37 @@ style={{ backgroundColor: "#ef4444" }}
       className="w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
     />
   </div>
+  
+</div>
+
+<label className="mb-2 block font-medium">Neradni dani</label>
+
+<div className="mb-4 flex flex-wrap gap-2" style={{ maxWidth: "450px" }}>
+  {["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"].map((day) => {
+    const isSelected = closedWeekdays.includes(day);
+
+    return (
+      <button
+        key={day}
+        type="button"
+        onClick={() =>
+          setClosedWeekdays((prev) =>
+            prev.includes(day)
+              ? prev.filter((item) => item !== day)
+              : [...prev, day]
+          )
+        }
+        className="rounded-xl px-4 py-2 text-sm font-medium transition"
+        style={{
+          backgroundColor: isSelected ? "#611a1a" : "#ffffff",
+          color: isSelected ? "#ffffff" : "#611a1a",
+          border: "1px solid #611a1a",
+        }}
+      >
+        {day}
+      </button>
+    );
+  })}
 </div>
 
 <label className="mb-1 block font-medium">Instagram</label>
