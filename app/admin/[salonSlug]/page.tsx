@@ -3869,7 +3869,10 @@ style={{
 {selectedSettings.includes("closed") && (
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
     <div className="mx-auto max-w-3xl">
-      <h2 className="mb-4 text-xl font-bold">Zatvoreni dani</h2>
+      <h2 className="mb-1 text-xl font-bold">Zatvoreni dani</h2>
+<p className="mb-6 text-sm text-gray-500">
+  Odredite dane kada salon ili određeni frizer nije dostupan za rezervacije.
+</p>
 
     <div className="mb-4 space-y-2">
       {closedDays.map((day) => (
@@ -3897,7 +3900,7 @@ style={{
 
             <button
               onClick={() => handleDeleteClosedDay(day.id)}
-              className="rounded bg-red-500 px-3 py-1 text-white"
+              className="rounded-lg bg-red-500 px-3 py-1 text-white"
             >
               Obriši
             </button>
@@ -4027,7 +4030,7 @@ style={{
 />
 
     <div>
-      <label className="mb-2 block font-medium">Razlog</label>
+      <label className="mb-1 block font-medium">Razlog</label>
   <input
     type="text"
     placeholder="Razlog (npr. godišnji odmor)"
@@ -4035,7 +4038,7 @@ style={{
     onChange={(e) => setClosedReason(e.target.value)}
     className="mb-3 rounded-xl border border-gray-300 bg-white p-3"
     style={{
-      width: "320px",
+      width: "205px",
       maxWidth: "100%",
     }}
   />
@@ -4052,7 +4055,7 @@ style={{
     }}
     className="mb-3 rounded-xl border border-gray-300 bg-white p-3"
     style={{
-      width: "320px",
+      width: "205px",
       maxWidth: "100%",
     }}
   >
@@ -4073,7 +4076,7 @@ style={{
       backgroundColor: "#611a1a",
     }}
   >
-    + Dodaj zatvoren dan
+     Dodaj zatvoren dan
   </button>
 
     </div>
@@ -4083,7 +4086,10 @@ style={{
 {selectedSettings.includes("barbers") && (
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
     <div className="mx-auto max-w-3xl">
-      <h2 className="mb-4 text-xl font-bold">Frizeri</h2>
+      <h2 className="mb-1 text-xl font-bold">Frizeri</h2>
+<p className="mb-6 text-sm text-gray-500">
+  Dodajte frizere i odaberite da li će biti prikazani na stranici salona.
+</p>
     <label className="mb-4 flex items-center gap-2">
   <input
   type="checkbox"
@@ -4119,7 +4125,7 @@ style={{
 
           <button
             onClick={() => handleDeleteBarber(barber.id)}
-            className="rounded bg-red-500 px-3 py-1 text-white"
+            className="rounded-lg bg-red-500 px-3 py-1 text-white"
           >
             Obriši
           </button>
@@ -4133,7 +4139,7 @@ style={{
   placeholder="Ime frizera"
   value={newBarberName}
   onChange={(e) => setNewBarberName(e.target.value)}
-  className="mb-3 rounded-lg border p-3"
+  className="mb-3 rounded-xl border border-gray-300 bg-white p-3"
   style={{
     width: "320px",
     maxWidth: "100%",
@@ -4150,7 +4156,7 @@ style={{
     border: "1px solid #611a1a",
   }}
 >
-  + Dodaj frizera
+   Dodaj frizera
 </button>
 
     <button
