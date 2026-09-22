@@ -525,8 +525,10 @@ const { error: notificationError } = await supabase
   .insert({
     salon_id: salonId,
     type: "booking_created",
-    title: "Ny bokning",
-    message: `${ime} ${prezime} har bokat ${time} den ${date} hos ${finalBarberName}`,
+    title: "Nova rezervacija",
+    message: `${ime} ${prezime} je rezervisao/la termin ${formattedDate} u ${time} kod ${finalBarberName}`,
+    event_date: date,
+    event_time: time,
     is_read: false,
   });
 

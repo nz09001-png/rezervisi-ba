@@ -70,14 +70,21 @@ if (bookingError || !bookingData) {
       return;
     }
 
-    if (salonData?.id && bookingData) {
+   if (salonData?.id && bookingData) {
+  const formattedBookingDate = bookingData.booking_date
+    .split("-")
+    .reverse()
+    .join(".");
+
   await supabase.from("admin_notifications").insert({
-    salon_id: salonData.id,
-    type: "booking_cancelled",
-    title: "Avbokning",
-    message: `${bookingData.customer_name} har avbokat ${bookingData.booking_time} den ${bookingData.booking_date} hos ${bookingData.barber_name}`,
-    is_read: false,
-  });
+  salon_id: salonData.id,
+  type: "booking_cancelled",
+  title: "Otkazana rezervacija",
+  message: `${bookingData.customer_name} je otkazao/la termin ${formattedBookingDate}. u ${bookingData.booking_time} kod ${bookingData.barber_name}`,
+  event_date: bookingData.booking_date,
+  event_time: bookingData.booking_time,
+  is_read: false,
+});
 }
 
     setCancelled(true);

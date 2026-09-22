@@ -663,7 +663,25 @@ async function fetchNotifications() {
     return;
   }
 
-  setNotifications(data || []);
+  const now = new Date();
+
+const visibleNotifications = (data || []).filter((notification) => {
+  if (!notification.event_date || !notification.event_time) {
+    return true;
+  }
+
+  const eventDateTime = new Date(
+    `${notification.event_date}T${notification.event_time}`
+  );
+
+  const hideAfter = new Date(
+    eventDateTime.getTime() + 24 * 60 * 60 * 1000
+  );
+
+  return now < hideAfter;
+});
+
+setNotifications(visibleNotifications);
 }
 
 async function markNotificationAsRead(id: number) {
@@ -2043,53 +2061,71 @@ style={{
 
   <div style={{ position: "relative", display: "inline-block" }}>
   <button
-    onClick={() => setShowNotifications(!showNotifications)}
-    className="h-12 rounded-xl px-5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
-    style={{ backgroundColor: "#611a1a" }}
-  >
-     Notifikacije
-  </button>
+  onClick={() => setShowNotifications(!showNotifications)}
+  className="h-12 rounded-xl px-5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+  style={{ backgroundColor: "#611a1a" }}
+>
+  Obavijesti
+</button>
   {showNotifications && (
   <div
     className="z-50 rounded-2xl bg-white p-6 shadow"
-    style={{
-      position: "absolute",
-      top: "100%",
-      right: 0,
-      marginTop: "8px",
-      width: "360px",
-    }}
+   style={{
+  position: "absolute",
+  top: "100%",
+  right: 0,
+  marginTop: "8px",
+  width: "400px",
+  maxHeight: "550px",
+  overflowY: "auto",
+  border: "1px solid rgba(97, 26, 26, 0.20)",
+}}
   >
-  <h2 className="mb-4 text-2xl font-bold">
-    🔔 Notiser
-  </h2>
+  <h2
+  className="mb-4 text-xl font-bold"
+  style={{ color: "#611a1a" }}
+>
+  Obavijesti
+</h2>
 
   {notifications.length === 0 ? (
-    <p>Inga notiser.</p>
+  <p className="text-sm text-gray-500">
+    Nema obavijesti.
+  </p>
   ) : (
     <div className="space-y-3">
       {notifications.map((notification) => (
   <div
-    key={notification.id}
-    className="rounded-xl border p-4"
-  >
-    <p className="font-semibold">
-      {notification.title}
-    </p>
+  key={notification.id}
+  className="rounded-xl p-4"
+  style={{
+    border: "1px solid rgba(97, 26, 26, 0.20)",
+    backgroundColor: notification.is_read ? "#ffffff" : "#fdf8f8",
+  }}
+>
+   <p
+  className="font-semibold"
+  style={{
+    color: notification.is_read ? "#111827" : "#611a1a",
+  }}
+>
+  {notification.title}
+</p>
 
-    <p className="text-gray-600">
-      {notification.message}
-    </p>
+    <p className="mt-1 text-sm leading-5 text-gray-600">
+  {notification.message}
+</p>
 
     {!notification.is_read && (
       <button
-        onClick={() =>
-          markNotificationAsRead(notification.id)
-        }
-        className="mt-3 rounded-lg bg-black px-4 py-2 text-white"
-      >
-        ✓ Markera som läst
-      </button>
+  onClick={() =>
+    markNotificationAsRead(notification.id)
+  }
+  className="mt-3 rounded-lg px-3 py-1.5 text-sm font-medium text-white transition hover:opacity-90"
+  style={{ backgroundColor: "#611a1a" }}
+>
+  Označi kao pročitano
+</button>
     )}
   </div>
 ))}
