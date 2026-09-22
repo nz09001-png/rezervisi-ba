@@ -597,6 +597,60 @@ return (
         >
           {salon.opening_hours}
         </p>
+        {salon.closed_weekdays?.length > 0 && (
+  <div
+    style={{
+      marginTop: "6px",
+      display: "flex",
+      flexDirection: "column",
+      gap: "3px",
+    }}
+  >
+    {[...salon.closed_weekdays]
+  .sort((a: string, b: string) => {
+    const dayOrder = ["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"];
+    return dayOrder.indexOf(a) - dayOrder.indexOf(b);
+  })
+  .map((day: string) => {
+      const dayNames: Record<string, string> = {
+        Pon: "Ponedjeljak",
+        Uto: "Utorak",
+        Sri: "Srijeda",
+        Čet: "Četvrtak",
+        Pet: "Petak",
+        Sub: "Subota",
+        Ned: "Nedjelja",
+      };
+
+      return (
+        <p
+          key={day}
+          style={{
+            fontSize: "15px",
+            lineHeight: "1.5",
+          }}
+        >
+          <span
+            style={{
+              color: "#111827",
+              fontWeight: "600",
+            }}
+          >
+            {dayNames[day] || day}:
+          </span>{" "}
+          <span
+  style={{
+    color: "#111827",
+    fontWeight: "500",
+  }}
+>
+  Zatvoreno
+</span>
+        </p>
+      );
+    })}
+  </div>
+)}
       </div>
     </div>
   </div>

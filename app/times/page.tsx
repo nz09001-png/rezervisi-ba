@@ -17,6 +17,7 @@ const barberId = searchParams.get("barberId");
   const [selectedTime, setSelectedTime] = useState("");
 const [bookedTimes, setBookedTimes] = useState<any[]>([]);
 const [closedDays, setClosedDays] = useState<any[]>([]);
+const [closedWeekdays, setClosedWeekdays] = useState<string[]>([]);
 const [serviceSteps, setServiceSteps] = useState<any[]>([]);
 const [bookedServiceSteps, setBookedServiceSteps] = useState<any[]>([]);
 const [availableTimes, setAvailableTimes] = useState<any[]>([]);
@@ -290,15 +291,16 @@ useEffect(() => {
     if (!salonSlug) return;
 
     const { data: salonData, error: salonError } = await supabase
-      .from("salons")
-      .select("id")
-      .eq("slug", salonSlug)
-      .single();
+  .from("salons")
+  .select("id, closed_weekdays")
+  .eq("slug", salonSlug)
+  .single();
 
     if (salonError) {
       console.error(salonError);
       return;
     }
+    setClosedWeekdays(salonData.closed_weekdays || []);
 
     const currentDate = new Date();
 
@@ -777,7 +779,9 @@ const isSelectedBarberIneligible =
       )
     : barbers;
 
-const areAllBarbersClosed =
+const isClosedWeekday = closedWeekdays.includes(item.day);
+
+    const areAllBarbersClosed =
   !barberId &&
   relevantBarbersForClosedCheck.length > 0 &&
   relevantBarbersForClosedCheck.every((barber) =>
@@ -833,28 +837,22 @@ style={{
 >
   {isPastDay ||
 isClosedDay ||
+isClosedWeekday ||
 isSelectedBarberClosed ||
 areAllBarbersClosed ||
 isSelectedBarberIneligible ? (
-    <p className="pt-10 text-center text-lg font-medium italic text-gray-400">
-  {isSelectedBarberIneligible
-  ? "Frizer nije dostupan za ovu uslugu"
-  : isClosedDay || isSelectedBarberClosed || areAllBarbersClosed
-    ? "Zatvoreno"
-    : "Dan je prošao"}
-</p>
-) : item.day === "Ned" ? (
-  <p
-  className={
-    isMobile
-      ? "px-1 pt-5 text-center text-[10px] font-medium italic leading-tight text-[#611a1a]"
-      : "pt-10 text-center text-lg font-medium italic text-[#611a1a]"
-  }
->
-  Nema termina
+  <p className="pt-10 text-center text-lg font-medium italic text-gray-400">
+    {isSelectedBarberIneligible
+      ? "Frizer nije dostupan za ovu uslugu"
+      : isClosedDay ||
+        isClosedWeekday ||
+        isSelectedBarberClosed ||
+        areAllBarbersClosed
+        ? "Zatvoreno"
+        : "Dan je prošao"}
 </p>
 ) : (
-                availableTimes.map((slot) => {
+  availableTimes.map((slot) => {
   const time = slot.time;
 
   if (slot.date !== item.date) return null;

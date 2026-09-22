@@ -519,6 +519,21 @@ cancel_token: cancelToken,
   setLoading(false);
   return;
 }
+
+const { error: notificationError } = await supabase
+  .from("admin_notifications")
+  .insert({
+    salon_id: salonId,
+    type: "booking_created",
+    title: "Ny bokning",
+    message: `${ime} ${prezime} har bokat ${time} den ${date} hos ${finalBarberName}`,
+    is_read: false,
+  });
+
+if (notificationError) {
+  console.error("Greška pri kreiranju notifikacije:", notificationError);
+}
+
 if (email && email.trim()) {
   const emailResponse = await fetch("/api/send-email", {
     method: "POST",
