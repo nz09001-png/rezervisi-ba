@@ -115,6 +115,7 @@ const [selectedServiceCategoryId, setSelectedServiceCategoryId] = useState<numbe
 const [editingServiceId, setEditingServiceId] = useState<number | null>(null);
 const [serviceDescription, setServiceDescription] = useState("");
 const serviceFormRef = useRef<HTMLDivElement | null>(null);
+const notificationsRef = useRef<HTMLDivElement>(null);
 const [servicePrice, setServicePrice] = useState("");
 const [serviceDuration, setServiceDuration] = useState("");
 const [showPrice, setShowPrice] = useState(true);
@@ -1433,6 +1434,24 @@ useEffect(() => {
 }, [manualTimeBarberId]);
 
 
+useEffect(() => {
+  function handleClickOutside(event: MouseEvent) {
+    if (
+      notificationsRef.current &&
+      !notificationsRef.current.contains(event.target as Node)
+    ) {
+      setShowNotifications(false);
+    }
+  }
+
+  document.addEventListener("mousedown", handleClickOutside);
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, []);
+
+
 
 const today = new Date().toISOString().split("T")[0];
 const currentDate = new Date();
@@ -2059,13 +2078,25 @@ style={{
 )}
 </div>
 
-  <div style={{ position: "relative", display: "inline-block" }}>
+  <div
+  ref={notificationsRef}
+  style={{ position: "relative", display: "inline-block" }}
+>
   <button
   onClick={() => setShowNotifications(!showNotifications)}
-  className="h-12 rounded-xl px-5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+  className="flex h-12 items-center gap-2 rounded-xl px-5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
   style={{ backgroundColor: "#611a1a" }}
 >
-  Obavijesti
+  <span>Obavijesti</span>
+
+  {notifications.filter((notification) => !notification.is_read).length > 0 && (
+    <span
+      className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1.5 text-xs font-semibold"
+      style={{ color: "#611a1a" }}
+    >
+      {notifications.filter((notification) => !notification.is_read).length}
+    </span>
+  )}
 </button>
   {showNotifications && (
   <div
@@ -2082,10 +2113,19 @@ style={{
 }}
   >
   <h2
-  className="mb-4 text-xl font-bold"
+  className="mb-4 flex items-center gap-2 text-xl font-bold"
   style={{ color: "#611a1a" }}
 >
-  Obavijesti
+  <span>Obavijesti</span>
+
+  {notifications.filter((notification) => !notification.is_read).length > 0 && (
+    <span
+      className="flex h-6 min-w-6 items-center justify-center rounded-full px-2 text-xs font-semibold text-white"
+      style={{ backgroundColor: "#611a1a" }}
+    >
+      {notifications.filter((notification) => !notification.is_read).length}
+    </span>
+  )}
 </h2>
 
   {notifications.length === 0 ? (
@@ -2100,7 +2140,11 @@ style={{
   className="rounded-xl p-4"
   style={{
     border: "1px solid rgba(97, 26, 26, 0.20)",
-    backgroundColor: notification.is_read ? "#ffffff" : "#fdf8f8",
+    backgroundColor: notification.is_read
+  ? "#ffffff"
+  : notification.type === "booking_created"
+  ? "#f3faf5"
+  : "#fdf8f8",
   }}
 >
    <p
