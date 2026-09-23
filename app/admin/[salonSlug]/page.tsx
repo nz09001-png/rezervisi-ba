@@ -190,6 +190,7 @@ const [isUploadingImage, setIsUploadingImage] = useState(false);
 const [selectedServiceBarberIds, setSelectedServiceBarberIds] = useState<number[]>([]);
 const [showFilterMenu, setShowFilterMenu] = useState(false);
 const [showDateFilter, setShowDateFilter] = useState(false);
+const [isMobile, setIsMobile] = useState(false);
 
 
 function handleCancelServiceEdit() {
@@ -294,6 +295,8 @@ setSelectedServiceBarberIds(
 
 
   function handleLogin() {
+  
+
   if (password.trim() === salon?.admin_password) {
     setIsLoggedIn(true);
   } else {
@@ -1435,6 +1438,21 @@ useEffect(() => {
 
 
 useEffect(() => {
+  const checkMobile = () => {
+    setIsMobile(window.innerWidth < 768);
+  };
+
+  checkMobile();
+
+  window.addEventListener("resize", checkMobile);
+
+  return () => {
+    window.removeEventListener("resize", checkMobile);
+  };
+}, []);
+
+
+useEffect(() => {
   function handleClickOutside(event: MouseEvent) {
     if (
       notificationsRef.current &&
@@ -1947,8 +1965,14 @@ if (!isLoggedIn) {
   }
 
   return (
-    <main className="min-h-screen bg-white p-8">
+    <main
+  className="min-h-screen bg-white"
+  style={{
+    padding: isMobile ? "24px 16px" : "32px",
+  }}
+>
       <div className="mx-auto max-w-6xl">
+        {!isMobile && (
         <div className="mb-6 flex items-start justify-between">
   <div>
     <h1 className="text-3xl font-semibold">
@@ -2192,43 +2216,358 @@ style={{
 </button>
 </div>
 </div>
-<div className="mb-3 grid grid-cols-2 gap-6">
-  <div
-  className="rounded-2xl border bg-white p-5 shadow-sm"
+)}
+
+{isMobile && (
+  <div className="mb-6">
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        gap: "16px",
+      }}
+    >
+      <div style={{ minWidth: 0 }}>
+        <h1
   style={{
-    borderColor: "#ead1d1",
-    borderLeft: "4px solid #611a1a",
+    fontSize: "18px",
+    fontWeight: 600,
+    lineHeight: 1.25,
+    whiteSpace: "nowrap",
   }}
 >
-  <p className="text-sm font-semibold text-gray-500">
-    Današnje rezervacije
-  </p>
+  {salon?.salon_name}
+</h1>
 
-  <p
-    className="mt-2 text-4xl font-bold"
+        <p
+          style={{
+            marginTop: "4px",
+            fontSize: "16px",
+            fontWeight: 600,
+          }}
+        >
+          Admin
+        </p>
+      </div>
+
+      <div
+  style={{
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "stretch",
+    gap: "8px",
+    flexShrink: 0,
+    width: "105px",
+  }}
+>
+        <button
+          onClick={() => setIsLoggedIn(false)}
+          className="rounded-xl border px-2 text-sm font-medium shadow-sm transition hover:opacity-90"
+          style={{
+            height: "40px",
+            backgroundColor: "#ffffff",
+            color: "#611a1a",
+            borderColor: "#611a1a",
+          }}
+        >
+          Odjavi se
+        </button>
+
+        <div
+  ref={notificationsRef}
+  style={{
+    position: "relative",
+    width: "100%",
+  }}
+>
+  <button
+    onClick={() => setShowNotifications(!showNotifications)}
+    className="flex w-full items-center justify-center gap-2 rounded-xl px-2 text-sm font-medium text-white shadow-sm"
     style={{
-      color: "#611a1a",
+      height: "40px",
+      backgroundColor: "#611a1a",
     }}
   >
-    {todaysBookings.length}
-  </p>
+    <span>Obavijesti</span>
+
+    {notifications.filter((notification) => !notification.is_read).length > 0 && (
+      <span
+        className="flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1.5 text-xs font-semibold"
+        style={{ color: "#611a1a" }}
+      >
+        {notifications.filter((notification) => !notification.is_read).length}
+      </span>
+    )}
+  </button>
+  {showNotifications && (
+  <div
+    className="z-50 rounded-2xl bg-white p-4 shadow"
+    style={{
+      position: "absolute",
+      top: "100%",
+      right: 0,
+      marginTop: "8px",
+      width: "calc(100vw - 32px)",
+      maxHeight: "500px",
+      overflowY: "auto",
+      border: "1px solid rgba(97, 26, 26, 0.20)",
+    }}
+  >
+    <h2
+      className="mb-4 flex items-center gap-2 text-xl font-bold"
+      style={{ color: "#611a1a" }}
+    >
+      <span>Obavijesti</span>
+
+      {notifications.filter((notification) => !notification.is_read).length > 0 && (
+        <span
+          className="flex h-6 min-w-6 items-center justify-center rounded-full px-2 text-xs font-semibold text-white"
+          style={{ backgroundColor: "#611a1a" }}
+        >
+          {notifications.filter((notification) => !notification.is_read).length}
+        </span>
+      )}
+    </h2>
+
+    {notifications.length === 0 ? (
+      <p className="text-sm text-gray-500">
+        Nema obavijesti.
+      </p>
+    ) : (
+      <div className="space-y-3">
+        {notifications.map((notification) => (
+          <div
+            key={notification.id}
+            className="rounded-xl p-4"
+            style={{
+              border: "1px solid rgba(97, 26, 26, 0.20)",
+              backgroundColor: notification.is_read
+                ? "#ffffff"
+                : notification.type === "booking_created"
+                ? "#f3faf5"
+                : "#fdf8f8",
+            }}
+          >
+            <p
+              className="font-semibold"
+              style={{
+                color: notification.is_read ? "#111827" : "#611a1a",
+              }}
+            >
+              {notification.title}
+            </p>
+
+            <p className="mt-1 text-sm leading-5 text-gray-600">
+              {notification.message}
+            </p>
+
+            {!notification.is_read && (
+              <button
+                onClick={() => markNotificationAsRead(notification.id)}
+                className="mt-3 rounded-lg px-3 py-1.5 text-sm font-medium text-white transition hover:opacity-90"
+                style={{ backgroundColor: "#611a1a" }}
+              >
+                Označi kao pročitano
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+)}
 </div>
 
-  <div
-  className="rounded-2xl border bg-white p-5 shadow-sm"
+<div
   style={{
-    borderColor: "#ead1d1",
-    borderLeft: "4px solid #611a1a",
+    position: "relative",
+    width: "100%",
   }}
 >
-  <p className="text-sm font-semibold text-gray-500">
-    Ukupno rezervacija
-  </p>
+  <button
+    onClick={() => setShowSettingsMenu(!showSettingsMenu)}
+    className="w-full rounded-xl px-2 text-sm font-medium text-white shadow-sm"
+    style={{
+      height: "40px",
+      backgroundColor: "#611a1a",
+    }}
+  >
+    Postavke
+    {selectedSettings.length > 0 && ` (${selectedSettings.length})`}
+  </button>
 
-  <p className="mt-2 text-4xl font-bold">
-    {filteredBookings.length}
-  </p>
+  {showSettingsMenu && (
+    <div
+      className="z-50 rounded-2xl bg-white p-2 shadow"
+      style={{
+        position: "absolute",
+        top: "100%",
+        right: 0,
+        marginTop: "8px",
+        width: "210px",
+        border: "1px solid rgba(97, 26, 26, 0.20)",
+      }}
+    >
+      <button
+        onClick={() => toggleSetting("hero")}
+        className="flex w-full items-center rounded-lg text-left text-sm font-medium hover:bg-gray-100"
+        style={{ padding: "8px 12px" }}
+      >
+        {selectedSettings.includes("hero") ? "✓  " : ""}
+        Naslovna slika
+      </button>
+
+      <button
+        onClick={() => toggleSetting("gallery")}
+        className="flex w-full items-center rounded-lg text-left text-sm font-medium hover:bg-gray-100"
+        style={{ padding: "8px 12px" }}
+      >
+        {selectedSettings.includes("gallery") ? "✓  " : ""}
+        Galerija
+      </button>
+
+      <button
+        onClick={() => toggleSetting("info")}
+        className="flex w-full items-center rounded-lg text-left text-sm font-medium hover:bg-gray-100"
+        style={{ padding: "8px 12px" }}
+      >
+        {selectedSettings.includes("info") ? "✓  " : ""}
+        Informacije o salonu
+      </button>
+
+      <button
+        onClick={() => toggleSetting("serviceCategories")}
+        className="flex w-full items-center rounded-lg text-left text-sm font-medium hover:bg-gray-100"
+        style={{ padding: "8px 12px" }}
+      >
+        {selectedSettings.includes("serviceCategories") ? "✓  " : ""}
+        Kategorije usluga
+      </button>
+
+      <button
+        onClick={() => toggleSetting("services")}
+        className="flex w-full items-center rounded-lg text-left text-sm font-medium hover:bg-gray-100"
+        style={{ padding: "8px 12px" }}
+      >
+        {selectedSettings.includes("services") ? "✓  " : ""}
+        Usluge
+      </button>
+
+      <button
+        onClick={() => toggleSetting("times")}
+        className="flex w-full items-center rounded-lg text-left text-sm font-medium hover:bg-gray-100"
+        style={{ padding: "8px 12px" }}
+      >
+        {selectedSettings.includes("times") ? "✓  " : ""}
+        Termini
+      </button>
+
+      <button
+        onClick={() => toggleSetting("barbers")}
+        className="flex w-full items-center rounded-lg text-left text-sm font-medium hover:bg-gray-100"
+        style={{ padding: "8px 12px" }}
+      >
+        {selectedSettings.includes("barbers") ? "✓  " : ""}
+        Frizeri
+      </button>
+
+      <button
+        onClick={() => toggleSetting("closed")}
+        className="flex w-full items-center rounded-lg text-left text-sm font-medium hover:bg-gray-100"
+        style={{ padding: "8px 12px" }}
+      >
+        {selectedSettings.includes("closed") ? "✓  " : ""}
+        Zatvoreni dani
+      </button>
+    </div>
+  )}
 </div>
+      </div>
+    </div>
+
+    <p
+      style={{
+        marginTop: "20px",
+        color: "#6b7280",
+        fontSize: "15px",
+        fontWeight: 400,
+        lineHeight: 1.5,
+      }}
+    >
+      Upravljajte rezervacijama, uslugama, frizerima i informacijama o salonu.
+    </p>
+  </div>
+)}
+
+<div
+  className="mb-3 grid grid-cols-2"
+  style={{
+    gap: isMobile ? "12px" : "24px",
+  }}
+>
+  <div
+    className="rounded-2xl border bg-white shadow-sm"
+    style={{
+      borderColor: "#ead1d1",
+      borderLeft: "4px solid #611a1a",
+      padding: isMobile ? "14px 16px" : "20px",
+      height: isMobile ? "90px" : undefined,
+    }}
+  >
+    <p
+      className="font-semibold text-gray-500"
+      style={{
+        fontSize: isMobile ? "13px" : "14px",
+        lineHeight: isMobile ? 1.35 : undefined,
+      }}
+    >
+      Današnje rezervacije
+    </p>
+
+    <p
+      className="font-bold"
+      style={{
+        marginTop: isMobile ? "8px" : "8px",
+        fontSize: isMobile ? "30px" : "36px",
+        lineHeight: 1,
+        color: "#611a1a",
+      }}
+    >
+      {todaysBookings.length}
+    </p>
+  </div>
+
+  <div
+    className="rounded-2xl border bg-white shadow-sm"
+    style={{
+      borderColor: "#ead1d1",
+      borderLeft: "4px solid #611a1a",
+      padding: isMobile ? "14px 16px" : "20px",
+      height: isMobile ? "90px" : undefined,
+    }}
+  >
+    <p
+      className="font-semibold text-gray-500"
+      style={{
+        fontSize: isMobile ? "13px" : "14px",
+        lineHeight: isMobile ? 1.35 : undefined,
+      }}
+    >
+      Ukupno rezervacija
+    </p>
+
+    <p
+      className="font-bold"
+      style={{
+        marginTop: isMobile ? "8px" : "8px",
+        fontSize: isMobile ? "30px" : "36px",
+        lineHeight: 1,
+      }}
+    >
+      {filteredBookings.length}
+    </p>
+  </div>
 </div>
 
   <div
