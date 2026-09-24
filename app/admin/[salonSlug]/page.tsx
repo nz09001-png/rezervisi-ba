@@ -116,6 +116,8 @@ const [editingServiceId, setEditingServiceId] = useState<number | null>(null);
 const [serviceDescription, setServiceDescription] = useState("");
 const serviceFormRef = useRef<HTMLDivElement | null>(null);
 const notificationsRef = useRef<HTMLDivElement>(null);
+const mobileCalendarScrollRef = useRef<HTMLDivElement | null>(null);
+const mobileCalendarScrollToMondayRef = useRef(false);
 const [servicePrice, setServicePrice] = useState("");
 const [serviceDuration, setServiceDuration] = useState("");
 const [showPrice, setShowPrice] = useState(true);
@@ -1437,6 +1439,8 @@ useEffect(() => {
 }, [manualTimeBarberId]);
 
 
+
+
 useEffect(() => {
   const checkMobile = () => {
     setIsMobile(window.innerWidth < 768);
@@ -1450,6 +1454,7 @@ useEffect(() => {
     window.removeEventListener("resize", checkMobile);
   };
 }, []);
+
 
 
 useEffect(() => {
@@ -1572,6 +1577,8 @@ const calendarWeekBookings = filteredBookings.filter((booking) => {
     (showPreviousBookings || isTodayOrFuture)
   );
 });
+
+
 
 const calendarAvailableTimeMinutes = calendarAvailableTimes.map((item) => {
   const [hours, minutes] = item.time.split(":").map(Number);
@@ -4650,7 +4657,7 @@ style={{
 
 
        
-
+{!isMobile && (
 <div className="mb-3 flex items-center justify-between">
 
   <div className="flex items-center gap-2">
@@ -4882,6 +4889,279 @@ style={{
   </div>
 
 </div>
+)}
+
+{isMobile && (
+  <div className="mb-3">
+    <div
+    style={{
+      display: "flex",
+      justifyContent: "flex-start",
+      alignItems: "center",
+      gap: "8px",
+    }}
+  >
+    <div
+      className="text-sm font-semibold"
+      style={{
+        color: "#611a1a",
+        whiteSpace: "nowrap",
+      }}
+    >
+      {(() => {
+        const weekEnd = new Date(calendarWeekStart);
+        weekEnd.setDate(calendarWeekStart.getDate() + 6);
+
+        const months = [
+          "jan",
+          "feb",
+          "mar",
+          "apr",
+          "maj",
+          "jun",
+          "jul",
+          "aug",
+          "sep",
+          "okt",
+          "nov",
+          "dec",
+        ];
+
+        return `${calendarWeekStart.getDate()}. ${
+          months[calendarWeekStart.getMonth()]
+        } – ${weekEnd.getDate()}. ${months[weekEnd.getMonth()]}`;
+      })()}
+    </div>
+
+    {(showPreviousBookings || !isCurrentCalendarWeek) && (
+      <button
+        onClick={() => {
+  mobileCalendarScrollToMondayRef.current = true;
+
+  const previousWeek = new Date(calendarWeekStart);
+  previousWeek.setDate(calendarWeekStart.getDate() - 7);
+  setCalendarWeekStart(previousWeek);
+}}
+        className="rounded-xl border px-4 py-2 text-sm font-medium"
+        style={{
+          borderColor: "#611a1a",
+          color: "#611a1a",
+          backgroundColor: "white",
+        }}
+      >
+        ←
+      </button>
+    )}
+
+    <button
+      onClick={() => {
+  mobileCalendarScrollToMondayRef.current = true;
+
+  const nextWeek = new Date(calendarWeekStart);
+  nextWeek.setDate(calendarWeekStart.getDate() + 7);
+  setCalendarWeekStart(nextWeek);
+}}
+      className="rounded-xl border px-4 py-2 text-sm font-medium"
+      style={{
+        borderColor: "#611a1a",
+        color: "#611a1a",
+        backgroundColor: "white",
+      }}
+    >
+      →
+       </button>
+  </div>
+
+  <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "8px",
+    marginTop: "12px",
+  }}
+>
+  <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  }}
+>
+    <button
+      onClick={() => {
+  mobileCalendarScrollToMondayRef.current = false;
+
+  const today = new Date();
+  const monday = new Date(today);
+  const currentDay = today.getDay();
+
+  const diffToMonday =
+    currentDay === 0 ? -6 : 1 - currentDay;
+
+  monday.setDate(today.getDate() + diffToMonday);
+  monday.setHours(0, 0, 0, 0);
+
+  setCalendarWeekStart(monday);
+}}
+      className="rounded-xl border px-4 py-2 text-sm font-medium"
+      style={{
+        borderColor: "#611a1a",
+        color: "#611a1a",
+        backgroundColor: "white",
+      }}
+    >
+      Danas
+    </button>
+
+    <button
+      onClick={() => {
+        if (showPreviousBookings) {
+          setShowPreviousBookings(false);
+
+          const today = new Date();
+          const monday = new Date(today);
+          const currentDay = today.getDay();
+
+          const diffToMonday =
+            currentDay === 0 ? -6 : 1 - currentDay;
+
+          monday.setDate(today.getDate() + diffToMonday);
+          monday.setHours(0, 0, 0, 0);
+
+          setCalendarWeekStart(monday);
+          return;
+        }
+
+        setShowPreviousBookings(true);
+      }}
+      className="rounded-xl border px-4 py-2 text-sm font-medium"
+      style={{
+        borderColor: "#611a1a",
+        color: showPreviousBookings ? "#ffffff" : "#611a1a",
+        backgroundColor: showPreviousBookings ? "#611a1a" : "#ffffff",
+      }}
+    >
+      Prethodne rezervacije
+    </button>
+    </div>
+  <div
+  style={{
+    position: "relative",
+    flexShrink: 0,
+  }}
+>
+  <button
+    onClick={() => setShowBarberFilterMenu(!showBarberFilterMenu)}
+    className="rounded-xl border px-4 py-2 text-sm font-medium transition hover:opacity-90"
+    style={{
+      backgroundColor: "#ffffff",
+      color: "#611a1a",
+      borderColor: "#611a1a",
+    }}
+  >
+    <span className="flex items-center gap-2">
+      {calendarBarberFilter === "all"
+        ? "Frizer"
+        : barbers.find(
+            (barber) => barber.id === calendarBarberFilter
+          )?.name || "Frizer"}
+
+      {calendarBarberFilter !== "all" && (
+        <span
+          style={{
+            width: "10px",
+            height: "10px",
+            borderRadius: "9999px",
+            backgroundColor: getBarberColor(
+              calendarBarberFilter as number
+            ).borderColor,
+            display: "inline-block",
+            flexShrink: 0,
+          }}
+        />
+      )}
+    </span>
+  </button>
+  {showBarberFilterMenu && (
+  <div
+    className="flex flex-col items-stretch gap-2 rounded-2xl border bg-white p-3 shadow-sm"
+    style={{
+      position: "absolute",
+      top: "100%",
+      right: 0,
+      marginTop: "8px",
+      width: "max-content",
+      minWidth: "180px",
+      borderColor: "#ead1d1",
+      zIndex: 50,
+    }}
+  >
+    <button
+      onClick={() => {
+        setCalendarBarberFilter("all");
+        setShowBarberFilterMenu(false);
+      }}
+      className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-gray-100"
+      style={{
+        color:
+          calendarBarberFilter === "all" ? "#611a1a" : "#111827",
+        backgroundColor:
+          calendarBarberFilter === "all" ? "#f7eeee" : "#ffffff",
+      }}
+    >
+      <span className="mr-2 w-4">
+        {calendarBarberFilter === "all" ? "✓" : ""}
+      </span>
+
+      <span>Svi frizeri</span>
+    </button>
+
+    {barbers.map((barber) => (
+      <button
+        key={barber.id}
+        onClick={() => {
+          setCalendarBarberFilter(barber.id);
+          setShowBarberFilterMenu(false);
+        }}
+        className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-gray-100"
+        style={{
+          color:
+            calendarBarberFilter === barber.id
+              ? "#611a1a"
+              : "#111827",
+          backgroundColor:
+            calendarBarberFilter === barber.id
+              ? "#f7eeee"
+              : "#ffffff",
+        }}
+      >
+        <span className="mr-2 w-4">
+          {calendarBarberFilter === barber.id ? "✓" : ""}
+        </span>
+
+        <span className="flex items-center gap-2">
+          <span
+            style={{
+              width: "10px",
+              height: "10px",
+              borderRadius: "9999px",
+              backgroundColor: getBarberColor(barber.id).borderColor,
+              display: "inline-block",
+              flexShrink: 0,
+            }}
+          />
+
+          {barber.name}
+        </span>
+      </button>
+    ))}
+  </div>
+)}
+</div>
+  </div>
+</div>
+)}
 
 <div
   className="mb-6 rounded-2xl border bg-white shadow-sm"
@@ -4890,8 +5170,46 @@ style={{
     overflow: "hidden",
   }}
 >
-  <div className="overflow-x-auto">
-    <div className="min-w-[1000px]">
+  <div
+  ref={(element) => {
+  mobileCalendarScrollRef.current = element;
+
+  if (!element || !isMobile) return;
+
+  const shouldScrollToMonday =
+    mobileCalendarScrollToMondayRef.current;
+
+  const today = new Date();
+  const currentDay = today.getDay();
+  const dayIndex = currentDay === 0 ? 6 : currentDay - 1;
+
+  requestAnimationFrame(() => {
+    const mondayElement =
+      element.querySelector<HTMLElement>(
+        '[data-calendar-day-index="0"]'
+      );
+
+    if (!mondayElement) return;
+
+    if (shouldScrollToMonday) {
+      element.scrollLeft = 0;
+      return;
+    }
+
+    const todayElement =
+      element.querySelector<HTMLElement>(
+        `[data-calendar-day-index="${dayIndex}"]`
+      );
+
+    if (!todayElement) return;
+
+    element.scrollLeft =
+      todayElement.offsetLeft - mondayElement.offsetLeft;
+  });
+}}
+  className="overflow-x-auto"
+>
+  <div className="min-w-[1000px]">
     <div
   className="grid text-sm font-semibold"
   style={{
@@ -4907,6 +5225,15 @@ style={{
   className="px-3 py-4"
   style={{
     borderRight: "1px solid #ead1d1",
+    ...(isMobile
+  ? {
+      position: "sticky",
+      left: 0,
+      zIndex: 20,
+      backgroundColor: "#f8eeee",
+      boxShadow: "2px 0 0 #ead1d1",
+    }
+  : {}),
   }}
 >
   Vrijeme
@@ -4944,13 +5271,14 @@ style={{
     }`;
 
     return (
-      <div
-        key={day}
-        className="border-r border-gray-200 px-3 py-3 text-center last:border-r-0"
-        style={{
-          backgroundColor: isToday ? "#e8cccc" : "transparent",
-        }}
-      >
+  <div
+    key={day}
+    data-calendar-day-index={index}
+    className="border-r border-gray-200 px-3 py-3 text-center last:border-r-0"
+    style={{
+      backgroundColor: isToday ? "#e8cccc" : "transparent",
+    }}
+  >
         <div className="font-semibold">
           {day}
         </div>
@@ -4977,9 +5305,13 @@ style={{
         <div
   className="px-3 text-sm font-medium text-gray-500"
   style={{
-    position: "relative",
-    borderRight: "1px solid #ead1d1",
-  }}
+  position: isMobile ? "sticky" : "relative",
+  left: isMobile ? 0 : undefined,
+  zIndex: isMobile ? 10 : undefined,
+  backgroundColor: isMobile ? "white" : undefined,
+  borderRight: "1px solid #ead1d1",
+  boxShadow: isMobile ? "2px 0 0 #ead1d1" : undefined,
+}}
 >
   <span
   style={{
