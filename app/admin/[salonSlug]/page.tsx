@@ -117,7 +117,10 @@ const [serviceDescription, setServiceDescription] = useState("");
 const serviceFormRef = useRef<HTMLDivElement | null>(null);
 const notificationsRef = useRef<HTMLDivElement>(null);
 const mobileCalendarScrollRef = useRef<HTMLDivElement | null>(null);
-const mobileCalendarScrollToMondayRef = useRef(false);
+const mobileCalendarScrollModeRef = useRef<
+  "today" | "monday" | "keep"
+>("today");
+const mobileCalendarSavedScrollLeftRef = useRef(0);
 const [servicePrice, setServicePrice] = useState("");
 const [serviceDuration, setServiceDuration] = useState("");
 const [showPrice, setShowPrice] = useState(true);
@@ -193,6 +196,18 @@ const [selectedServiceBarberIds, setSelectedServiceBarberIds] = useState<number[
 const [showFilterMenu, setShowFilterMenu] = useState(false);
 const [showDateFilter, setShowDateFilter] = useState(false);
 const [isMobile, setIsMobile] = useState(false);
+
+useEffect(() => {
+  if (!isMobile || !selectedBooking) return;
+
+  const previousOverflow = document.body.style.overflow;
+
+  document.body.style.overflow = "hidden";
+
+  return () => {
+    document.body.style.overflow = previousOverflow;
+  };
+}, [isMobile, selectedBooking]);
 
 
 function handleCancelServiceEdit() {
@@ -2887,7 +2902,12 @@ style={{
       Prilagodi sliku
     </p>
 
-    <div className="relative h-[320px] w-full max-w-2xl overflow-hidden rounded-2xl bg-gray-100">
+    <div
+  className="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-gray-100"
+  style={{
+    height: isMobile ? "220px" : "320px",
+  }}
+>
     <Cropper
       image={imagePreview}
       crop={crop}
@@ -4936,7 +4956,7 @@ style={{
     {(showPreviousBookings || !isCurrentCalendarWeek) && (
       <button
         onClick={() => {
-  mobileCalendarScrollToMondayRef.current = true;
+  mobileCalendarScrollModeRef.current = "monday";
 
   const previousWeek = new Date(calendarWeekStart);
   previousWeek.setDate(calendarWeekStart.getDate() - 7);
@@ -4955,7 +4975,7 @@ style={{
 
     <button
       onClick={() => {
-  mobileCalendarScrollToMondayRef.current = true;
+  mobileCalendarScrollModeRef.current = "monday";
 
   const nextWeek = new Date(calendarWeekStart);
   nextWeek.setDate(calendarWeekStart.getDate() + 7);
@@ -4990,7 +5010,7 @@ style={{
 >
     <button
       onClick={() => {
-  mobileCalendarScrollToMondayRef.current = false;
+  mobileCalendarScrollModeRef.current = "today";
 
   const today = new Date();
   const monday = new Date(today);
@@ -5176,8 +5196,11 @@ style={{
 
   if (!element || !isMobile) return;
 
-  const shouldScrollToMonday =
-    mobileCalendarScrollToMondayRef.current;
+  const scrollMode = mobileCalendarScrollModeRef.current;
+
+  // Vanlig rerender, till exempel öppna/stäng popup:
+  // behåll kalenderns nuvarande horisontella position.
+  if (scrollMode === "keep") return;
 
   const today = new Date();
   const currentDay = today.getDay();
@@ -5191,23 +5214,33 @@ style={{
 
     if (!mondayElement) return;
 
-    if (shouldScrollToMonday) {
+    if (scrollMode === "monday") {
       element.scrollLeft = 0;
+      mobileCalendarScrollModeRef.current = "keep";
       return;
     }
 
     const todayElement =
-      element.querySelector<HTMLElement>(
-        `[data-calendar-day-index="${dayIndex}"]`
-      );
+  element.querySelector<HTMLElement>(
+    `[data-calendar-day-index="${dayIndex}"]`
+  );
 
-    if (!todayElement) return;
+if (!todayElement) return;
 
-    element.scrollLeft =
-      todayElement.offsetLeft - mondayElement.offsetLeft;
-  });
+element.scrollLeft =
+  todayElement.offsetLeft - mondayElement.offsetLeft;
+
+mobileCalendarSavedScrollLeftRef.current =
+  element.scrollLeft;
+   });
 }}
-  className="overflow-x-auto"
+onScroll={(e) => {
+  if (!isMobile) return;
+
+  mobileCalendarSavedScrollLeftRef.current =
+    e.currentTarget.scrollLeft;
+}}
+className="overflow-x-auto"
 >
   <div className="min-w-[1000px]">
     <div
@@ -5226,14 +5259,14 @@ style={{
   style={{
     borderRight: "1px solid #ead1d1",
     ...(isMobile
-  ? {
-      position: "sticky",
-      left: 0,
-      zIndex: 20,
-      backgroundColor: "#f8eeee",
-      boxShadow: "2px 0 0 #ead1d1",
-    }
-  : {}),
+      ? {
+          position: "sticky",
+          left: 0,
+          zIndex: 20,
+          backgroundColor: "#f8eeee",
+          boxShadow: "2px 0 0 #ead1d1",
+        }
+      : {}),
   }}
 >
   Vrijeme
