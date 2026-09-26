@@ -3830,7 +3830,18 @@ style={{ maxWidth: "420px" }}
 
   {editingServiceId !== null && (
     <button
-      onClick={handleCancelServiceEdit}
+      onClick={() => {
+  handleCancelServiceEdit();
+
+  if (isMobile) {
+    setTimeout(() => {
+      serviceFormRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 50);
+  }
+}}
       className="rounded-lg px-5 py-3 font-medium"
       style={{
   border: "2px solid #dc2626",
@@ -3881,9 +3892,10 @@ style={{ maxWidth: "420px" }}
     setSelectedDate(date ? format(date, "yyyy-MM-dd") : "");
   }}
   locale="bs"
-dateFormat="dd.MM.yyyy"
-placeholderText="Odaberite datum"
-formatWeekDay={(dayName) => {
+  dateFormat="dd.MM.yyyy"
+  placeholderText="Odaberite datum"
+  popperPlacement={isMobile ? "bottom-start" : undefined}
+  formatWeekDay={(dayName) => {
     const days: Record<string, string> = {
       nedjelja: "ned",
       ponedjeljak: "pon",
@@ -3897,6 +3909,7 @@ formatWeekDay={(dayName) => {
 
     return days[dayName.toLowerCase()] ?? dayName.slice(0, 3);
   }}
+  
   calendarContainer={({ className, children }) => (
     <CalendarContainer className={className}>
       {children}
@@ -4125,14 +4138,20 @@ formatWeekDay={(dayName) => {
   <div
   className="mt-3"
   style={{
-    display: "grid",
-    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-    gap: "16px",
-    width: "400px",
+  display: "grid",
+  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+  gap: isMobile ? "10px" : "16px",
+  width: isMobile ? "100%" : "400px",
+  maxWidth: "100%",
+}}
+>
+  <div
+  style={{
+    width: isMobile ? "100%" : "194px",
     maxWidth: "100%",
+    minWidth: 0,
   }}
 >
-  <div style={{ width: "194px", maxWidth: "100%" }}>
     <label className="mb-1 block text-sm font-semibold">
       Od datuma
     </label>
@@ -4148,9 +4167,11 @@ formatWeekDay={(dayName) => {
     setScheduleStartDate(date ? format(date, "yyyy-MM-dd") : "");
   }}
   locale="bs"
-  dateFormat="dd.MM.yyyy"
-  placeholderText="Odaberite datum"
-  formatWeekDay={(dayName) => {
+dateFormat="dd.MM.yyyy"
+placeholderText="Odaberite datum"
+popperPlacement={isMobile ? "bottom-start" : undefined}
+popperClassName={isMobile ? "mobile-datepicker-popper" : undefined}
+formatWeekDay={(dayName) => {
     const days: Record<string, string> = {
       nedjelja: "ned",
       ponedjeljak: "pon",
@@ -4196,7 +4217,13 @@ formatWeekDay={(dayName) => {
 />
   </div>
 
-  <div style={{ width: "194px", maxWidth: "100%" }}>
+  <div
+  style={{
+    width: isMobile ? "100%" : "194px",
+    maxWidth: "100%",
+    minWidth: 0,
+  }}
+>
     <label className="mb-1 block text-sm font-semibold">
       Do datuma
     </label>
@@ -4211,10 +4238,12 @@ formatWeekDay={(dayName) => {
   onChange={(date: Date | null) => {
     setScheduleEndDate(date ? format(date, "yyyy-MM-dd") : "");
   }}
-  locale="bs"
-  dateFormat="dd.MM.yyyy"
-  placeholderText="Odaberite datum"
-  formatWeekDay={(dayName) => {
+locale="bs"
+dateFormat="dd.MM.yyyy"
+placeholderText="Odaberite datum"
+popperPlacement={isMobile ? "bottom-start" : undefined}
+popperClassName={isMobile ? "mobile-datepicker-popper-end" : undefined}
+formatWeekDay={(dayName) => {
     const days: Record<string, string> = {
       nedjelja: "ned",
       ponedjeljak: "pon",
@@ -4267,35 +4296,49 @@ formatWeekDay={(dayName) => {
   style={{
     display: "grid",
     gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-    gap: "16px",
-    width: "400px",
+    gap: isMobile ? "10px" : "16px",
+    width: isMobile ? "100%" : "400px",
     maxWidth: "100%",
   }}
 >
-  <div>
-    <label className="mb-1 block text-sm font-semibold">
-      Od
-    </label>
+  <div style={{ minWidth: 0 }}>
+  <label className="mb-1 block text-sm font-semibold">
+    Od
+  </label>
 
     <input
-      type="time"
-      value={startTime}
-      onChange={(e) => setStartTime(e.target.value)}
-      className="w-full rounded-xl border border-gray-300 bg-white p-3"
-    />
+  type="time"
+  value={startTime}
+  onChange={(e) => setStartTime(e.target.value)}
+  className="w-full rounded-xl border border-gray-300 bg-white p-3"
+  style={{
+    minWidth: 0,
+    width: isMobile ? "100px" : "100%",
+    maxWidth: isMobile ? "100px" : "100%",
+    boxSizing: "border-box",
+    padding: isMobile ? "12px 8px" : undefined,
+  }}
+/>
   </div>
 
-  <div>
-    <label className="mb-1 block text-sm font-semibold">
-      Do
-    </label>
+  <div style={{ minWidth: 0 }}>
+  <label className="mb-1 block text-sm font-semibold">
+    Do
+  </label>
 
-    <input
-      type="time"
-      value={endTime}
-      onChange={(e) => setEndTime(e.target.value)}
-      className="w-full rounded-xl border border-gray-300 bg-white p-3"
-    />
+   <input
+  type="time"
+  value={endTime}
+  onChange={(e) => setEndTime(e.target.value)}
+  className="w-full rounded-xl border border-gray-300 bg-white p-3"
+  style={{
+    minWidth: 0,
+    width: isMobile ? "100px" : "100%",
+    maxWidth: isMobile ? "100px" : "100%",
+    boxSizing: "border-box",
+    padding: isMobile ? "12px 8px" : undefined,
+  }}
+/>
   </div>
 
   <div>
@@ -4336,13 +4379,14 @@ formatWeekDay={(dayName) => {
                   : [...currentDays, day]
               );
             }}
-            className="rounded-xl px-4 py-2 text-sm font-semibold"
+  className="rounded-xl text-sm font-semibold"
 style={{
   backgroundColor: isSelected ? "#611a1a" : "#ffffff",
   color: isSelected ? "#ffffff" : "#374151",
   border: isSelected
     ? "1px solid #611a1a"
     : "1px solid #d1d5db",
+  padding: isMobile ? "8px 12px" : "8px 16px",
 }}
           >
             {day}
