@@ -3039,28 +3039,30 @@ style={{
     </p>
 
     {galleryPreviewUrl && (
-      <img
-        src={galleryPreviewUrl}
-        alt="Pregled odabrane slike"
-        style={{
-          width: "180px",
-          height: "120px",
-          objectFit: "cover",
-          borderRadius: "12px",
-          display: "block",
-        }}
-      />
-    )}
+  <img
+    src={galleryPreviewUrl}
+    alt="Pregled odabrane slike"
+    style={{
+      width: isMobile ? "140px" : "180px",
+      height: isMobile ? "100px" : "120px",
+      objectFit: "cover",
+      borderRadius: "12px",
+      display: "block",
+    }}
+  />
+)}
 
     <button
-      onClick={handleGalleryImageUpload}
-      className="mt-3 rounded-xl px-5 py-3 font-medium text-white transition hover:opacity-90"
-      style={{
-        backgroundColor: "#611a1a",
-      }}
-    >
-      Sačuvaj u galeriju
-    </button>
+  onClick={handleGalleryImageUpload}
+  className={`mt-3 rounded-xl font-medium text-white transition hover:opacity-90 ${
+    isMobile ? "px-4 py-2 text-sm" : "px-5 py-3"
+  }`}
+  style={{
+    backgroundColor: "#611a1a",
+  }}
+>
+  Sačuvaj u galeriju
+</button>
   </div>
 )}
 
@@ -3068,21 +3070,25 @@ style={{
   style={{
     marginTop: "24px",
     display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
-    gap: "12px",
+    gridTemplateColumns: isMobile
+  ? "repeat(2, minmax(0, 1fr))"
+  : "repeat(4, 1fr)",
+    gap: isMobile ? "8px" : "12px",
   }}
 >
     {galleryImages.map((image) => (
-      <div
+     <div
   key={image.id}
-  className="rounded-2xl bg-white p-4 shadow"
+  className={`rounded-2xl bg-white shadow ${
+    isMobile ? "p-2" : "p-4"
+  }`}
 >
         <img
   src={image.image_url}
   alt="Slika galerije"
   style={{
     width: "100%",
-    height: "150px",
+    height: isMobile ? "100px" : "150px",
     objectFit: "cover",
     borderRadius: "12px",
     display: "block",
@@ -3091,7 +3097,9 @@ style={{
 
         <button
           onClick={() => handleDeleteGalleryImage(image.id)}
-          className="mt-4 w-full rounded-xl px-3 py-2 font-medium text-white transition hover:opacity-90"
+          className={`w-full rounded-xl font-medium text-white transition hover:opacity-90 ${
+  isMobile ? "mt-2 px-2 py-1.5 text-sm" : "mt-4 px-3 py-2"
+}`}
 style={{ backgroundColor: "#ef4444" }}
         >
           Obriši
@@ -3142,27 +3150,58 @@ style={{ backgroundColor: "#ef4444" }}
 
   <label className="mb-1 block font-medium">Radno vrijeme</label>
 
-<div className="mb-3 flex gap-3" style={{ maxWidth: "450px" }}>
-  <div className="flex-1">
+<div
+  className="mb-3 flex"
+  style={{
+    maxWidth: "450px",
+    gap: isMobile ? "16px" : "12px",
+  }}
+>
+  <div
+    style={{
+  width: isMobile ? "100px" : "50%",
+  minWidth: 0,
+}}
+  >
     <label className="mb-1 block text-sm text-gray-500">Od</label>
+
     <input
       type="time"
       value={openingHoursFrom}
       onChange={(e) => setOpeningHoursFrom(e.target.value)}
-      className="w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+      className="w-full rounded-xl border border-gray-300 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+      style={{
+  minWidth: 0,
+  width: isMobile ? "100px" : "100%",
+  maxWidth: isMobile ? "100px" : "100%",
+  boxSizing: "border-box",
+  padding: isMobile ? "12px 8px" : "12px 16px",
+}}
     />
   </div>
 
-  <div className="flex-1">
+  <div
+    style={{
+  width: isMobile ? "100px" : "50%",
+  minWidth: 0,
+}}
+  >
     <label className="mb-1 block text-sm text-gray-500">Do</label>
+
     <input
       type="time"
       value={openingHoursTo}
       onChange={(e) => setOpeningHoursTo(e.target.value)}
-      className="w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+      className="w-full rounded-xl border border-gray-300 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+      style={{
+        minWidth: 0,
+        width: isMobile ? "100px" : "100%",
+        maxWidth: isMobile ? "100px" : "100%",
+        boxSizing: "border-box",
+        padding: isMobile ? "12px 8px" : "12px 16px",
+      }}
     />
   </div>
-  
 </div>
 
 <label className="mb-2 block font-medium">Neradni dani</label>
@@ -3182,12 +3221,13 @@ style={{ backgroundColor: "#ef4444" }}
               : [...prev, day]
           )
         }
-        className="rounded-xl px-4 py-2 text-sm font-medium transition"
+        className="rounded-xl text-sm font-medium transition"
         style={{
-          backgroundColor: isSelected ? "#611a1a" : "#ffffff",
-          color: isSelected ? "#ffffff" : "#611a1a",
-          border: "1px solid #611a1a",
-        }}
+  backgroundColor: isSelected ? "#611a1a" : "#ffffff",
+  color: isSelected ? "#ffffff" : "#611a1a",
+  border: "1px solid #611a1a",
+  padding: isMobile ? "8px 12px" : "8px 16px",
+}}
       >
         {day}
       </button>
@@ -3201,8 +3241,12 @@ style={{ backgroundColor: "#ef4444" }}
   placeholder="https://instagram.com/..."
   value={instagramUrl}
   onChange={(e) => setInstagramUrl(e.target.value)}
-  className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-  style={{ maxWidth: "450px" }}
+  className="w-full rounded-xl border border-gray-300 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+style={{
+  maxWidth: "450px",
+  padding: isMobile ? "9px 12px" : "12px 16px",
+  marginBottom: isMobile ? "8px" : "12px",
+}}
 />
 
 <label className="mb-1 block font-medium">Facebook</label>
@@ -3211,8 +3255,12 @@ style={{ backgroundColor: "#ef4444" }}
   placeholder="https://facebook.com/..."
   value={facebookUrl}
   onChange={(e) => setFacebookUrl(e.target.value)}
-  className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-  style={{ maxWidth: "450px" }}
+  className="w-full rounded-xl border border-gray-300 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+style={{
+  maxWidth: "450px",
+  padding: isMobile ? "9px 12px" : "12px 16px",
+  marginBottom: isMobile ? "8px" : "12px",
+}}
 />
 
 <label className="mb-1 block font-medium">TikTok</label>
@@ -3221,20 +3269,25 @@ style={{ backgroundColor: "#ef4444" }}
   placeholder="https://tiktok.com/@..."
   value={tiktokUrl}
   onChange={(e) => setTiktokUrl(e.target.value)}
-  className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-  style={{ maxWidth: "450px" }}
+  className="w-full rounded-xl border border-gray-300 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+style={{
+  maxWidth: "450px",
+  padding: isMobile ? "9px 12px" : "12px 16px",
+  marginBottom: isMobile ? "8px" : "12px",
+}}
 />
 
     <button
-    onClick={handleSalonInfoUpdate}
-    className="mt-4 rounded-xl px-5 py-3 font-medium text-white transition hover:opacity-90"
-    style={{
-      backgroundColor: "#611a1a",
-      display: "block",
-    }}
-  >
-    Sačuvaj informacije
-  </button>
+  onClick={handleSalonInfoUpdate}
+  className="mt-4 rounded-xl font-medium text-white transition hover:opacity-90"
+  style={{
+    backgroundColor: "#611a1a",
+    display: "block",
+    padding: isMobile ? "9px 14px" : "12px 20px",
+  }}
+>
+  Sačuvaj informacije
+</button>
 
     </div>
   </div>
@@ -3257,48 +3310,57 @@ style={{ backgroundColor: "#ef4444" }}
   }}
 >
   {serviceCategories.map((category) => (
-    <div
-      key={category.id}
-      className="flex items-center justify-between rounded-xl p-2"
-      style={{
-        width: "320px",
-        maxWidth: "100%",
-        backgroundColor: "#ffffff",
-        border: "1px solid #ead1d1",
-      }}
-    >
-      <span>{category.name}</span>
+   <div
+  key={category.id}
+  className="flex items-center justify-between rounded-xl"
+  style={{
+    width: isMobile ? "280px" : "320px",
+    maxWidth: "100%",
+    padding: isMobile ? "6px 8px" : "8px",
+    backgroundColor: "#ffffff",
+    border: "1px solid #ead1d1",
+  }}
+>
+  <span>{category.name}</span>
 
-      <button
-        type="button"
-        onClick={() => handleDeleteServiceCategory(category.id)}
-        className="rounded bg-red-500 px-3 py-1 text-white"
-      >
-        Obriši
-      </button>
-    </div>
+  <button
+    type="button"
+    onClick={() => handleDeleteServiceCategory(category.id)}
+    className="rounded bg-red-500 text-white"
+    style={{
+      padding: isMobile ? "5px 10px" : "4px 12px",
+      fontSize: isMobile ? "13px" : undefined,
+    }}
+  >
+    Obriši
+  </button>
+</div>
   ))}
 </div>
 
 <div className="flex flex-col items-start gap-3">
   <input
-    type="text"
-    placeholder="Naziv kategorije"
-    value={newServiceCategoryName}
-    onChange={(e) => setNewServiceCategoryName(e.target.value)}
-    className="rounded-lg border p-3"
-    style={{
-      width: "320px",
-      maxWidth: "100%",
-    }}
-  />
+  type="text"
+  placeholder="Naziv kategorije"
+  value={newServiceCategoryName}
+  onChange={(e) => setNewServiceCategoryName(e.target.value)}
+  className="rounded-lg border"
+  style={{
+    width: isMobile ? "280px" : "320px",
+    maxWidth: "100%",
+    padding: isMobile ? "8px 12px" : "12px",
+    fontSize: isMobile ? "14px" : undefined,
+  }}
+/>
 
   <button
   type="button"
   onClick={handleAddServiceCategory}
-  className="rounded-xl px-5 py-3 font-medium text-white"
+  className="rounded-xl font-medium text-white"
   style={{
     backgroundColor: "#611a1a",
+    padding: isMobile ? "8px 14px" : "12px 20px",
+    fontSize: isMobile ? "14px" : undefined,
   }}
 >
   + Dodaj kategoriju
@@ -3321,17 +3383,18 @@ style={{ backgroundColor: "#ef4444" }}
    {services.map((service) => (
   <div
   key={service.id}
-  className="rounded-xl border p-3 transition-all"
+  className="rounded-xl border transition-all"
   style={{
-    maxWidth: "600px",
-    width: "100%",
-    backgroundColor:
-      editingServiceId === service.id ? "#e5cccc" : "#ffffff",
-    borderColor:
-  editingServiceId === service.id ? "#611a1a" : "#d8caca",
-    borderWidth:
-      editingServiceId === service.id ? "2px" : "1px",
-  }}
+  maxWidth: "600px",
+  width: "100%",
+  padding: isMobile ? "10px 12px" : "12px",
+  backgroundColor:
+    editingServiceId === service.id ? "#e5cccc" : "#ffffff",
+  borderColor:
+    editingServiceId === service.id ? "#611a1a" : "#d8caca",
+  borderWidth:
+    editingServiceId === service.id ? "2px" : "1px",
+}}
 >
     <div>
         
@@ -3356,7 +3419,12 @@ style={{ backgroundColor: "#ef4444" }}
           </p>
         )}
 
-       <div className="mt-2 space-y-1">
+       <div
+  className="space-y-1"
+  style={{
+    marginTop: isMobile ? "4px" : "8px",
+  }}
+>
   {service.price && (
     <p className="font-bold">
       {service.price} BAM
@@ -3370,7 +3438,12 @@ style={{ backgroundColor: "#ef4444" }}
   )}
 </div>
 
-        <div className="mt-3 space-y-1">
+        <div
+  className="space-y-1"
+  style={{
+    marginTop: isMobile ? "6px" : "12px",
+  }}
+>
           <p className="text-xs text-gray-500">
             Cijena:{" "}
             {service.show_price ? "Prikazana" : "Skrivena"}
@@ -3383,7 +3456,12 @@ style={{ backgroundColor: "#ef4444" }}
                 </div>
     </div>
 
-    <div className="mt-3 flex w-full gap-2">
+    <div
+  className="flex w-full gap-2"
+  style={{
+    marginTop: isMobile ? "8px" : "12px",
+  }}
+>
       <button
   type="button"
   onClick={() => handleEditService(service)}
@@ -3393,6 +3471,7 @@ style={{ backgroundColor: "#ef4444" }}
   color: "#611a1a",
   borderColor: "#611a1a",
   marginLeft: "auto",
+  padding: isMobile ? "6px 12px" : undefined,
 }}
 >
   Edit
@@ -3402,8 +3481,9 @@ style={{ backgroundColor: "#ef4444" }}
         onClick={() => handleDeleteService(service.id)}
         className="rounded-lg px-4 py-2 text-white"
         style={{
-          backgroundColor: "#ef4444",
-        }}
+  backgroundColor: "#ef4444",
+  padding: isMobile ? "6px 12px" : undefined,
+}}
       >
         Obriši
       </button>
@@ -3439,14 +3519,22 @@ style={{ backgroundColor: "#ef4444" }}
   value={serviceName}
   onChange={(e) => setServiceName(e.target.value)}
   className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-  style={{ maxWidth: "450px" }}
+  style={{
+  maxWidth: "450px",
+  paddingTop: isMobile ? "9px" : undefined,
+  paddingBottom: isMobile ? "9px" : undefined,
+}}
 />
   <textarea
   placeholder="Opis usluge (nije obavezno)"
   value={serviceDescription}
   onChange={(e) => setServiceDescription(e.target.value)}
   className="mb-4 block w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-  style={{ maxWidth: "450px" }}
+  style={{
+  maxWidth: "450px",
+  paddingTop: isMobile ? "9px" : undefined,
+  paddingBottom: isMobile ? "9px" : undefined,
+}}
   rows={3}
 />
 
@@ -3456,7 +3544,11 @@ style={{ backgroundColor: "#ef4444" }}
   value={servicePrice}
   onChange={(e) => setServicePrice(e.target.value)}
   className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-  style={{ maxWidth: "450px" }}
+  style={{
+    maxWidth: "450px",
+    paddingTop: isMobile ? "9px" : undefined,
+    paddingBottom: isMobile ? "9px" : undefined,
+  }}
 />
   <input
   type="number"
@@ -3580,14 +3672,21 @@ style={{ backgroundColor: "#ef4444" }}
     {serviceSteps.map((step, index) => (
   <div
   key={index}
-  className="mt-4 rounded-xl border bg-white p-4"
+  className="rounded-xl border bg-white"
   style={{
     borderColor: "#d8caca",
+    marginTop: isMobile ? "10px" : "16px",
+    padding: isMobile ? "12px" : "16px",
   }}
 >
-    <h4 className="mb-4 text-lg font-semibold">
-      Korak {index + 1}
-    </h4>
+  <h4
+    className="text-lg font-semibold"
+    style={{
+      marginBottom: isMobile ? "10px" : "16px",
+    }}
+  >
+    Korak {index + 1}
+  </h4>
 
     <input
   type="text"
@@ -3656,7 +3755,7 @@ style={{ maxWidth: "420px" }}
   paddingRight: "15px",
 }}
 >
-    <button
+   <button
   type="button"
   onClick={() => {
     const shouldDelete = window.confirm(
@@ -3672,7 +3771,7 @@ style={{ maxWidth: "420px" }}
   className="rounded-lg px-4 py-2 text-white"
   style={{ backgroundColor: "#ef4444" }}
 >
-  Obriši korak
+  {isMobile ? "Obriši" : "Obriši korak"}
 </button>
   </div>
 )}
@@ -3701,13 +3800,30 @@ style={{ maxWidth: "420px" }}
 </button>
   </div>
 )}
-<div className="flex gap-3">
+<div
+  className="flex gap-3"
+  style={{
+    ...(isMobile
+      ? {
+          flexWrap: "nowrap",
+          width: "100%",
+        }
+      : {}),
+  }}
+>
   <button
     onClick={handleAddService}
     className="rounded-lg px-5 py-3 text-white font-medium"
     style={{
-      backgroundColor: "#611a1a",
-    }}
+  backgroundColor: "#611a1a",
+  ...(isMobile
+    ? {
+        paddingLeft: "12px",
+        paddingRight: "12px",
+        whiteSpace: "nowrap",
+      }
+    : {}),
+}}
   >
     {editingServiceId !== null ? "Sačuvaj izmjene" : "+ Dodaj uslugu"}
     </button>
@@ -3717,9 +3833,16 @@ style={{ maxWidth: "420px" }}
       onClick={handleCancelServiceEdit}
       className="rounded-lg px-5 py-3 font-medium"
       style={{
-        border: "2px solid #dc2626",
-        color: "#dc2626",
-      }}
+  border: "2px solid #dc2626",
+  color: "#dc2626",
+  ...(isMobile
+    ? {
+        paddingLeft: "12px",
+        paddingRight: "12px",
+        whiteSpace: "nowrap",
+      }
+    : {}),
+}}
     >
       Otkaži editovanje
     </button>
