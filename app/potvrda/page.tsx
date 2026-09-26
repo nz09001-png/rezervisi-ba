@@ -898,8 +898,8 @@ maxWidth: isMobile ? "100%" : "420px",
     border: "2px solid #611a1a",
   }}
 >
-  <h2
-  className="mb-10 text-center text-xl font-bold"
+<h2
+  className="mb-3 text-center text-xl font-bold"
   style={{ color: "#611a1a" }}
 >
   Podaci klijenta

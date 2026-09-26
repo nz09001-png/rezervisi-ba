@@ -733,13 +733,14 @@ return (
 
 
     
-  <div
+ <div
   className="rounded-3xl"
   style={{
     display: "grid",
     gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
     border: "1px solid #611a1a",
     backgroundColor: "#ffffff",
+    overflow: "hidden",
   }}
 >
         {weekDays.map((item) => {

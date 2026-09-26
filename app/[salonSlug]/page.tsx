@@ -341,7 +341,7 @@ return (
       margin: 0,
     }}
   >
-    Lokacija
+    Informacije o salonu
   </h2>
 
   {(salon.instagram_url || salon.facebook_url || salon.tiktok_url) && (

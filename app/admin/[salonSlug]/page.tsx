@@ -2250,28 +2250,46 @@ style={{
         gap: "16px",
       }}
     >
-      <div style={{ minWidth: 0 }}>
-        <h1
+      <div
   style={{
-    fontSize: "18px",
-    fontWeight: 600,
-    lineHeight: 1.25,
-    whiteSpace: "nowrap",
+    minWidth: 0,
+    flex: 1,
+    paddingRight: "4px",
   }}
 >
-  {salon?.salon_name}
-</h1>
+  <h1
+    style={{
+      fontSize: "18px",
+      fontWeight: 600,
+      lineHeight: 1.25,
+      whiteSpace: "nowrap",
+    }}
+  >
+    {salon?.salon_name}
+  </h1>
 
-        <p
-          style={{
-            marginTop: "4px",
-            fontSize: "16px",
-            fontWeight: 600,
-          }}
-        >
-          Admin
-        </p>
-      </div>
+  <p
+    style={{
+      marginTop: "4px",
+      fontSize: "16px",
+      fontWeight: 600,
+    }}
+  >
+    Admin
+  </p>
+
+  <p
+    style={{
+      marginTop: "16px",
+      color: "#6b7280",
+      fontSize: "15px",
+      fontWeight: 400,
+      lineHeight: 1.5,
+    }}
+  >
+    Upravljajte rezervacijama, uslugama, frizerima i informacijama o salonu.
+  </p>
+</div>
 
       <div
   style={{
@@ -2325,16 +2343,17 @@ style={{
   {showNotifications && (
   <div
     className="z-50 rounded-2xl bg-white p-4 shadow"
-    style={{
-      position: "absolute",
-      top: "100%",
-      right: 0,
-      marginTop: "8px",
-      width: "calc(100vw - 32px)",
-      maxHeight: "500px",
-      overflowY: "auto",
-      border: "1px solid rgba(97, 26, 26, 0.20)",
-    }}
+style={{
+  position: "absolute",
+  top: "100%",
+  right: 0,
+  marginTop: "8px",
+width: "300px",
+maxHeight: "420px",
+overflowY: "auto",
+overflowX: "hidden",
+  border: "1px solid rgba(97, 26, 26, 0.20)",
+}}
   >
     <h2
       className="mb-4 flex items-center gap-2 text-xl font-bold"
@@ -2357,45 +2376,56 @@ style={{
         Nema obavijesti.
       </p>
     ) : (
-      <div className="space-y-3">
-        {notifications.map((notification) => (
-          <div
-            key={notification.id}
-            className="rounded-xl p-4"
-            style={{
-              border: "1px solid rgba(97, 26, 26, 0.20)",
-              backgroundColor: notification.is_read
-                ? "#ffffff"
-                : notification.type === "booking_created"
-                ? "#f3faf5"
-                : "#fdf8f8",
-            }}
-          >
-            <p
-              className="font-semibold"
-              style={{
-                color: notification.is_read ? "#111827" : "#611a1a",
-              }}
-            >
-              {notification.title}
-            </p>
+<div className="space-y-2">
+  {notifications.map((notification) => (
+    <div
+      key={notification.id}
+      className="rounded-xl"
+      style={{
+        padding: "10px 12px",
+        border: "1px solid rgba(97, 26, 26, 0.20)",
+        backgroundColor: notification.is_read
+          ? "#ffffff"
+          : notification.type === "booking_created"
+          ? "#f3faf5"
+          : "#fdf8f8",
+      }}
+    >
+      <p
+        className="text-sm font-semibold"
+        style={{
+          color: notification.is_read ? "#111827" : "#611a1a",
+        }}
+      >
+        {notification.title}
+      </p>
 
-            <p className="mt-1 text-sm leading-5 text-gray-600">
-              {notification.message}
-            </p>
+      <p
+        className="text-sm text-gray-600"
+        style={{
+          marginTop: "2px",
+          lineHeight: "18px",
+        }}
+      >
+        {notification.message}
+      </p>
 
-            {!notification.is_read && (
-              <button
-                onClick={() => markNotificationAsRead(notification.id)}
-                className="mt-3 rounded-lg px-3 py-1.5 text-sm font-medium text-white transition hover:opacity-90"
-                style={{ backgroundColor: "#611a1a" }}
-              >
-                Označi kao pročitano
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
+      {!notification.is_read && (
+        <button
+          onClick={() => markNotificationAsRead(notification.id)}
+          className="rounded-lg text-xs font-medium text-white transition hover:opacity-90"
+          style={{
+            marginTop: "7px",
+            padding: "5px 9px",
+            backgroundColor: "#611a1a",
+          }}
+        >
+          Označi kao pročitano
+        </button>
+      )}
+    </div>
+  ))}
+</div>
     )}
   </div>
 )}
@@ -2508,17 +2538,7 @@ style={{
       </div>
     </div>
 
-    <p
-      style={{
-        marginTop: "20px",
-        color: "#6b7280",
-        fontSize: "15px",
-        fontWeight: 400,
-        lineHeight: 1.5,
-      }}
-    >
-      Upravljajte rezervacijama, uslugama, frizerima i informacijama o salonu.
-    </p>
+
   </div>
 )}
 
@@ -3893,9 +3913,10 @@ style={{ maxWidth: "420px" }}
   }}
   locale="bs"
   dateFormat="dd.MM.yyyy"
-  placeholderText="Odaberite datum"
-  popperPlacement={isMobile ? "bottom-start" : undefined}
-  formatWeekDay={(dayName) => {
+ placeholderText="Odaberite datum"
+popperPlacement={isMobile ? "bottom-start" : undefined}
+popperClassName={isMobile ? "mobile-datepicker-popper" : undefined}
+formatWeekDay={(dayName) => {
     const days: Record<string, string> = {
       nedjelja: "ned",
       ponedjeljak: "pon",
@@ -3997,26 +4018,28 @@ style={{ maxWidth: "420px" }}
       index === array.findIndex((other) => other.time === item.time)
   )
   .map((item) => (
-      <div
+<div
   key={item.id}
-  className="flex items-center justify-between rounded-xl px-2 py-1.5"
+  className="flex items-center justify-between rounded-xl"
   style={{
     backgroundColor: "#ffffff",
     border: "1px solid #ead1d1",
+    padding: isMobile ? "5px 8px" : "6px 8px",
   }}
 >
-        <span>{item.time}</span>
+  <span>{item.time}</span>
 
-       <button
-  onClick={() => handleDeleteTime(item.id)}
-  className="rounded-lg px-3 py-1 font-medium text-white"
-  style={{
-    backgroundColor: "#ef4444",
-  }}
->
-  Obriši
-</button>
-      </div>
+  <button
+    onClick={() => handleDeleteTime(item.id)}
+    className="rounded-lg font-medium text-white"
+    style={{
+      backgroundColor: "#ef4444",
+      padding: isMobile ? "4px 10px" : "4px 12px",
+    }}
+  >
+    Obriši
+  </button>
+</div>
             ))}
       </div>
     )}
@@ -4034,37 +4057,41 @@ style={{ maxWidth: "420px" }}
       Dodaj novi termin
     </label>
 
-    <div
-      style={{
-        display: "flex",
-        gap: "12px",
-        width: "100%",
-      }}
-    >
-      <input
-  type="time"
-  value={newTime}
-  onChange={(e) => setNewTime(e.currentTarget.value)}
-  className="rounded-lg border p-2"
+<div
   style={{
-    width: "200px",
-    maxWidth: "100%",
+    display: "flex",
+    gap: isMobile ? "10px" : "12px",
+    width: "100%",
+    alignItems: "stretch",
   }}
-/>
+>
+  <input
+    type="time"
+    value={newTime}
+    onChange={(e) => setNewTime(e.currentTarget.value)}
+    className="rounded-lg border"
+    style={{
+      width: isMobile ? "150px" : "200px",
+      maxWidth: "100%",
+      padding: isMobile ? "8px 10px" : "8px",
+    }}
+  />
 
-      <button
-        type="button"
-        onClick={handleAddTime}
-        className="rounded-lg bg-black px-5 py-2 font-semibold text-white"
-        style={{
-  backgroundColor: "#611a1a",
-  color: "white",
-  border: "1px solid #611a1a",
-}}
-      >
-        Dodaj termin
-      </button>
-    </div>
+  <button
+    type="button"
+    onClick={handleAddTime}
+    className="rounded-lg font-semibold text-white"
+    style={{
+      backgroundColor: "#611a1a",
+      color: "white",
+      border: "1px solid #611a1a",
+      padding: isMobile ? "8px 14px" : "8px 20px",
+      whiteSpace: "nowrap",
+    }}
+  >
+    Dodaj termin
+  </button>
+</div>
 
     <button
       type="button"
@@ -4412,13 +4439,13 @@ style={{
       gap: "12px",
     }}
   >
-    <button
-      type="button"
-      onClick={handleGenerateTimes}
-      className="rounded-xl bg-black px-5 py-3 font-semibold text-white"
-    >
-      Generiši termine
-    </button>
+<button
+  type="button"
+  onClick={handleGenerateTimes}
+  className="rounded-xl bg-black px-5 py-3 font-semibold text-white"
+>
+  Generiši termine
+</button>
 
     {generatedTimes.length > 0 && (
       <div>
@@ -4444,20 +4471,20 @@ style={{
     >
       
 
-      <button
+<button
   type="button"
   onClick={handleReplaceTimes}
   disabled={generatedTimes.length === 0}
   className="rounded-xl px-5 py-3 font-semibold"
-  style={{
-    backgroundColor: "#611a1a",
-    color: "white",
-    border: "1px solid #611a1a",
-    cursor:
-      generatedTimes.length === 0 ? "not-allowed" : "pointer",
-    opacity:
-      generatedTimes.length === 0 ? 0.5 : 1,
-  }}
+style={{
+  backgroundColor: "#611a1a",
+  color: "white",
+  border: "1px solid #611a1a",
+  cursor:
+    generatedTimes.length === 0 ? "not-allowed" : "pointer",
+  opacity:
+    generatedTimes.length === 0 ? 0.5 : 1,
+}}
 >
   {timesSaved ? "Sačuvano ✓" : "Sačuvaj termine"}
 </button>
@@ -4570,9 +4597,11 @@ style={{
     setClosedDate(date ? format(date, "yyyy-MM-dd") : "");
   }}
   locale="bs"
-  dateFormat="dd.MM.yyyy"
-  placeholderText="Odaberite datum"
-  formatWeekDay={(dayName) => {
+dateFormat="dd.MM.yyyy"
+placeholderText="Odaberite datum"
+popperPlacement={isMobile ? "bottom-start" : undefined}
+popperClassName={isMobile ? "mobile-datepicker-popper" : undefined}
+formatWeekDay={(dayName) => {
     const days: Record<string, string> = {
       nedjelja: "ned",
       ponedjeljak: "pon",
@@ -4630,9 +4659,11 @@ style={{
     setClosedEndDate(date ? format(date, "yyyy-MM-dd") : "");
   }}
   locale="bs"
-  dateFormat="dd.MM.yyyy"
-  placeholderText="Odaberite datum"
-  formatWeekDay={(dayName) => {
+ dateFormat="dd.MM.yyyy"
+placeholderText="Odaberite datum"
+popperPlacement={isMobile ? "bottom-start" : undefined}
+popperClassName={isMobile ? "mobile-datepicker-popper" : undefined}
+formatWeekDay={(dayName) => {
     const days: Record<string, string> = {
       nedjelja: "ned",
       ponedjeljak: "pon",
@@ -4782,15 +4813,16 @@ style={{
     </div>
 
     <div>
-  <input
+<input
   type="text"
   placeholder="Ime frizera"
   value={newBarberName}
   onChange={(e) => setNewBarberName(e.target.value)}
-  className="mb-3 rounded-xl border border-gray-300 bg-white p-3"
+  className="mb-3 rounded-xl border border-gray-300 bg-white"
   style={{
     width: "320px",
     maxWidth: "100%",
+    padding: isMobile ? "10px 12px" : "12px",
   }}
 />
 
