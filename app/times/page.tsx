@@ -465,7 +465,7 @@ return (
       style={{
         width: "100%",
         maxWidth: "340px",
-        padding: "18px 20px",
+        padding: isMobile ? "14px 20px" : "18px 20px",
         borderRadius: "18px",
         backgroundColor: "rgba(97, 26, 26, 0.03)",
         border: "1px solid rgba(97, 26, 26, 0.15)",
@@ -477,9 +477,9 @@ return (
       <p
         style={{
           margin: 0,
-          marginBottom: "18px",
+          marginBottom: isMobile ? "10px" : "18px",
           color: "#111827",
-          fontSize: "24px",
+          fontSize: isMobile ? "20px" : "24px",
           fontWeight: "700",
         }}
       >
@@ -648,7 +648,7 @@ return (
 </h1>
 
   <div
-  className="mt-3 flex items-center gap-6"
+  className={`${isMobile ? "mt-1" : "mt-3"} flex items-center gap-6`}
   style={{
     color: "#611a1a",
     marginLeft: "45px",
@@ -999,9 +999,14 @@ if (slotsNeeded > 1 && !hasEnoughSlots) return null;
   key={time}
   type="button"
   onClick={() => {
+  if (selectedTime === time && selectedDate === item.date) {
+    setSelectedDate("");
+    setSelectedTime("");
+  } else {
     setSelectedDate(item.date);
     setSelectedTime(time);
-  }}
+  }
+}}
   style={{
     backgroundColor:
       selectedTime === time && selectedDate === item.date
@@ -1050,7 +1055,7 @@ className={
     display: "flex",
     justifyContent: "flex-end",
     width: "100%",
-    marginTop: "24px",
+    marginTop: isMobile ? "12px" : "24px",
   }}
 >
   <button

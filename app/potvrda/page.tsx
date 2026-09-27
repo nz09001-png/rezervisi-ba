@@ -333,7 +333,12 @@ setTimeTaken(false);
 setLoading(true);
 
  
-  const cancelToken = crypto.randomUUID();
+  const cancelToken =
+  typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random()
+        .toString(36)
+        .slice(2)}`;
   const requestedStart = timeToMinutes(time || "00:00");
 const serviceDuration = service?.duration_minutes || 30;
 const slotsNeeded = Math.ceil(serviceDuration / 30);
@@ -587,24 +592,24 @@ router.replace(
     salon || ""
   )}&salonSlug=${encodeURIComponent(
     salonSlug || ""
-  )}&serviceId=${serviceId}&date=${encodeURIComponent(
-    date || ""
-  )}&time=${encodeURIComponent(time || "")}`}
+  )}&serviceId=${serviceId}&date=${date}&time=${time}${
+    barberId ? `&barberId=${barberId}` : ""
+  }`}
   style={{
     color: "#611a1a",
     textDecoration: "none",
     fontWeight: "700",
     display: "inline-block",
-    marginBottom: "16px",
+    marginBottom: isMobile ? "0px" : "16px",
   }}
 >
   ← Nazad
 </Link>
-      <div
-  className="mx-auto"
+
+<div
+  className="mx-auto max-w-4xl"
   style={{
-    width: "680px",
-    maxWidth: "100%",
+    marginTop: isMobile ? "-8px" : undefined,
   }}
 >
         <div
@@ -615,11 +620,13 @@ router.replace(
     transform: isMobile ? "none" : "translateX(110px)",
   }}
 >
-  <div>
+<div>
+  {!isMobile && (
     <h1 className="text-3xl font-bold text-[#611a1a]">
       Pregled rezervacije
     </h1>
-  </div>
+  )}
+</div>
 
   <div
   className={
@@ -680,10 +687,10 @@ router.replace(
   className="mb-6"
   style={{
     width: isMobile ? "100%" : "420px",
-maxWidth: isMobile ? "100%" : "420px",
+    maxWidth: isMobile ? "100%" : "420px",
     marginLeft: "auto",
     marginRight: "auto",
-    padding: "18px 20px",
+    padding: isMobile ? "12px 16px" : "18px 20px",
     borderRadius: "18px",
     backgroundColor: "rgba(97, 26, 26, 0.03)",
     border: "1px solid rgba(97, 26, 26, 0.15)",
@@ -694,20 +701,36 @@ maxWidth: isMobile ? "100%" : "420px",
     style={{
       margin: 0,
       color: "#111827",
-      fontSize: "24px",
+      fontSize: isMobile ? "18px" : "24px",
       fontWeight: "700",
     }}
   >
     {service ? service.name : "Učitava se..."}
   </p>
 
+  {service?.description && (
+    <p
+      style={{
+        marginTop: "4px",
+        marginRight: 0,
+        marginBottom: 0,
+        marginLeft: 0,
+        color: "#6b7280",
+        fontSize: "14px",
+        lineHeight: "1.5",
+      }}
+    >
+      {service.description}
+    </p>
+  )}
+
   <div
     style={{
       display: "flex",
       gap: "40px",
       alignItems: "center",
-      marginTop: "18px",
-      marginBottom: "18px",
+      marginTop: isMobile ? "10px" : "18px",
+      marginBottom: isMobile ? "10px" : "18px",
     }}
   >
     <div>
@@ -760,13 +783,67 @@ maxWidth: isMobile ? "100%" : "420px",
   </div>
 
   <div
-  style={{
-    display: "flex",
-    gap: "32px",
-    alignItems: "center",
-  }}
->
-  {service?.show_price && (
+    style={{
+      display: isMobile ? "grid" : "flex",
+      gridTemplateColumns: isMobile
+        ? "repeat(3, minmax(0, 1fr))"
+        : undefined,
+      gap: isMobile ? "12px" : "32px",
+      alignItems: "start",
+    }}
+  >
+    {service?.show_price && (
+      <div>
+        <p
+          style={{
+            margin: 0,
+            marginBottom: "3px",
+            color: "#6b7280",
+            fontSize: "13px",
+          }}
+        >
+          Cijena
+        </p>
+
+        <p
+          style={{
+            margin: 0,
+            color: "#111827",
+            fontSize: "17px",
+            fontWeight: "700",
+          }}
+        >
+          {service.price} KM
+        </p>
+      </div>
+    )}
+
+    {service?.show_duration && (
+      <div>
+        <p
+          style={{
+            margin: 0,
+            marginBottom: "3px",
+            color: "#6b7280",
+            fontSize: "13px",
+          }}
+        >
+          Trajanje
+        </p>
+
+        <p
+          style={{
+            margin: 0,
+            color: "#111827",
+            fontSize: "17px",
+            fontWeight: "700",
+          }}
+        >
+          {service.duration_minutes || 60} min
+        </p>
+      </div>
+    )}
+
     <div>
       <p
         style={{
@@ -776,72 +853,22 @@ maxWidth: isMobile ? "100%" : "420px",
           fontSize: "13px",
         }}
       >
-        Cijena
+        Frizer
       </p>
 
       <p
         style={{
           margin: 0,
           color: "#111827",
-          fontSize: "17px",
+          fontSize: isMobile ? "15px" : "17px",
           fontWeight: "700",
+          whiteSpace: isMobile ? "nowrap" : undefined,
         }}
       >
-        {service.price} KM
+        {barberId ? barberName : "Bilo koji frizer"}
       </p>
     </div>
-  )}
-
-  {service?.show_duration && (
-    <div>
-      <p
-        style={{
-          margin: 0,
-          marginBottom: "3px",
-          color: "#6b7280",
-          fontSize: "13px",
-        }}
-      >
-        Trajanje
-      </p>
-
-      <p
-        style={{
-          margin: 0,
-          color: "#111827",
-          fontSize: "17px",
-          fontWeight: "700",
-        }}
-      >
-        {service.duration_minutes || 60} min
-      </p>
-    </div>
-  )}
-
-  <div>
-    <p
-      style={{
-        margin: 0,
-        marginBottom: "3px",
-        color: "#6b7280",
-        fontSize: "13px",
-      }}
-    >
-      Frizer
-    </p>
-
-    <p
-      style={{
-        margin: 0,
-        color: "#111827",
-        fontSize: "17px",
-        fontWeight: "700",
-      }}
-    >
-      {barberId ? barberName : "Bilo koji frizer"}
-    </p>
   </div>
-</div>
 </div>
 
 {isMobile && ( 
@@ -890,17 +917,39 @@ maxWidth: isMobile ? "100%" : "420px",
   </div>
 )}
 
+{isMobile && (
+  <h1
+    style={{
+      margin: 0,
+      marginBottom: "6px",
+      color: "#111827",
+      fontSize: "22px",
+      fontWeight: "700",
+      lineHeight: "1.2",
+    }}
+  >
+    Pregled rezervacije
+  </h1>
+)}
+
         <div
-  className="mx-auto rounded-3xl bg-white p-6 shadow-sm"
+  className="mx-auto rounded-3xl bg-white shadow-sm"
   style={{
     width: "420px",
     maxWidth: "100%",
     border: "2px solid #611a1a",
+    paddingTop: isMobile ? "16px" : "24px",
+    paddingRight: "24px",
+    paddingBottom: "24px",
+    paddingLeft: "24px",
   }}
 >
 <h2
-  className="mb-3 text-center text-xl font-bold"
-  style={{ color: "#611a1a" }}
+  className="text-center font-bold text-[#611a1a]"
+  style={{
+    fontSize: isMobile ? "18px" : undefined,
+    marginBottom: isMobile ? "14px" : "24px",
+  }}
 >
   Podaci klijenta
 </h2>
@@ -915,8 +964,8 @@ maxWidth: isMobile ? "100%" : "420px",
     style={{
       display: "grid",
       gridTemplateColumns: "120px 1fr",
-      padding: "8px 0",
-      borderBottom: "1px solid #f1f1f1",
+      padding: isMobile ? "4px 0" : "8px 0",
+      borderBottom: isMobile ? "none" : "1px solid #f1f1f1",
       alignItems: "center",
       
     }}
@@ -931,8 +980,8 @@ maxWidth: isMobile ? "100%" : "420px",
     style={{
       display: "grid",
       gridTemplateColumns: "120px 1fr",
-      padding: "8px 0",
-      borderBottom: "1px solid #f1f1f1",
+      padding: isMobile ? "4px 0" : "8px 0",
+      borderBottom: isMobile ? "none" : "1px solid #f1f1f1",
       alignItems: "center",
     }}
   >
@@ -946,8 +995,8 @@ maxWidth: isMobile ? "100%" : "420px",
     style={{
       display: "grid",
       gridTemplateColumns: "120px 1fr",
-      padding: "8px 0",
-      borderBottom: "1px solid #f1f1f1",
+      padding: isMobile ? "4px 0" : "8px 0",
+      borderBottom: isMobile ? "none" : "1px solid #f1f1f1",
       alignItems: "center",
     }}
   >
@@ -962,8 +1011,8 @@ maxWidth: isMobile ? "100%" : "420px",
     style={{
       display: "grid",
       gridTemplateColumns: "120px 1fr",
-      padding: "8px 0",
-      borderBottom: "1px solid #f1f1f1",
+      padding: isMobile ? "4px 0" : "8px 0",
+      borderBottom: isMobile ? "none" : "1px solid #f1f1f1",
       alignItems: "center",
     }}
   >
@@ -986,8 +1035,8 @@ maxWidth: isMobile ? "100%" : "420px",
     style={{
       display: "grid",
       gridTemplateColumns: "120px 1fr",
-      padding: "8px 0",
-      borderBottom: "1px solid #f1f1f1",
+      padding: isMobile ? "4px 0" : "8px 0",
+      borderBottom: isMobile ? "none" : "1px solid #f1f1f1",
       alignItems: "center",
     }}
   >
@@ -1035,18 +1084,24 @@ maxWidth: isMobile ? "100%" : "420px",
   </div>
 )}
 {!timeTaken && (
-  <div className="mt-10 flex justify-center">
+  <div
+    className="flex justify-center"
+    style={{
+      marginTop: isMobile ? "20px" : "40px",
+    }}
+  >
     <button
       type="button"
       onClick={handleConfirmBooking}
       disabled={loading || confirmed}
       style={{
-        backgroundColor: "#611a1a",
-        color: "white",
-        padding: "16px 80px",
-        borderRadius: "16px",
-        fontWeight: "bold",
-      }}
+  backgroundColor: "#611a1a",
+  color: "white",
+  padding: isMobile ? "12px 24px" : "16px 80px",
+  borderRadius: "16px",
+  fontWeight: "bold",
+  whiteSpace: isMobile ? "nowrap" : undefined,
+}}
     >
       {confirmed
   ? "Rezervacija potvrđena"

@@ -175,7 +175,7 @@ useEffect(() => {
     textDecoration: "none",
     fontWeight: "700",
     display: "inline-block",
-    marginBottom: "16px",
+    marginBottom: isMobile ? "8px" : "16px",
   }}
 >
   ← Nazad
@@ -183,17 +183,15 @@ useEffect(() => {
   <div className="mx-auto max-w-4xl">
     
 
-        <div
+  <div
   className="flex items-end justify-between"
   style={{
-    marginBottom: "16px",
+    marginBottom: isMobile ? "0px" : "16px",
   }}
 >
 
   <div>
-    <h1 className="text-3xl font-bold text-gray-950">
-      Unesi podatke
-    </h1>
+
 
    
   </div>
@@ -257,14 +255,14 @@ useEffect(() => {
 
 </div>
 
-
+ 
 
        <div
   className="mb-6"
   style={{
     width: "100%",
     maxWidth: "420px",
-    padding: "18px 20px",
+    padding: isMobile ? "12px 16px" : "18px 20px",
     borderRadius: "18px",
     backgroundColor: "rgba(97, 26, 26, 0.03)",
     border: "1px solid rgba(97, 26, 26, 0.15)",
@@ -275,7 +273,7 @@ useEffect(() => {
     style={{
       margin: 0,
       color: "#111827",
-      fontSize: "24px",
+      fontSize: isMobile ? "18px" : "24px",
       fontWeight: "700",
     }}
   >
@@ -298,15 +296,15 @@ useEffect(() => {
     </p>
   )}
 
-  <div
-    style={{
-      display: "flex",
-      gap: "40px",
-      alignItems: "center",
-      marginTop: "18px",
-      marginBottom: "18px",
-    }}
-  >
+ <div
+  style={{
+    display: "flex",
+    gap: "40px",
+    alignItems: "center",
+    marginTop: isMobile ? "10px" : "18px",
+    marginBottom: isMobile ? "10px" : "18px",
+  }}
+>
     <div>
       <p
         style={{
@@ -434,13 +432,14 @@ useEffect(() => {
       </p>
 
       <p
-        style={{
-          margin: 0,
-          color: "#111827",
-          fontSize: "17px",
-          fontWeight: "700",
-        }}
-      >
+  style={{
+    margin: 0,
+    color: "#111827",
+    fontSize: isMobile ? "15px" : "17px",
+    fontWeight: "700",
+    whiteSpace: isMobile ? "nowrap" : undefined,
+  }}
+>
         {barberId
           ? barber
             ? barber.name
@@ -502,6 +501,15 @@ useEffect(() => {
   </div>
 )}
 
+<h1
+  className="text-3xl font-bold text-gray-950"
+ style={{
+  fontSize: isMobile ? "22px" : undefined,
+  transform: isMobile ? "translateY(-6px)" : undefined,
+}}
+>
+  Unesi podatke
+</h1>
 
         <div
   className={
@@ -510,10 +518,10 @@ useEffect(() => {
       : "mx-auto max-w-4xl rounded-3xl border border-[#611a1a] bg-white p-6 shadow-sm"
   }
 >
-        <div
+<div
   className={
     isMobile
-      ? "mb-6 grid grid-cols-1 gap-4"
+      ? "mb-3 grid grid-cols-1 gap-2"
       : "mb-6 grid grid-cols-2 gap-6"
   }
 >
@@ -521,7 +529,11 @@ useEffect(() => {
   <div>
     <label
   style={{ color: "#611a1a" }}
-  className="mb-2 block font-semibold"
+  className={
+  isMobile
+    ? "mb-1 block font-semibold"
+    : "mb-2 block font-semibold"
+}
 >
   Ime *
 </label>
@@ -531,14 +543,22 @@ useEffect(() => {
   value={ime}
   onChange={(e) => setIme(e.target.value)}
   placeholder="Unesite ime"
-  className="w-full rounded-xl border border-gray-300 p-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
+className={
+  isMobile
+    ? "w-full rounded-xl border border-[#611a1a] px-3 py-2 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
+    : "w-full rounded-xl border border-[#611a1a] p-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
+}
 />
   </div>
 
   <div>
     <label
   style={{ color: "#611a1a" }}
-  className="mb-2 block font-semibold"
+  className={
+  isMobile
+    ? "mb-1 block font-semibold"
+    : "mb-2 block font-semibold"
+}
 >
   Prezime *
 </label>
@@ -548,16 +568,24 @@ useEffect(() => {
   value={prezime}
   onChange={(e) => setPrezime(e.target.value)}
   placeholder="Unesite prezime"
-  className="w-full rounded-xl border border-[#611a1a] p-3"
+className={
+  isMobile
+    ? "w-full rounded-xl border border-[#611a1a] px-3 py-2 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
+    : "w-full rounded-xl border border-[#611a1a] p-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
+}
 />
   </div>
 
 </div>
 
-<div className="mb-6">
-  <label
+<div className={isMobile ? "mb-3" : "mb-6"}>
+ <label
   style={{ color: "#611a1a" }}
-  className="mb-2 block font-semibold"
+  className={
+    isMobile
+      ? "mb-1 block font-semibold"
+      : "mb-2 block font-semibold"
+  }
 >
   Telefon *
 </label>
@@ -572,10 +600,10 @@ useEffect(() => {
     <select
   value={phoneCode}
   onChange={(e) => setPhoneCode(e.target.value)}
-  className={
+className={
   isMobile
-    ? "w-28 rounded-xl border border-[#611a1a] px-3 py-3"
-    : "w-40 rounded-xl border border-[#611a1a] px-4 py-3"
+    ? "w-28 rounded-xl border border-[#611a1a] px-3 py-2 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
+    : "w-40 rounded-xl border border-[#611a1a] px-4 py-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
 }
 >
   <option value="+387">BA +387</option>
@@ -596,7 +624,11 @@ useEffect(() => {
   value={phone}
   onChange={(e) => setPhone(e.target.value)}
   placeholder={phonePlaceholders[phoneCode] || "Unesite broj telefona"}
-  className="w-full rounded-xl border border-gray-300 p-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
+  className={
+  isMobile
+    ? "w-full rounded-xl border border-[#611a1a] px-3 py-2 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
+    : "w-full rounded-xl border border-[#611a1a] p-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
+}
 />
   </div>
   <p
@@ -610,10 +642,14 @@ useEffect(() => {
 </p>
 </div>
 
-<div className="mb-6">
+<div className={isMobile ? "mb-3" : "mb-6"}>
   <label
   style={{ color: "#611a1a" }}
-  className="mb-2 block font-semibold"
+  className={
+  isMobile
+    ? "mb-1 block font-semibold"
+    : "mb-2 block font-semibold"
+}
 >
   Email
 </label>
@@ -623,28 +659,45 @@ useEffect(() => {
   value={email}
   onChange={(e) => setEmail(e.target.value)}
   placeholder={isMobile ? "Unesite email adresu" : "Unesite email adresu ako želite primiti potvrdu i putem emaila."}
-  className="w-full rounded-xl border border-[#611a1a] p-3"
+ className={
+  isMobile
+    ? "w-full rounded-xl border border-[#611a1a] px-3 py-2 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
+    : "w-full rounded-xl border border-[#611a1a] p-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
+}
 />
 </div>
 
-<div className="mb-6">
+<div className={isMobile ? "mb-2" : "mb-6"}>
   <label
   style={{ color: "#611a1a" }}
-  className="mb-2 block font-semibold"
+  className={
+  isMobile
+    ? "mb-1 block font-semibold"
+    : "mb-2 block font-semibold"
+}
 >
   Napomena
 </label>
 
-  <textarea
+<textarea
   value={napomena}
   onChange={(e) => setNapomena(e.target.value)}
   placeholder="Dodatne informacije..."
   rows={4}
-  className="w-full rounded-xl border border-[#611a1a] p-3"
+  className="w-full rounded-xl border border-[#611a1a] p-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
+  style={{
+  height: isMobile ? "75px" : undefined,
+}}
 />
 </div>
 
-<div className="mt-8 flex justify-end">
+<div
+  className={
+    isMobile
+      ? "mt-4 flex justify-end"
+      : "mt-8 flex justify-end"
+  }
+>
   <button
     type="button"
     onClick={handleNext}
