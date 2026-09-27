@@ -283,7 +283,7 @@ return (
     alt={salon.salon_name}
     style={{
   width: "100%",
-  height: "400px",
+  height: isMobile ? "230px" : "400px",
   objectFit: "cover",
   objectPosition: salon.hero_position || "center",
   display: "block",
@@ -324,7 +324,11 @@ return (
   </p>
 </div>
 
-        <div style={{ marginBottom: "48px" }}>
+        <div
+  style={{
+    marginBottom: isMobile ? "24px" : "48px",
+  }}
+>
   <div
   style={{
     display: "flex",
@@ -336,7 +340,7 @@ return (
   <h2
     style={{
       color: "#611a1a",
-      fontSize: "28px",
+      fontSize: isMobile ? "20px" : "28px",
       fontWeight: "600",
       margin: 0,
     }}
@@ -365,7 +369,7 @@ return (
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "26px",
+            fontSize: isMobile ? "22px" : "26px",
           }}
         >
           <FaInstagram />
@@ -385,7 +389,7 @@ return (
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "26px",
+            fontSize: isMobile ? "22px" : "26px",
           }}
         >
           <FaFacebookF />
@@ -405,7 +409,7 @@ return (
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "26px",
+            fontSize: isMobile ? "22px" : "26px",
           }}
         >
           <FaTiktok />
@@ -426,7 +430,7 @@ return (
     {/* GOOGLE MAPS - LIJEVO */}
     <div
       style={{
-  height: isMobile ? "320px" : "360px",
+  height: isMobile ? "260px" : "360px",
   border: "1px solid rgba(97, 26, 26, 0.18)",
   borderRadius: "20px",
   overflow: "hidden",
@@ -487,8 +491,8 @@ return (
     display: "grid",
     gridTemplateColumns: isMobile ? "1fr 1fr" : "1fr",
     gridTemplateRows: isMobile
-      ? "auto auto auto"
-      : "auto repeat(3, 1fr)",
+  ? "auto auto"
+  : "auto repeat(3, 1fr)",
     gap: "14px",
     order: isMobile ? 1 : 2,
   }}
@@ -500,7 +504,7 @@ return (
         style={{
           border: "1px solid rgba(97, 26, 26, 0.18)",
           borderRadius: "18px",
-          padding: "20px",
+          padding: isMobile ? "14px 16px" : "20px",
           backgroundColor: "#ffffff",
           display: "flex",
           flexDirection: "column",
@@ -534,7 +538,7 @@ return (
         style={{
           border: "1px solid rgba(97, 26, 26, 0.18)",
           borderRadius: "18px",
-          padding: "20px",
+          padding: isMobile ? "14px 16px" : "20px",
           backgroundColor: "#ffffff",
           display: "flex",
           flexDirection: "column",
@@ -565,17 +569,17 @@ return (
       </div>
 
       <div
-        style={{
-  border: "1px solid rgba(97, 26, 26, 0.18)",
-  borderRadius: "18px",
-  padding: "20px",
-  backgroundColor: "#ffffff",
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "center",
-  gridColumn: isMobile ? "1 / -1" : "auto",
-}}
-      >
+  style={{
+    border: "1px solid rgba(97, 26, 26, 0.18)",
+    borderRadius: "18px",
+    padding: isMobile ? "14px 16px" : "20px",
+    backgroundColor: "#ffffff",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    gridColumn: isMobile ? "1 / -1" : "auto",
+  }}
+>
         <p
           style={{
             color: "#611a1a",
@@ -656,7 +660,12 @@ return (
   </div>
 </div>
 {salonImages.length > 0 && (
-  <div style={{ marginBottom: "48px", width: "100%" }}>
+  <div
+  style={{
+    marginBottom: isMobile ? "24px" : "48px",
+    width: "100%",
+  }}
+>
     <h2
       style={{
         color: "#611a1a",
@@ -881,7 +890,7 @@ gap: "24px",
     color: "#611a1a",
     fontSize: "28px",
     fontWeight: "600",
-    marginBottom: "24px",
+    marginBottom: isMobile ? "12px" : "24px",
   }}
 >
   Usluge
@@ -899,7 +908,7 @@ gap: "24px",
       <div
   key={category.id}
   style={{
-    marginTop: "32px",
+    marginTop: isMobile ? "12px" : "32px",
   }}
 >
         <h2
@@ -923,7 +932,7 @@ gap: "24px",
       style={{
   border: "1px solid rgba(97, 26, 26, 0.16)",
   borderRadius: "18px",
-  padding: "18px 20px",
+  padding: isMobile ? "14px 16px" : "18px 20px",
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
@@ -1003,7 +1012,11 @@ gap: "24px",
 </div>
 
 {salon.show_barbers && (
-  <div style={{ marginTop: "16px" }}>
+  <div
+    style={{
+      marginTop: isMobile ? "12px" : "16px",
+    }}
+  >
     <p
       style={{
         marginBottom: "8px",

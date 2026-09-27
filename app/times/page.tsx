@@ -590,7 +590,7 @@ return (
     className="flex w-full items-center"
     style={{
       marginTop: "-20px",
-      marginBottom: "12px",
+      marginBottom: "4px",
       paddingLeft: "170px",
     }}
   >
@@ -638,9 +638,14 @@ return (
 
       <div className="mb-10 flex items-end justify-between gap-8">
   <div>
-  <h1 className="text-2xl font-bold text-gray-950">
-    Odaberi termin
-  </h1>
+<h1
+  className="font-bold"
+  style={{
+    fontSize: isMobile ? "22px" : undefined,
+  }}
+>
+  Odaberi termin
+</h1>
 
   <div
   className="mt-3 flex items-center gap-6"
@@ -733,14 +738,23 @@ return (
 
 
     
- <div
+<div
   className="rounded-3xl"
   style={{
     display: "grid",
+    marginTop: isMobile ? "-35px" : undefined,
     gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
     border: "1px solid #611a1a",
     backgroundColor: "#ffffff",
     overflow: "hidden",
+
+    ...(isMobile
+  ? {
+      width: "calc(100% + 20px)",
+      marginLeft: "-10px",
+      marginRight: "-10px",
+    }
+  : {}),
   }}
 >
         {weekDays.map((item) => {
@@ -802,7 +816,7 @@ style={{
 }}
           >
             <div
-  className="p-4 text-center"
+  className={isMobile ? "px-2 py-3 text-center" : "p-4 text-center"}
   style={{
     borderBottom: "1px solid rgba(97, 26, 26, 0.25)",
     backgroundColor: "rgba(97, 26, 26, 0.03)",
@@ -832,8 +846,8 @@ style={{
             <div
   className={
     isMobile
-      ? "space-y-2 px-1 py-3"
-      : "space-y-3 p-4"
+  ? "space-y-1.5 px-1 py-3"
+  : "space-y-3 p-4"
   }
 >
   {isPastDay ||
@@ -842,7 +856,13 @@ isClosedWeekday ||
 isSelectedBarberClosed ||
 areAllBarbersClosed ||
 isSelectedBarberIneligible ? (
-  <p className="pt-10 text-center text-lg font-medium italic text-gray-400">
+ <p
+  className={
+    isMobile
+  ? "mt-3 text-center text-[9px] font-semibold text-gray-400 whitespace-nowrap"
+  : "pt-10 text-center text-lg font-medium italic text-gray-400"
+  }
+>
     {isSelectedBarberIneligible
       ? "Frizer nije dostupan za ovu uslugu"
       : isClosedDay ||
@@ -1007,9 +1027,9 @@ if (slotsNeeded > 1 && !hasEnoughSlots) return null;
       e.currentTarget.style.color = "#611a1a";
     }
   }}
- className={
+className={
   isMobile
-    ? "mx-auto w-[calc(100%_-_4px)] rounded-lg py-1.5 text-[11px] font-bold"
+    ? "mx-auto w-[calc(100%_-_2px)] rounded-lg py-3 text-[14px] font-bold"
     : "w-full rounded-xl py-2 font-bold"
 }
 >
