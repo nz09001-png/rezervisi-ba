@@ -452,11 +452,10 @@ useEffect(() => {
 
 {isMobile && (
   <div
-    className="flex w-full items-center"
+    className="flex w-full items-center justify-center"
     style={{
       marginTop: "-10px",
       marginBottom: "12px",
-      paddingLeft: "170px",
     }}
   >
     {[

@@ -463,9 +463,9 @@ return (
     <div
       className="mb-8"
       style={{
-        width: "100%",
-        maxWidth: "340px",
-        padding: isMobile ? "14px 20px" : "18px 20px",
+  width: "100%",
+  maxWidth: isMobile ? "100%" : "340px",
+  padding: isMobile ? "14px 20px" : "18px 20px",
         borderRadius: "18px",
         backgroundColor: "rgba(97, 26, 26, 0.03)",
         border: "1px solid rgba(97, 26, 26, 0.15)",
@@ -500,13 +500,15 @@ return (
   </p>
 )}
 
-      <div
-        style={{
-          display: "flex",
-          gap: "32px",
-          alignItems: "center",
-        }}
-      >
+     <div
+  style={{
+    display: "flex",
+    gap: isMobile ? "0" : "32px",
+    alignItems: "center",
+    justifyContent: isMobile ? "space-between" : "flex-start",
+    width: isMobile ? "100%" : "auto",
+  }}
+>
         {service.show_price && (
   <div>
     <p
@@ -585,13 +587,12 @@ return (
     </div>
   )}
   
-  {isMobile && (
+{isMobile && (
   <div
-    className="flex w-full items-center"
+    className="flex w-full items-center justify-center"
     style={{
       marginTop: "-20px",
-      marginBottom: "4px",
-      paddingLeft: "170px",
+      marginBottom: "12px",
     }}
   >
       {[
@@ -636,23 +637,35 @@ return (
     </div>
   )}
 
-      <div className="mb-10 flex items-end justify-between gap-8">
-  <div>
-<h1
+<div className="mb-10 flex items-end justify-between gap-8">
+  <div
+  style={{
+    width: isMobile ? "100%" : "auto",
+    display: isMobile ? "flex" : "block",
+    alignItems: isMobile ? "center" : undefined,
+    justifyContent: isMobile ? "space-between" : undefined,
+    gap: isMobile ? "12px" : undefined,
+  }}
+>
+    <h1
   className="font-bold"
   style={{
-    fontSize: isMobile ? "22px" : undefined,
+    fontSize: isMobile ? "19px" : undefined,
+    whiteSpace: isMobile ? "nowrap" : undefined,
   }}
 >
   Odaberi termin
 </h1>
 
-  <div
-  className={`${isMobile ? "mt-1" : "mt-3"} flex items-center gap-6`}
+<div
+  className={`${isMobile ? "mt-0" : "mt-3"} flex items-center`}
   style={{
-    color: "#611a1a",
-    marginLeft: "45px",
-  }}
+  color: "#611a1a",
+  marginLeft: isMobile ? "0" : "45px",
+  marginRight: isMobile ? "12px" : "0",
+  gap: isMobile ? "12px" : "24px",
+  whiteSpace: "nowrap",
+}}
 >
   {weekOffset > 0 && (
     <button

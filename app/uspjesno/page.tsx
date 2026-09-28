@@ -54,15 +54,15 @@ const formattedDate = date
 
   return (
   <main
-    style={{
-      minHeight: "100vh",
-      backgroundColor: "#611a1a",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-      padding: "24px",
-    }}
-  >
+  style={{
+    minHeight: isMobile ? "100dvh" : "100vh",
+    backgroundColor: "#611a1a",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: "24px",
+  }}
+>
     <div
       style={{
         width: "100%",
@@ -75,26 +75,33 @@ const formattedDate = date
       }}
     >
       <div
-        style={{
-          width: "56px",
-          height: "56px",
-          borderRadius: "999px",
-          backgroundColor: "#611a1a",
-          color: "white",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: "28px",
-          fontWeight: "bold",
-          margin: "0 auto 16px",
-        }}
-      >
-        ✓
-      </div>
+  style={{
+    width: isMobile ? "50px" : "56px",
+    height: isMobile ? "50px" : "56px",
+    borderRadius: "999px",
+    backgroundColor: "#611a1a",
+    color: "white",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: isMobile ? "24px" : "28px",
+    fontWeight: "bold",
+    margin: isMobile ? "0 auto 12px" : "0 auto 16px",
+  }}
+>
+  ✓
+</div>
 
-      <h1 style={{ color: "#611a1a", fontSize: "28px", fontWeight: "bold", marginBottom: "8px" }}>
-        Rezervacija potvrđena
-      </h1>
+      <h1
+  style={{
+    color: "#611a1a",
+    fontSize: isMobile ? "24px" : "28px",
+    fontWeight: "bold",
+    marginBottom: "8px",
+  }}
+>
+  Rezervacija potvrđena
+</h1>
 
       <p style={{ color: "#666", fontSize: "14px", marginBottom: "20px" }}>
         Vaš termin je uspješno rezervisan.
@@ -104,53 +111,59 @@ const formattedDate = date
   style={{
     borderTop: "1px solid #e5e5e5",
     borderBottom: "1px solid #e5e5e5",
-    padding: "16px 0",
+    padding: isMobile ? "12px 0" : "16px 0",
     textAlign: "left",
     marginBottom: "20px",
   }}
 >
-  <p style={{ marginBottom: isMobile ? "4px" : "0" }}>
+  <p style={{ marginBottom: isMobile ? "2px" : "0" }}>
   <strong style={{ color: "#611a1a" }}>Klijent:</strong> {ime} {prezime}
 </p>
 
-  <p style={{ marginBottom: isMobile ? "4px" : "0" }}>
+  <p style={{ marginBottom: isMobile ? "2px" : "0" }}>
     <strong style={{ color: "#611a1a" }}>Salon:</strong> {salon}
   </p>
 
-  <p style={{ marginBottom: isMobile ? "4px" : "0" }}>
+  <p style={{ marginBottom: isMobile ? "2px" : "0" }}>
   <strong style={{ color: "#611a1a" }}>Usluga:</strong> {service}
 </p>
 
-<p style={{ marginBottom: isMobile ? "4px" : "0" }}>
+<p style={{ marginBottom: isMobile ? "2px" : "0" }}>
   <strong style={{ color: "#611a1a" }}>Frizer:</strong> {barber}
 </p>
 
 {showPrice && (
-  <p style={{ marginBottom: isMobile ? "4px" : "0" }}>
+  <p style={{ marginBottom: isMobile ? "2px" : "0" }}>
     <strong style={{ color: "#611a1a" }}>Cijena:</strong> {price} KM
   </p>
 )}
 
 {showDuration && (
-  <p style={{ marginBottom: isMobile ? "4px" : "0" }}>
+  <p style={{ marginBottom: isMobile ? "2px" : "0" }}>
     <strong style={{ color: "#611a1a" }}>Trajanje:</strong> {duration} min
   </p>
 )}
 
-<p style={{ marginBottom: isMobile ? "4px" : "0" }}>
+<p style={{ marginBottom: isMobile ? "2px" : "0" }}>
   <strong style={{ color: "#611a1a" }}>Datum:</strong> {formattedDate}
 </p>
 
-  <p style={{ marginBottom: isMobile ? "4px" : "0" }}>
+  <p style={{ marginBottom: isMobile ? "2px" : "0" }}>
     <strong style={{ color: "#611a1a" }}>Vrijeme:</strong> {time}
   </p>
 </div>
 
       {email && email.trim() && (
-        <p style={{ color: "#611a1a", fontSize: "14px", marginBottom: "20px" }}>
-          Potvrda rezervacije je poslana na email.
-        </p>
-      )}
+  <p
+    style={{
+      color: "#611a1a",
+      fontSize: "14px",
+      marginBottom: isMobile ? "14px" : "20px",
+    }}
+  >
+    Potvrda rezervacije je poslana na email.
+  </p>
+)}
 
       {salonSlug && (
         <button
@@ -159,15 +172,17 @@ const formattedDate = date
             window.location.href = `/${salonSlug}`;
           }}
           style={{
-            width: "100%",
-            backgroundColor: "#611a1a",
-            color: "white",
-            padding: "14px",
-            borderRadius: "16px",
-            fontWeight: "bold",
-            border: "none",
-            cursor: "pointer",
-          }}
+  width: isMobile ? "82%" : "100%",
+  backgroundColor: "#611a1a",
+  color: "white",
+  padding: isMobile ? "12px" : "14px",
+  borderRadius: "16px",
+  fontWeight: "bold",
+  border: "none",
+  cursor: "pointer",
+  margin: isMobile ? "0 auto" : undefined,
+  display: isMobile ? "block" : undefined,
+}}
         >
           Povratak na salon
         </button>

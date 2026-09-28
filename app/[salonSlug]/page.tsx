@@ -6,7 +6,29 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { createPortal } from "react-dom";
 import { FaInstagram, FaFacebookF, FaTiktok } from "react-icons/fa";
+import {
+  DM_Serif_Display,
+  Outfit,
+  Source_Sans_3,
+  Geist,
+} from "next/font/google";
 
+const dmSerif = DM_Serif_Display({
+  weight: "400",
+  subsets: ["latin"],
+});
+
+const outfit = Outfit({
+  subsets: ["latin"],
+});
+
+const sourceSans = Source_Sans_3({
+  subsets: ["latin"],
+});
+
+const geist = Geist({
+  subsets: ["latin"],
+});
 
 export default function SalonPage() {
   const params = useParams();
@@ -315,13 +337,17 @@ return (
     Frizerski salon
   </p>
 
-  <h1 className="mb-3 text-3xl font-extrabold tracking-tight text-gray-950 md:text-4xl">
-    {salon.salon_name}
-  </h1>
+  <h1
+  className={`mb-3 text-3xl font-extrabold tracking-tight text-gray-950 md:text-4xl ${dmSerif.className}`}
+>
+  {salon.salon_name}
+</h1>
 
-  <p className="max-w-2xl text-base leading-relaxed text-gray-600">
-    {salon.description}
-  </p>
+  <p
+  className={`max-w-2xl text-base leading-relaxed text-gray-600 ${outfit.className}`}
+>
+  {salon.description}
+</p>
 </div>
 
         <div
@@ -338,15 +364,16 @@ return (
   }}
 >
   <h2
-    style={{
-      color: "#611a1a",
-      fontSize: isMobile ? "20px" : "28px",
-      fontWeight: "600",
-      margin: 0,
-    }}
-  >
-    Informacije o salonu
-  </h2>
+  className={dmSerif.className}
+  style={{
+    color: "#611a1a",
+    fontSize: isMobile ? "20px" : "28px",
+    fontWeight: "600",
+    margin: 0,
+  }}
+>
+  Informacije o salonu
+</h2>
 
   {(salon.instagram_url || salon.facebook_url || salon.tiktok_url) && (
     <div
@@ -501,8 +528,9 @@ return (
 
 
       <div
-        style={{
-          border: "1px solid rgba(97, 26, 26, 0.18)",
+  className={outfit.className}
+  style={{
+    border: "1px solid rgba(97, 26, 26, 0.18)",
           borderRadius: "18px",
           padding: isMobile ? "14px 16px" : "20px",
           backgroundColor: "#ffffff",
@@ -535,8 +563,9 @@ return (
       </div>
 
       <div
-        style={{
-          border: "1px solid rgba(97, 26, 26, 0.18)",
+  className={outfit.className}
+  style={{
+    border: "1px solid rgba(97, 26, 26, 0.18)",
           borderRadius: "18px",
           padding: isMobile ? "14px 16px" : "20px",
           backgroundColor: "#ffffff",
@@ -569,6 +598,7 @@ return (
       </div>
 
       <div
+  className={outfit.className}
   style={{
     border: "1px solid rgba(97, 26, 26, 0.18)",
     borderRadius: "18px",
@@ -667,15 +697,16 @@ return (
   }}
 >
     <h2
-      style={{
-        color: "#611a1a",
-        marginBottom: "20px",
-        fontSize: "26px",
-        fontWeight: "600",
-      }}
-    >
-      Galerija
-    </h2>
+  className={dmSerif.className}
+  style={{
+    color: "#611a1a",
+    marginBottom: "20px",
+    fontSize: "26px",
+    fontWeight: "600",
+  }}
+>
+  Galerija
+</h2>
 
     <div
       style={{
@@ -886,6 +917,7 @@ gap: "24px",
         
 
 <h2
+  className={dmSerif.className}
   style={{
     color: "#611a1a",
     fontSize: "28px",
@@ -911,7 +943,8 @@ gap: "24px",
     marginTop: isMobile ? "12px" : "32px",
   }}
 >
-        <h2
+  <h2
+  className={dmSerif.className}
   style={{
     fontSize: "18px",
     fontWeight: "700",
@@ -927,20 +960,21 @@ gap: "24px",
 
         <div className="space-y-4">
           {categoryServices.map((service) => (
-    <div
-      key={service.id}
-      style={{
-  border: "1px solid rgba(97, 26, 26, 0.16)",
-  borderRadius: "18px",
-  padding: isMobile ? "14px 16px" : "18px 20px",
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  gap: "24px",
-  backgroundColor: "#ffffff",
-  boxShadow: "0 4px 14px rgba(0, 0, 0, 0.04)",
-}}
-    >
+   <div
+  key={service.id}
+  className={sourceSans.className}
+  style={{
+    border: "1px solid rgba(97, 26, 26, 0.16)",
+    borderRadius: "18px",
+    padding: isMobile ? "14px 16px" : "18px 20px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "24px",
+    backgroundColor: "#ffffff",
+    boxShadow: "0 4px 14px rgba(0, 0, 0, 0.04)",
+  }}
+>
       <div>
         <h3
           style={{
@@ -1074,8 +1108,9 @@ gap: "24px",
       </select>
 
       {isMobile && (
-        <Link
-          href={`/times?salon=${encodeURIComponent(
+  <Link
+    className={geist.className}
+    href={`/times?salon=${encodeURIComponent(
             salon.salon_name
           )}&salonSlug=${encodeURIComponent(
             salonSlug

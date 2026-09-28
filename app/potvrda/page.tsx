@@ -873,10 +873,9 @@ router.replace(
 
 {isMobile && ( 
   <div 
-    className="flex items-center justify-center" 
+    className="flex w-full items-center justify-center" 
     style={{ 
       marginBottom: "10px",
-      transform: "translateX(70px)",
     }} 
   >
     {[
@@ -906,7 +905,7 @@ router.replace(
         {index < 3 && (
           <div
             style={{
-              width: "28px",
+              width: "24px",
               height: "1px",
               backgroundColor: "#611a1a",
             }}
@@ -937,7 +936,7 @@ router.replace(
   style={{
     width: "420px",
     maxWidth: "100%",
-    border: "2px solid #611a1a",
+    border: isMobile ? "1px solid #611a1a" : "2px solid #611a1a",
     paddingTop: isMobile ? "16px" : "24px",
     paddingRight: "24px",
     paddingBottom: "24px",
