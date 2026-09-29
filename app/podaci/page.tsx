@@ -5,6 +5,15 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
+import { Source_Sans_3, Geist } from "next/font/google";
+
+const sourceSans = Source_Sans_3({
+  subsets: ["latin"],
+});
+
+const geist = Geist({
+  subsets: ["latin"],
+});
 
 export default function PodaciPage() {
 
@@ -158,11 +167,11 @@ useEffect(() => {
 
   return (
     <main
-  className={
+  className={`${sourceSans.className} ${
     isMobile
       ? "min-h-screen bg-white px-4 py-4"
       : "min-h-screen bg-white px-8 py-6"
-  }
+  }`}
 >
       <Link
   href={`/times?salon=${encodeURIComponent(
@@ -697,19 +706,20 @@ className={
       : "mt-8 flex justify-end"
   }
 >
-  <button
-    type="button"
-    onClick={handleNext}
-    style={{
-      backgroundColor: "#611a1a",
-      color: "white",
-      padding: "14px 40px",
-      borderRadius: "16px",
-      fontWeight: "bold",
-    }}
-  >
-    Nastavi
-  </button>
+ <button
+  type="button"
+  onClick={handleNext}
+  style={{
+    backgroundColor: "#611a1a",
+    color: "white",
+    padding: "14px 40px",
+    borderRadius: "16px",
+    fontWeight: "700",
+    fontFamily: "var(--font-geist-sans)",
+  }}
+>
+  Nastavi
+</button>
 </div>
 </div>
 

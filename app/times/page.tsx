@@ -4,6 +4,15 @@ import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
+import { Source_Sans_3, Geist } from "next/font/google";
+
+const sourceSans = Source_Sans_3({
+  subsets: ["latin"],
+});
+
+const geist = Geist({
+  subsets: ["latin"],
+});
 
 function TimesContent() {
   const searchParams = useSearchParams();
@@ -444,7 +453,9 @@ const weekTitle =
     const todayOnly = new Date();
 todayOnly.setHours(0, 0, 0, 0);
 return (
-  <main className="min-h-screen bg-white px-3 py-6 md:px-8">
+  <main
+    className={`${sourceSans.className} min-h-screen bg-white px-3 py-6 md:px-8`}
+  >
     <Link
   href={`/${salonSlug}`}
   style={{
@@ -1071,20 +1082,21 @@ className={
     marginTop: isMobile ? "12px" : "24px",
   }}
 >
-  <button
-    type="button"
-    disabled={!selectedTime}
-    onClick={handleContinue}
-    style={{
-      backgroundColor: selectedTime ? "#611a1a" : "#e5e7eb",
-      color: selectedTime ? "#ffffff" : "#9ca3af",
-      padding: "12px 40px",
-      borderRadius: "16px",
-      fontWeight: "700",
-    }}
-  >
-    Nastavi
-  </button>
+ <button
+  type="button"
+  disabled={!selectedTime}
+  onClick={handleContinue}
+  className={geist.className}
+  style={{
+    backgroundColor: selectedTime ? "#611a1a" : "#e5e7eb",
+    color: selectedTime ? "#ffffff" : "#9ca3af",
+    padding: "12px 40px",
+    borderRadius: "16px",
+    fontWeight: "700",
+  }}
+>
+  Nastavi
+</button>
 </div>
 
 </div>

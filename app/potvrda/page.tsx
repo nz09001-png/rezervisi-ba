@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
+import { Source_Sans_3 } from "next/font/google";
+
+const sourceSans = Source_Sans_3({
+  subsets: ["latin"],
+});
 
 const timeToMinutes = (time: string) => {
   const [hours, minutes] = time.split(":").map(Number);
@@ -586,7 +591,9 @@ router.replace(
 }
 
   return (
-    <main className="min-h-screen bg-white px-8 py-6">
+  <main
+    className={`${sourceSans.className} min-h-screen bg-white px-8 py-6`}
+  >
       <Link
   href={`/podaci?salon=${encodeURIComponent(
     salon || ""
@@ -1098,7 +1105,8 @@ router.replace(
   color: "white",
   padding: isMobile ? "12px 24px" : "16px 80px",
   borderRadius: "16px",
-  fontWeight: "bold",
+  fontFamily: "var(--font-geist-sans)",
+  fontWeight: "700",
   whiteSpace: isMobile ? "nowrap" : undefined,
 }}
     >

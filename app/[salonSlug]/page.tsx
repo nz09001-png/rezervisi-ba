@@ -338,7 +338,10 @@ return (
   </p>
 
   <h1
-  className={`mb-3 text-3xl font-extrabold tracking-tight text-gray-950 md:text-4xl ${dmSerif.className}`}
+  className={`${dmSerif.className} mb-3 text-3xl md:text-4xl`}
+  style={{
+    color: "#611a1a",
+  }}
 >
   {salon.salon_name}
 </h1>
@@ -489,12 +492,13 @@ return (
         }}
       >
         <a
-          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-            salon.address || ""
-          )}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
+  className={geist.className}
+  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    salon.address || ""
+  )}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  style={{
             display: "block",
             width: "100%",
             backgroundColor: "#611a1a",
@@ -554,7 +558,7 @@ return (
           style={{
             color: "#111827",
             fontSize: "16px",
-            fontWeight: "700",
+            fontWeight: "500",
             lineHeight: "1.5",
           }}
         >
@@ -589,7 +593,7 @@ return (
           style={{
             color: "#111827",
             fontSize: "16px",
-            fontWeight: "700",
+            fontWeight: "500",
             lineHeight: "1.5",
           }}
         >
@@ -625,7 +629,7 @@ return (
           style={{
             color: "#111827",
             fontSize: "16px",
-            fontWeight: "700",
+            fontWeight: "500",
             lineHeight: "1.5",
           }}
         >
@@ -692,7 +696,7 @@ return (
 {salonImages.length > 0 && (
   <div
   style={{
-    marginBottom: isMobile ? "24px" : "48px",
+    marginBottom: isMobile ? "32px" : "48px",
     width: "100%",
   }}
 >
@@ -928,7 +932,7 @@ gap: "24px",
   Usluge
 </h2>
 
-<div className="mb-8 space-y-12">
+<div className="mb-8 space-y-8">
   {serviceCategories.map((category) => {
     const categoryServices = services.filter(
       (service) => service.category_id === category.id
@@ -946,7 +950,7 @@ gap: "24px",
   <h2
   className={dmSerif.className}
   style={{
-    fontSize: "18px",
+    fontSize: "20px",
     fontWeight: "700",
     color: "#611a1a",
     marginBottom: "14px",
@@ -1011,7 +1015,7 @@ gap: "24px",
     <span
       style={{
         color: "#111827",
-        fontWeight: "700",
+        fontWeight: "600",
         fontSize: "16px",
       }}
     >
@@ -1024,24 +1028,26 @@ gap: "24px",
     service.show_duration &&
     service.duration_minutes && (
       <span
-        style={{
-          color: "#6b7280",
-          fontWeight: "500",
-        }}
-      >
-        •
-      </span>
+  style={{
+    color: "#111827",
+    fontWeight: "600",
+    fontSize: "16px",
+  }}
+>
+  •
+</span>
     )}
 
   {service.show_duration && service.duration_minutes && (
     <span
-      style={{
-        color: "#6b7280",
-        fontWeight: "500",
-      }}
-    >
-      {service.duration_minutes} min
-    </span>
+  style={{
+    color: "#111827",
+    fontWeight: "600",
+    fontSize: "16px",
+  }}
+>
+  {service.duration_minutes} min
+</span>
   )}
 </div>
 
@@ -1054,7 +1060,7 @@ gap: "24px",
     <p
       style={{
         marginBottom: "8px",
-        fontWeight: "700",
+        fontWeight: "600",
         color: "#111827",
       }}
     >

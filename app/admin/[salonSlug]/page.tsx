@@ -631,7 +631,22 @@ function getBarberColor(barberId: number | null) {
     };
   }
 
-  return barberColors[Math.abs(Number(barberId)) % barberColors.length];
+  const barber = barbers.find(
+    (barber) => Number(barber.id) === Number(barberId)
+  );
+
+  if (
+    barber?.color_index !== null &&
+    barber?.color_index !== undefined
+  ) {
+    return barberColors[
+      Number(barber.color_index) % barberColors.length
+    ];
+  }
+
+  return barberColors[
+    Math.abs(Number(barberId)) % barberColors.length
+  ];
 }
 async function fetchClosedDays() {
   if (!salon?.id) return;
@@ -857,9 +872,25 @@ async function handleDeleteAllTimesForDate() {
 
 
 
-  async function handleAddBarber() {
+async function handleAddBarber() {
   if (!newBarberName.trim()) {
     alert("Unesite ime frizera.");
+    return;
+  }
+
+  const usedColorIndexes = barbers
+    .map((barber) => barber.color_index)
+    .filter(
+      (colorIndex) =>
+        colorIndex !== null && colorIndex !== undefined
+    );
+
+  const availableColorIndex = barberColors.findIndex(
+    (_, index) => !usedColorIndexes.includes(index)
+  );
+
+  if (availableColorIndex === -1) {
+    alert("Nema više dostupnih boja za novog frizera.");
     return;
   }
 
@@ -867,8 +898,9 @@ async function handleDeleteAllTimesForDate() {
     .from("barbers")
     .insert({
       salon_id: salon?.id,
-      name: newBarberName,
+      name: newBarberName.trim(),
       is_active: true,
+      color_index: availableColorIndex,
     });
 
   if (error) {
@@ -1570,7 +1602,7 @@ const isCurrentCalendarWeek =
   calendarWeekStart.getMonth() === currentWeekMonday.getMonth() &&
   calendarWeekStart.getDate() === currentWeekMonday.getDate();
 
-const calendarWeekBookings = filteredBookings.filter((booking) => {
+const calendarWeekBookings = bookings.filter((booking) => {
   const bookingDate = new Date(`${booking.booking_date}T00:00:00`);
 
   const today = new Date();
@@ -2262,7 +2294,7 @@ style={{
       fontSize: "18px",
       fontWeight: 600,
       lineHeight: 1.25,
-      whiteSpace: "nowrap",
+      whiteSpace: "normal",
     }}
   >
     {salon?.salon_name}
@@ -2637,7 +2669,7 @@ overflowX: "hidden",
   }}
 >
   <span className="flex items-center gap-2">
-    Filter
+    Statistika
 
     {filter !== "all" && (
       <span
@@ -2776,8 +2808,9 @@ overflowX: "hidden",
 
 {showDateFilter && (
   <DatePicker
-    ref={datePickerRef}
-    selected={
+  ref={datePickerRef}
+  popperPlacement={isMobile ? "bottom-start" : undefined}
+  selected={
       selectedDate
         ? new Date(`${selectedDate}T00:00:00`)
         : null
@@ -5113,13 +5146,32 @@ formatWeekDay={(dayName) => {
 {isMobile && (
   <div className="mb-3">
     <div
+  style={{
+    display: "flex",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    gap: "8px",
+  }}
+>
+    {(showPreviousBookings || !isCurrentCalendarWeek) && (
+  <button
+    onClick={() => {
+      mobileCalendarScrollModeRef.current = "monday";
+
+      const previousWeek = new Date(calendarWeekStart);
+      previousWeek.setDate(calendarWeekStart.getDate() - 7);
+      setCalendarWeekStart(previousWeek);
+    }}
+    className="rounded-xl border px-4 py-2 text-sm font-medium"
     style={{
-      display: "flex",
-      justifyContent: "flex-start",
-      alignItems: "center",
-      gap: "8px",
+      borderColor: "#611a1a",
+      color: "#611a1a",
+      backgroundColor: "white",
     }}
   >
+    ←
+  </button>
+)}
     <div
       className="text-sm font-semibold"
       style={{
@@ -5152,25 +5204,7 @@ formatWeekDay={(dayName) => {
       })()}
     </div>
 
-    {(showPreviousBookings || !isCurrentCalendarWeek) && (
-      <button
-        onClick={() => {
-  mobileCalendarScrollModeRef.current = "monday";
-
-  const previousWeek = new Date(calendarWeekStart);
-  previousWeek.setDate(calendarWeekStart.getDate() - 7);
-  setCalendarWeekStart(previousWeek);
-}}
-        className="rounded-xl border px-4 py-2 text-sm font-medium"
-        style={{
-          borderColor: "#611a1a",
-          color: "#611a1a",
-          backgroundColor: "white",
-        }}
-      >
-        ←
-      </button>
-    )}
+    
 
     <button
       onClick={() => {
@@ -5261,8 +5295,20 @@ formatWeekDay={(dayName) => {
         backgroundColor: showPreviousBookings ? "#611a1a" : "#ffffff",
       }}
     >
-      Prethodne rezervacije
-    </button>
+  {(() => {
+    if (calendarBarberFilter === "all") {
+      return "Prethodne rezervacije";
+    }
+
+    const selectedBarber = barbers.find(
+      (barber) => barber.id === calendarBarberFilter
+    );
+
+    return selectedBarber && selectedBarber.name.length >= 7
+  ? "Prethodne..."
+  : "Prethodne rezervacije";
+  })()}
+</button>
     </div>
   <div
   style={{

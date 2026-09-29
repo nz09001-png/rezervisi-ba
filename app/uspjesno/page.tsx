@@ -2,6 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { Outfit, Source_Sans_3, Geist } from "next/font/google";
+
+const outfit = Outfit({
+  subsets: ["latin"],
+});
+
+const sourceSans = Source_Sans_3({
+  subsets: ["latin"],
+});
+
+const geist = Geist({
+  subsets: ["latin"],
+});
 
 export default function UspjesnoPage() {
   const searchParams = useSearchParams();
@@ -93,21 +106,30 @@ const formattedDate = date
 </div>
 
       <h1
+  className={outfit.className}
   style={{
     color: "#611a1a",
     fontSize: isMobile ? "24px" : "28px",
-    fontWeight: "bold",
+    fontWeight: "700",
     marginBottom: "8px",
   }}
 >
   Rezervacija potvrđena
 </h1>
 
-      <p style={{ color: "#666", fontSize: "14px", marginBottom: "20px" }}>
-        Vaš termin je uspješno rezervisan.
-      </p>
+      <p
+  className={outfit.className}
+  style={{
+    color: "#666",
+    fontSize: "14px",
+    marginBottom: "20px",
+  }}
+>
+  Vaš termin je uspješno rezervisan.
+</p>
 
       <div
+  className={sourceSans.className}
   style={{
     borderTop: "1px solid #e5e5e5",
     borderBottom: "1px solid #e5e5e5",
@@ -155,6 +177,7 @@ const formattedDate = date
 
       {email && email.trim() && (
   <p
+    className={outfit.className}
     style={{
       color: "#611a1a",
       fontSize: "14px",
@@ -167,25 +190,26 @@ const formattedDate = date
 
       {salonSlug && (
         <button
-          type="button"
-          onClick={() => {
-            window.location.href = `/${salonSlug}`;
-          }}
-          style={{
-  width: isMobile ? "82%" : "100%",
-  backgroundColor: "#611a1a",
-  color: "white",
-  padding: isMobile ? "12px" : "14px",
-  borderRadius: "16px",
-  fontWeight: "bold",
-  border: "none",
-  cursor: "pointer",
-  margin: isMobile ? "0 auto" : undefined,
-  display: isMobile ? "block" : undefined,
-}}
-        >
-          Povratak na salon
-        </button>
+  type="button"
+  className={geist.className}
+  onClick={() => {
+    window.location.href = `/${salonSlug}`;
+  }}
+  style={{
+    width: isMobile ? "82%" : "100%",
+    backgroundColor: "#611a1a",
+    color: "white",
+    padding: isMobile ? "12px" : "14px",
+    borderRadius: "16px",
+    fontWeight: "700",
+    border: "none",
+    cursor: "pointer",
+    margin: isMobile ? "0 auto" : undefined,
+    display: isMobile ? "block" : undefined,
+  }}
+>
+  Povratak na salon
+</button>
       )}
     </div>
   </main>
