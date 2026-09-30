@@ -511,10 +511,11 @@ useEffect(() => {
 
 <h1
   className="text-3xl font-bold text-gray-950"
- style={{
-  fontSize: isMobile ? "22px" : undefined,
-  transform: isMobile ? "translateY(-6px)" : undefined,
-}}
+  style={{
+    fontSize: isMobile ? "22px" : undefined,
+    transform: isMobile ? "translateY(-6px)" : undefined,
+    marginBottom: isMobile ? undefined : "8px",
+  }}
 >
   Unesi podatke
 </h1>
@@ -605,27 +606,57 @@ className={
       : "flex gap-3"
   }
 >
-    <select
-  value={phoneCode}
-  onChange={(e) => setPhoneCode(e.target.value)}
-className={
-  isMobile
-    ? "w-28 rounded-xl border border-[#611a1a] px-3 py-2 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
-    : "w-40 rounded-xl border border-[#611a1a] px-4 py-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
-}
+   <div
+  style={{
+    position: "relative",
+    width: isMobile ? "112px" : "160px",
+    flexShrink: 0,
+  }}
 >
-  <option value="+387">BA +387</option>
-<option value="+385">HR +385</option>
-<option value="+381">RS +381</option>
-<option value="+382">ME +382</option>
-<option value="+386">SI +386</option>
-<option value="+46">SE +46</option>
-<option value="+47">NO +47</option>
-<option value="+45">DK +45</option>
-<option value="+49">DE +49</option>
-<option value="+43">AT +43</option>
-<option value="+41">CH +41</option>
-</select>
+  <select
+    value={phoneCode}
+    onChange={(e) => setPhoneCode(e.target.value)}
+    className={
+      isMobile
+        ? "w-28 rounded-xl border border-[#611a1a] px-3 py-2 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
+        : "w-40 rounded-xl border border-[#611a1a] px-4 py-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
+    }
+    style={{
+      borderRadius: isMobile ? undefined : "12px",
+      appearance: isMobile ? undefined : "none",
+      WebkitAppearance: isMobile ? undefined : "none",
+      paddingRight: isMobile ? undefined : "36px",
+    }}
+  >
+    <option value="+387">BA +387</option>
+    <option value="+385">HR +385</option>
+    <option value="+381">RS +381</option>
+    <option value="+382">ME +382</option>
+    <option value="+386">SI +386</option>
+    <option value="+46">SE +46</option>
+    <option value="+47">NO +47</option>
+    <option value="+45">DK +45</option>
+    <option value="+49">DE +49</option>
+    <option value="+43">AT +43</option>
+    <option value="+41">CH +41</option>
+  </select>
+
+  {!isMobile && (
+    <span
+      style={{
+        position: "absolute",
+        right: "14px",
+        top: "50%",
+        transform: "translateY(-50%)",
+        pointerEvents: "none",
+        color: "#611a1a",
+        fontSize: "11px",
+      }}
+    >
+      ▼
+    </span>
+  )}
+</div>
 
     <input
   type="tel"

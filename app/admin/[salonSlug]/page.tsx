@@ -102,6 +102,10 @@ const [openingHours, setOpeningHours] = useState("");
 const [openingHoursFrom, setOpeningHoursFrom] = useState("");
 const [openingHoursTo, setOpeningHoursTo] = useState("");
 const [closedWeekdays, setClosedWeekdays] = useState<string[]>([]);
+const [shortenedHours, setShortenedHours] = useState<any[]>([]);
+const [shortenedFrom, setShortenedFrom] = useState("");
+const [shortenedTo, setShortenedTo] = useState("");
+const [selectedShortenedWeekdays, setSelectedShortenedWeekdays] = useState<string[]>([]);
 const [instagramUrl, setInstagramUrl] = useState("");
 const [facebookUrl, setFacebookUrl] = useState("");
 const [tiktokUrl, setTiktokUrl] = useState("");
@@ -407,6 +411,24 @@ setHeroPosition(data.hero_position || "center");
   setFacebookUrl(data.facebook_url || "");
   setTiktokUrl(data.tiktok_url || "");
 }
+
+async function fetchShortenedHours() {
+  if (!salon?.id) return;
+
+  const { data, error } = await supabase
+    .from("salon_shortened_hours")
+    .select("*")
+    .eq("salon_id", salon.id)
+    .order("weekday", { ascending: true });
+
+  if (error) {
+    console.error("Greška pri učitavanju skraćenog radnog vremena:", error);
+    return;
+  }
+
+  setShortenedHours(data || []);
+}
+
 async function fetchServices() {
   const { data, error } = await supabase
     .from("services")
@@ -1417,9 +1439,111 @@ console.log("SHOW BARBERS STATE:", showBarbers);
     return;
   }
 
+const { error: deleteShortenedHoursError } = await supabase
+  .from("salon_shortened_hours")
+  .delete()
+  .eq("salon_id", salon?.id);
+
+if (deleteShortenedHoursError) {
+  console.error(
+    "Greška pri brisanju skraćenog radnog vremena:",
+    deleteShortenedHoursError
+  );
+  alert("Greška pri spremanju skraćenog radnog vremena.");
+  return;
+}
+
+if (shortenedHours.length > 0) {
+  const shortenedHoursToSave = shortenedHours.map((item) => ({
+    salon_id: salon?.id,
+    weekday: item.weekday,
+    start_time: item.start_time,
+    end_time: item.end_time,
+  }));
+
+  const { error: shortenedHoursError } = await supabase
+    .from("salon_shortened_hours")
+    .insert(shortenedHoursToSave);
+
+  if (shortenedHoursError) {
+    console.error(
+      "Greška pri spremanju skraćenog radnog vremena:",
+      shortenedHoursError
+    );
+    alert("Greška pri spremanju skraćenog radnog vremena.");
+    return;
+  }
+}
+
+await fetchShortenedHours();
+
   alert("Podaci su uspješno spremljeni.");
 }
 
+
+function handleAddShortenedHours() {
+  if (!shortenedFrom || !shortenedTo) {
+    alert("Odaberite vrijeme od i do.");
+    return;
+  }
+
+  if (shortenedFrom >= shortenedTo) {
+    alert('Vrijeme "Do" mora biti kasnije od vremena "Od".');
+    return;
+  }
+
+  if (selectedShortenedWeekdays.length === 0) {
+    alert("Odaberite najmanje jedan dan.");
+    return;
+  }
+
+  const conflictingClosedDays = selectedShortenedWeekdays.filter((day) =>
+    closedWeekdays.includes(day)
+  );
+
+  if (conflictingClosedDays.length > 0) {
+    alert(
+      `Nije moguće dodati skraćeno radno vrijeme za neradni dan: ${conflictingClosedDays.join(
+        ", "
+      )}.`
+    );
+    return;
+  }
+
+  setShortenedHours((prev) => {
+    const remaining = prev.filter(
+      (item) => !selectedShortenedWeekdays.includes(item.weekday)
+    );
+
+    const newItems = selectedShortenedWeekdays.map((day) => ({
+      id:
+        prev.find((item) => item.weekday === day)?.id ??
+        `temp-${day}`,
+      salon_id: salon?.id,
+      weekday: day,
+      start_time: shortenedFrom,
+      end_time: shortenedTo,
+    }));
+
+    return [...remaining, ...newItems];
+  });
+
+  setShortenedFrom("");
+  setShortenedTo("");
+  setSelectedShortenedWeekdays([]);
+}
+
+function handleDeleteShortenedHours(id: number | string) {
+  const confirmed = window.confirm(
+    "Da li ste sigurni da želite obrisati ovo skraćeno radno vrijeme?"
+  );
+
+  if (!confirmed) return;
+
+  setShortenedHours((prev) =>
+    prev.filter((item) => item.id !== id)
+  );
+}
 
 
 useEffect(() => {
@@ -1469,6 +1593,7 @@ useEffect(() => {
   if (isLoggedIn && salon?.id) {
     fetchBookings();
     fetchSalonInfo();
+    fetchShortenedHours();
     fetchServices();
     fetchServiceCategories();
     fetchTimes();
@@ -2029,9 +2154,22 @@ if (!isLoggedIn) {
         {!isMobile && (
         <div className="mb-6 flex items-start justify-between">
   <div>
-    <h1 className="text-3xl font-semibold">
-  {salon?.salon_name} Admin
-</h1>
+    <div>
+  <h1 className="text-3xl font-semibold">
+    {salon?.salon_name}
+  </h1>
+
+  <p
+  style={{
+    marginTop: "2px",
+    fontSize: "18px",
+    fontWeight: 600,
+    color: "#111827",
+  }}
+>
+  Admin
+</p>
+</div>
 
     <p
   className="mt-2"
@@ -3287,6 +3425,161 @@ style={{ backgroundColor: "#ef4444" }}
     );
   })}
 </div>
+
+<div
+  className="mb-4 mt-5 rounded-xl border border-gray-200 p-4"
+  style={{ maxWidth: "450px" }}
+>
+  <label className="mb-1 block font-medium">
+    Skraćeno radno vrijeme
+  </label>
+
+  <p className="mb-4 text-sm text-gray-500">
+    Odaberite dane kada salon radi kraće od uobičajenog radnog vremena.
+  </p>
+
+  <div
+    className="mb-3 flex"
+    style={{
+      gap: isMobile ? "16px" : "12px",
+    }}
+  >
+    <div
+      style={{
+        width: isMobile ? "100px" : "50%",
+        minWidth: 0,
+      }}
+    >
+      <label className="mb-1 block text-sm text-gray-500">Od</label>
+
+      <input
+        type="time"
+        value={shortenedFrom}
+        onChange={(e) => setShortenedFrom(e.target.value)}
+        className="w-full rounded-xl border border-gray-300 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+        style={{
+          minWidth: 0,
+          width: isMobile ? "100px" : "100%",
+          maxWidth: isMobile ? "100px" : "100%",
+          boxSizing: "border-box",
+          padding: isMobile ? "12px 8px" : "12px 16px",
+        }}
+      />
+    </div>
+
+    <div
+      style={{
+        width: isMobile ? "100px" : "50%",
+        minWidth: 0,
+      }}
+    >
+      <label className="mb-1 block text-sm text-gray-500">Do</label>
+
+      <input
+        type="time"
+        value={shortenedTo}
+        onChange={(e) => setShortenedTo(e.target.value)}
+        className="w-full rounded-xl border border-gray-300 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+        style={{
+          minWidth: 0,
+          width: isMobile ? "100px" : "100%",
+          maxWidth: isMobile ? "100px" : "100%",
+          boxSizing: "border-box",
+          padding: isMobile ? "12px 8px" : "12px 16px",
+        }}
+      />
+    </div>
+  </div>
+
+  <div className="mb-4 flex flex-wrap gap-2">
+    {["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"].map((day) => {
+      const isSelected = selectedShortenedWeekdays.includes(day);
+
+      return (
+        <button
+          key={day}
+          type="button"
+          onClick={() =>
+            setSelectedShortenedWeekdays((prev) =>
+              prev.includes(day)
+                ? prev.filter((item) => item !== day)
+                : [...prev, day]
+            )
+          }
+          className="rounded-xl text-sm font-medium transition"
+          style={{
+            backgroundColor: isSelected ? "#611a1a" : "#ffffff",
+            color: isSelected ? "#ffffff" : "#611a1a",
+            border: "1px solid #611a1a",
+            padding: isMobile ? "8px 12px" : "8px 16px",
+          }}
+        >
+          {day}
+        </button>
+      );
+    })}
+  </div>
+
+  <button
+  type="button"
+  onClick={handleAddShortenedHours}
+  className="rounded-xl font-medium text-white transition hover:opacity-90"
+    style={{
+      backgroundColor: "#611a1a",
+      padding: isMobile ? "9px 14px" : "10px 16px",
+    }}
+  >
+    Dodaj
+  </button>
+  {shortenedHours.length > 0 && (
+  <div className="mt-4 space-y-2">
+    {shortenedHours.map((item) => {
+      const dayNames: Record<string, string> = {
+        Pon: "Ponedjeljak",
+        Uto: "Utorak",
+        Sri: "Srijeda",
+        Čet: "Četvrtak",
+        Pet: "Petak",
+        Sub: "Subota",
+        Ned: "Nedjelja",
+      };
+
+      return (
+        <div
+  key={item.id}
+  className="flex items-center justify-between rounded-xl px-3 py-2"
+  style={{
+    border: "1px solid rgba(97, 26, 26, 0.45)",
+  }}
+>
+  <div>
+    <p className="text-sm font-medium">
+      {dayNames[item.weekday] || item.weekday}
+    </p>
+
+    <p className="text-sm text-gray-500">
+      {item.start_time.slice(0, 5)}–{item.end_time.slice(0, 5)}
+    </p>
+  </div>
+
+<button
+  type="button"
+  onClick={() => handleDeleteShortenedHours(item.id)}
+  className="rounded-lg text-sm font-medium text-white transition hover:opacity-90"
+  style={{
+    backgroundColor: "#ef4444",
+    padding: isMobile ? "7px 10px" : "8px 12px",
+  }}
+>
+  Obriši
+</button>
+</div>
+      );
+    })}
+  </div>
+)}
+</div>
+
 
 <label className="mb-1 block font-medium">Instagram</label>
 <input

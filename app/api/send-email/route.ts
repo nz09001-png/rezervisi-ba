@@ -57,7 +57,10 @@ if (!email || !email.trim()) {
   });
 }
 
-    const cancelUrl = `http://localhost:3000/cancel?id=${bookingId}&token=${cancelToken}`;
+    const baseUrl =
+  process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+const cancelUrl = `${baseUrl}/cancel?id=${bookingId}&token=${cancelToken}`;
 
     const startDate = new Date(`${date}T${time}:00`);
 

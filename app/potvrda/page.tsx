@@ -953,7 +953,7 @@ router.replace(
 <h2
   className="text-center font-bold text-[#611a1a]"
   style={{
-    fontSize: isMobile ? "18px" : undefined,
+    fontSize: isMobile ? "18px" : "20px",
     marginBottom: isMobile ? "14px" : "24px",
   }}
 >

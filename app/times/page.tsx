@@ -27,6 +27,7 @@ const barberId = searchParams.get("barberId");
 const [bookedTimes, setBookedTimes] = useState<any[]>([]);
 const [closedDays, setClosedDays] = useState<any[]>([]);
 const [closedWeekdays, setClosedWeekdays] = useState<string[]>([]);
+const [shortenedHours, setShortenedHours] = useState<any[]>([]);
 const [serviceSteps, setServiceSteps] = useState<any[]>([]);
 const [bookedServiceSteps, setBookedServiceSteps] = useState<any[]>([]);
 const [availableTimes, setAvailableTimes] = useState<any[]>([]);
@@ -311,7 +312,23 @@ useEffect(() => {
     }
     setClosedWeekdays(salonData.closed_weekdays || []);
 
-    const currentDate = new Date();
+const { data: shortenedHoursData, error: shortenedHoursError } =
+  await supabase
+    .from("salon_shortened_hours")
+    .select("*")
+    .eq("salon_id", salonData.id);
+
+if (shortenedHoursError) {
+  console.error(
+    "Greška pri učitavanju skraćenog radnog vremena:",
+    shortenedHoursError
+  );
+  return;
+}
+
+setShortenedHours(shortenedHoursData || []);
+
+const currentDate = new Date();
 
     const mondayDate = new Date(currentDate);
     const currentDay = mondayDate.getDay();
@@ -648,7 +665,11 @@ return (
     </div>
   )}
 
-<div className="mb-10 flex items-end justify-between gap-8">
+<div
+  className={`flex items-end justify-between gap-8 ${
+    isMobile ? "mb-10" : "mb-6"
+  }`}
+>
   <div
   style={{
     width: isMobile ? "100%" : "auto",
@@ -661,7 +682,7 @@ return (
     <h1
   className="font-bold"
   style={{
-    fontSize: isMobile ? "19px" : undefined,
+    fontSize: isMobile ? "19px" : "30px",
     whiteSpace: isMobile ? "nowrap" : undefined,
   }}
 >
@@ -901,6 +922,26 @@ isSelectedBarberIneligible ? (
   const time = slot.time;
 
   if (slot.date !== item.date) return null;
+  const shortenedHoursForDay = shortenedHours.find(
+  (shortenedHour) => shortenedHour.weekday === item.day
+);
+
+if (shortenedHoursForDay) {
+  const slotMinutes = timeToMinutes(slot.time);
+  const shortenedStartMinutes = timeToMinutes(
+    shortenedHoursForDay.start_time
+  );
+  const shortenedEndMinutes = timeToMinutes(
+    shortenedHoursForDay.end_time
+  );
+
+  if (
+    slotMinutes < shortenedStartMinutes ||
+    slotMinutes >= shortenedEndMinutes
+  ) {
+    return null;
+  }
+}
 
   if (!barberId) {
   const firstMatchingSlotIndex = availableTimes.findIndex(
@@ -929,6 +970,17 @@ if (item.date === today && slotMinutes <= currentMinutes) {
   return null;
 }
 const serviceDuration = service?.duration_minutes || 30;
+
+if (shortenedHoursForDay) {
+  const shortenedEndMinutes = timeToMinutes(
+    shortenedHoursForDay.end_time
+  );
+
+  if (slotMinutes + serviceDuration > shortenedEndMinutes) {
+    return null;
+  }
+}
+
 const slotsNeeded = Math.ceil(serviceDuration / 30);
 const currentBusyIntervals =
   getBusyIntervalsForCurrentService(slotMinutes);

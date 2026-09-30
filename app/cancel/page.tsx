@@ -3,6 +3,15 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { Outfit, Geist } from "next/font/google";
+
+const outfit = Outfit({
+  subsets: ["latin"],
+});
+
+const geist = Geist({
+  subsets: ["latin"],
+});
 
 export default function CancelPage() {
   const searchParams = useSearchParams();
@@ -106,8 +115,13 @@ if (bookingError || !bookingData) {
     boxShadow: "0 20px 40px rgba(0,0,0,0.25)",
   }}
 >
-          <h1 className="mb-4 text-3xl font-bold">Rezervacija otkazana</h1>
-          <p className="text-gray-600">Vaša rezervacija je uspješno otkazana.</p>
+          <h1 className={`${outfit.className} mb-4 text-3xl font-bold`}>
+  Rezervacija otkazana
+</h1>
+
+<p className={`${outfit.className} text-gray-600`}>
+  Vaša rezervacija je uspješno otkazana.
+</p>
         </div>
       </main>
     );
@@ -127,16 +141,18 @@ if (bookingError || !bookingData) {
     boxShadow: "0 20px 40px rgba(0,0,0,0.25)",
   }}
 >
-        <h1 className="mb-4 text-3xl font-bold">Otkaži rezervaciju</h1>
+        <h1 className={`${outfit.className} mb-4 text-3xl font-bold`}>
+  Otkaži rezervaciju
+</h1>
 
-        <p className="mb-6 text-gray-600">
-          Kliknite na dugme ispod da otkažete svoju rezervaciju.
-        </p>
+<p className={`${outfit.className} mb-6 text-gray-600`}>
+  Kliknite na dugme ispod da otkažete svoju rezervaciju.
+</p>
 
         <button
   onClick={handleCancel}
   disabled={loading}
-  className="rounded px-6 py-3 text-white disabled:opacity-50"
+  className={`${geist.className} rounded px-6 py-3 text-white disabled:opacity-50`}
   style={{
     backgroundColor: "#611a1a",
     color: "white",

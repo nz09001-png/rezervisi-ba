@@ -35,6 +35,7 @@ export default function SalonPage() {
   const salonSlug = params.salonSlug as string;
 const [serviceBarbers, setServiceBarbers] = useState<any[]>([]);
   const [salon, setSalon] = useState<any>(null);
+  const [shortenedHours, setShortenedHours] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
   const [serviceCategories, setServiceCategories] = useState<any[]>([]);
   const [times, setTimes] = useState<any[]>([]);
@@ -72,23 +73,39 @@ useEffect(() => {
 
 
   useEffect(() => {
-    async function fetchSalon() {
-      const { data, error } = await supabase
-        .from("salons")
-        .select("*")
-        .eq("slug", salonSlug)
-        .single();
+  async function fetchSalon() {
+    const { data, error } = await supabase
+      .from("salons")
+      .select("*")
+      .eq("slug", salonSlug)
+      .single();
 
-      if (error) {
-        console.error(error);
-        return;
-      }
-
-      setSalon(data);
+    if (error) {
+      console.error(error);
+      return;
     }
 
-    fetchSalon();
-  }, [salonSlug]);
+    setSalon(data);
+
+    const { data: shortenedHoursData, error: shortenedHoursError } =
+      await supabase
+        .from("salon_shortened_hours")
+        .select("*")
+        .eq("salon_id", data.id);
+
+    if (shortenedHoursError) {
+      console.error(
+        "Greška pri učitavanju skraćenog radnog vremena:",
+        shortenedHoursError
+      );
+      return;
+    }
+
+    setShortenedHours(shortenedHoursData || []);
+  }
+
+  fetchSalon();
+}, [salonSlug]);
 
 useEffect(() => {
   async function fetchServices() {
@@ -635,6 +652,60 @@ return (
         >
           {salon.opening_hours}
         </p>
+        {shortenedHours.length > 0 && (
+  <div
+    style={{
+      marginTop: "6px",
+      display: "flex",
+      flexDirection: "column",
+      gap: "3px",
+    }}
+  >
+    {[...shortenedHours]
+      .sort((a, b) => {
+        const dayOrder = ["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"];
+        return dayOrder.indexOf(a.weekday) - dayOrder.indexOf(b.weekday);
+      })
+      .map((item) => {
+        const dayNames: Record<string, string> = {
+          Pon: "Ponedjeljak",
+          Uto: "Utorak",
+          Sri: "Srijeda",
+          Čet: "Četvrtak",
+          Pet: "Petak",
+          Sub: "Subota",
+          Ned: "Nedjelja",
+        };
+
+        return (
+          <p
+            key={item.id}
+            style={{
+              fontSize: "15px",
+              lineHeight: "1.5",
+            }}
+          >
+            <span
+              style={{
+                color: "#111827",
+                fontWeight: "600",
+              }}
+            >
+              {dayNames[item.weekday] || item.weekday}:
+            </span>{" "}
+            <span
+              style={{
+                color: "#111827",
+                fontWeight: "500",
+              }}
+            >
+              {item.start_time.slice(0, 5)}–{item.end_time.slice(0, 5)}
+            </span>
+          </p>
+        );
+      })}
+  </div>
+)}
         {salon.closed_weekdays?.length > 0 && (
   <div
     style={{
