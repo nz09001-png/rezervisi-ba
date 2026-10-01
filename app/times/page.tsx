@@ -597,7 +597,7 @@ return (
       fontSize: "13px",
     }}
   >
-    Frizer
+    Osoblje
   </p>
 
   <p
@@ -608,7 +608,7 @@ return (
       fontWeight: "700",
     }}
   >
-    {selectedBarber ? selectedBarber.name : "Bilo koji frizer"}
+    {selectedBarber ? selectedBarber.name : "Bez preferencije"}
   </p>
 </div>
       </div>
@@ -909,7 +909,7 @@ isSelectedBarberIneligible ? (
   }
 >
     {isSelectedBarberIneligible
-      ? "Frizer nije dostupan za ovu uslugu"
+      ? "Osoblje nije dostupno za ovu uslugu"
       : isClosedDay ||
         isClosedWeekday ||
         isSelectedBarberClosed ||

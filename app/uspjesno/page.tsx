@@ -151,7 +151,7 @@ const formattedDate = date
 </p>
 
 <p style={{ marginBottom: isMobile ? "2px" : "0" }}>
-  <strong style={{ color: "#611a1a" }}>Frizer:</strong> {barber}
+  <strong style={{ color: "#611a1a" }}>Osoblje:</strong> {barber}
 </p>
 
 {showPrice && (

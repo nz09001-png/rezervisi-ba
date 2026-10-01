@@ -437,7 +437,7 @@ useEffect(() => {
           fontSize: "13px",
         }}
       >
-        Frizer
+        Osoblje
       </p>
 
       <p
@@ -453,7 +453,7 @@ useEffect(() => {
           ? barber
             ? barber.name
             : "Učitava se..."
-          : "Bilo koji frizer"}
+          : "Bez preferencije"}
       </p>
     </div>
   </div>

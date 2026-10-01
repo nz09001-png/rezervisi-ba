@@ -294,7 +294,7 @@ async function handleConfirmBooking() {
   !eligibleBarberIds.includes(Number(barberId));
 
 if (isSelectedBarberIneligible) {
-  alert("Odabrani frizer ne pruža ovu uslugu.");
+  alert("Odabrani član osoblja ne pruža ovu uslugu.");
   return;
 }
 
@@ -330,7 +330,7 @@ if (
   isSelectedBarberClosed ||
   areAllBarbersClosed
 ) {
-  alert("Salon ili odabrani frizer nisu dostupni na ovaj datum.");
+  alert("Salon ili odabrani član osoblja nisu dostupni na ovaj datum.");
   return;
 }
 
@@ -382,7 +382,7 @@ const currentBusyIntervals =
 
 if (bookingsAtTimeError) {
   console.error(bookingsAtTimeError);
-  alert("Greška pri provjeri frizera.");
+  alert("Greška pri provjeri osoblja.");
   setLoading(false);
   return;
 }
@@ -573,7 +573,7 @@ router.replace(
   `/uspjesno?salon=${encodeURIComponent(salon || "")}&salonSlug=${encodeURIComponent(
     salonSlug || ""
   )}&service=${encodeURIComponent(service?.name || "")}&barber=${encodeURIComponent(
-    barberId ? finalBarberName || "" : "Bilo koji frizer"
+    barberId ? finalBarberName || "" : "Bez preferencije"
   )}&price=${encodeURIComponent(
     service?.price?.toString() || ""
   )}&duration=${encodeURIComponent(
@@ -851,17 +851,21 @@ router.replace(
       </div>
     )}
 
-    <div>
-      <p
-        style={{
-          margin: 0,
-          marginBottom: "3px",
-          color: "#6b7280",
-          fontSize: "13px",
-        }}
-      >
-        Frizer
-      </p>
+    <div
+  style={{
+    transform: isMobile ? "translateX(-8px)" : undefined,
+  }}
+>
+  <p
+    style={{
+      margin: 0,
+      marginBottom: "3px",
+      color: "#6b7280",
+      fontSize: "13px",
+    }}
+  >
+    Osoblje
+  </p>
 
       <p
         style={{
@@ -872,7 +876,7 @@ router.replace(
           whiteSpace: isMobile ? "nowrap" : undefined,
         }}
       >
-        {barberId ? barberName : "Bilo koji frizer"}
+        {barberId ? barberName : "Bez preferencije"}
       </p>
     </div>
   </div>

@@ -432,7 +432,12 @@ async function fetchShortenedHours() {
 async function fetchServices() {
   const { data, error } = await supabase
     .from("services")
-    .select("*")
+    .select(`
+      *,
+      service_barbers (
+        barber_id
+      )
+    `)
     .eq("salon_id", salon?.id)
     .order("id", { ascending: true });
 
@@ -864,7 +869,7 @@ async function handleDeleteAllTimesForDate() {
   const confirmDelete = confirm(
     manualTimeBarberId === "all"
       ? "Da li ste sigurni da želite obrisati sve termine za ovaj datum za cijeli salon?"
-      : "Da li ste sigurni da želite obrisati sve termine za ovaj datum za odabranog frizera?"
+      : "Da li ste sigurni da želite obrisati sve termine za ovaj datum za odabranog člana osoblja?"
   );
 
   if (!confirmDelete) return;
@@ -896,7 +901,7 @@ async function handleDeleteAllTimesForDate() {
 
 async function handleAddBarber() {
   if (!newBarberName.trim()) {
-    alert("Unesite ime frizera.");
+    alert("Unesite ime člana osoblja.");
     return;
   }
 
@@ -912,7 +917,7 @@ async function handleAddBarber() {
   );
 
   if (availableColorIndex === -1) {
-    alert("Nema više dostupnih boja za novog frizera.");
+    alert("Nema više dostupnih boja za novog člana osoblja.");
     return;
   }
 
@@ -926,7 +931,7 @@ async function handleAddBarber() {
     });
 
   if (error) {
-    alert("Greška pri dodavanju frizera.");
+    alert("Greška pri dodavanju člana osoblja.");
     console.error(error);
     return;
   }
@@ -936,7 +941,7 @@ async function handleAddBarber() {
 }
 
 async function handleDeleteBarber(id: number) {
-  const confirmDelete = confirm("Da li ste sigurni da želite obrisati frizera?");
+  const confirmDelete = confirm("Da li ste sigurni da želite obrisati člana osoblja?");
 
   if (!confirmDelete) return;
 
@@ -946,7 +951,7 @@ async function handleDeleteBarber(id: number) {
     .eq("id", id);
 
   if (error) {
-    alert("Greška pri brisanju frizera.");
+    alert("Greška pri brisanju člana osoblja.");
     console.error(error);
     return;
   }
@@ -1953,7 +1958,7 @@ const todaysBookings = bookings.filter(
 
 function handleGenerateTimes() {
   if (selectedScheduleBarberIds.length === 0) {
-    alert("Izaberite najmanje jednog frizera.");
+    alert("Izaberite najmanje jednog člana osoblja.");
     return;
   }
 
@@ -2049,7 +2054,7 @@ if (!confirmed) {
 }
 
 if (selectedScheduleBarberIds.length === 0) {
-  alert("Izaberite najmanje jednog frizera.");
+  alert("Izaberite najmanje jednog člana osoblja.");
   return;
 }
 
@@ -2179,7 +2184,7 @@ if (!isLoggedIn) {
     fontWeight: 400,
   }}
 >
-  Upravljajte rezervacijama, uslugama, frizerima i informacijama o salonu.
+  Upravljajte rezervacijama, uslugama, osobljem i informacijama o salonu.
 </p>
   </div>
 
@@ -2278,7 +2283,7 @@ style={{
   padding: "8px 12px",
 }}
     >
-      {selectedSettings.includes("barbers") ? "✓  " : ""}Frizeri
+      {selectedSettings.includes("barbers") ? "✓  " : ""}Osoblje
     </button>
 
     <button
@@ -2457,7 +2462,7 @@ style={{
       lineHeight: 1.5,
     }}
   >
-    Upravljajte rezervacijama, uslugama, frizerima i informacijama o salonu.
+    Upravljajte rezervacijama, uslugama, osobljem i informacijama o salonu.
   </p>
 </div>
 
@@ -2691,7 +2696,7 @@ overflowX: "hidden",
         style={{ padding: "8px 12px" }}
       >
         {selectedSettings.includes("barbers") ? "✓  " : ""}
-        Frizeri
+        Osoblje
       </button>
 
       <button
@@ -2723,8 +2728,8 @@ overflowX: "hidden",
     style={{
       borderColor: "#ead1d1",
       borderLeft: "4px solid #611a1a",
-      padding: isMobile ? "14px 16px" : "20px",
-      height: isMobile ? "90px" : undefined,
+      padding: isMobile ? "14px 16px" : "16px 20px",
+height: isMobile ? "90px" : "88px",
     }}
   >
     <p
@@ -2755,8 +2760,8 @@ overflowX: "hidden",
     style={{
       borderColor: "#ead1d1",
       borderLeft: "4px solid #611a1a",
-      padding: isMobile ? "14px 16px" : "20px",
-      height: isMobile ? "90px" : undefined,
+      padding: isMobile ? "14px 16px" : "16px 20px",
+      height: isMobile ? "90px" : "88px",
     }}
   >
     <p
@@ -3089,12 +3094,16 @@ overflowX: "hidden",
 
 {imagePreview && (
   <div className="mt-6">
-    <p className="mb-3 font-medium text-gray-700">
+    <p className="font-medium text-gray-700">
       Prilagodi sliku
     </p>
 
+    <p className="mb-3 mt-1 text-sm text-gray-500">
+      Pomjerite ili uvećajte sliku kako biste odabrali dio koji će biti prikazan.
+    </p>
+
     <div
-  className="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-gray-100"
+      className="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-gray-100"
   style={{
     height: isMobile ? "220px" : "320px",
   }}
@@ -3427,7 +3436,7 @@ style={{ backgroundColor: "#ef4444" }}
 </div>
 
 <div
-  className="mb-4 mt-5 rounded-xl border border-gray-200 p-4"
+  className="mb-4 mt-5"
   style={{ maxWidth: "450px" }}
 >
   <label className="mb-1 block font-medium">
@@ -3581,7 +3590,12 @@ style={{ backgroundColor: "#ef4444" }}
 </div>
 
 
-<label className="mb-1 block font-medium">Instagram</label>
+<label
+  className="mb-1 block font-medium"
+  style={{ marginTop: isMobile ? "20px" : "20px" }}
+>
+  Instagram
+</label>
 <input
   type="text"
   placeholder="https://instagram.com/..."
@@ -3729,10 +3743,10 @@ style={{
    {services.map((service) => (
   <div
   key={service.id}
-  className="rounded-xl border transition-all"
+  className="relative rounded-xl border transition-all"
   style={{
   maxWidth: "600px",
-  width: "100%",
+  width: isMobile ? "100%" : "450px",
   padding: isMobile ? "10px 12px" : "12px",
   backgroundColor:
     editingServiceId === service.id ? "#e5cccc" : "#ffffff",
@@ -3766,49 +3780,90 @@ style={{
         )}
 
        <div
-  className="space-y-1"
   style={{
     marginTop: isMobile ? "4px" : "8px",
+    display: "grid",
+    gridTemplateColumns: isMobile ? "1fr 42%" : "280px 1fr",
+    columnGap: isMobile ? "12px" : "20px",
+    alignItems: "start",
   }}
 >
-  {service.price && (
-    <p className="font-bold">
-      {service.price} BAM
-    </p>
-  )}
+  {/* Vänster sida */}
+  <div>
+    <div className="space-y-1">
+      {service.price && (
+        <p className="font-bold">
+          {service.price} BAM
+        </p>
+      )}
 
-  {service.duration_minutes && (
-    <p className="font-bold">
-      Trajanje: {service.duration_minutes} min
-    </p>
-  )}
-</div>
-
-        <div
-  className="space-y-1"
-  style={{
-    marginTop: isMobile ? "6px" : "12px",
-  }}
->
-          <p className="text-xs text-gray-500">
-            Cijena:{" "}
-            {service.show_price ? "Prikazana" : "Skrivena"}
-          </p>
-
-          <p className="text-xs text-gray-500">
-            Trajanje:{" "}
-            {service.show_duration ? "Prikazano" : "Skriveno"}
-          </p>
-                </div>
+      {service.duration_minutes && (
+        <p className="font-bold">
+          Trajanje: {service.duration_minutes} min
+        </p>
+      )}
     </div>
 
     <div
+      className="space-y-1"
+      style={{
+        marginTop: isMobile ? "6px" : "12px",
+      }}
+    >
+      <p className="text-xs text-gray-500">
+        Cijena:{" "}
+        {service.show_price ? "Prikazana" : "Skrivena"}
+      </p>
+
+      <p className="text-xs text-gray-500">
+        Trajanje:{" "}
+        {service.show_duration ? "Prikazano" : "Skriveno"}
+      </p>
+    </div>
+  </div>
+
+  {/* Höger sida – frisörer */}
+  <div>
+    <p className="mb-1 text-base font-semibold text-gray-700">
+      Osoblje
+    </p>
+
+    {service.service_barbers?.length > 0 ? (
+      <div className="space-y-1">
+        {service.service_barbers.map((serviceBarber: any) => {
+          const barber = barbers.find(
+            (barber) => barber.id === serviceBarber.barber_id
+          );
+
+          if (!barber) return null;
+
+          return (
+            <p
+              key={serviceBarber.barber_id}
+              className="text-sm text-gray-600"
+            >
+              {barber.name}
+            </p>
+          );
+        })}
+      </div>
+    ) : (
+      <p className="text-sm text-gray-400">
+        Nije odabrano
+      </p>
+    )}
+  </div>
+</div>
+
+</div>
+
+<div
   className="flex w-full gap-2"
   style={{
     marginTop: isMobile ? "8px" : "12px",
   }}
 >
-      <button
+  <button
   type="button"
   onClick={() => handleEditService(service)}
   className="rounded-lg border px-4 py-2"
@@ -3948,7 +4003,7 @@ style={{
 
 <div className="mb-4">
   <p className="mb-1 font-medium">
-  Izaberi frizere za ovu uslugu
+  Izaberi osoblje za ovu uslugu
 </p>
 
 <div className="space-y-1">
@@ -3998,7 +4053,7 @@ style={{
       cursor: "pointer",
     }}
   />
-  Frizer nije zauzet tokom cijelog tretmana
+  Osoblje nije zauzeto tokom cijelog tretmana
 </label>
 
 {hasServiceSteps && (
@@ -4089,7 +4144,7 @@ style={{ maxWidth: "420px" }}
   }}
 />
 
-      Frizer je zauzet
+      Osoblje je zauzeto
     </label>
     {serviceSteps.length > 1 && (
   <div
@@ -4296,7 +4351,7 @@ formatWeekDay={(dayName) => {
   }}
 >
   <label className="mb-2 block text-sm font-medium">
-    Frizer
+    Osoblje
   </label>
 
   <select
@@ -4456,7 +4511,7 @@ formatWeekDay={(dayName) => {
   </p>
 
   <div className="mt-4">
-  <p className="mb-1 font-semibold">Frizeri</p>
+  <p className="mb-1 font-semibold">Osoblje</p>
 
   <div className="flex flex-wrap gap-4">
     {barbers.map((barber) => (
@@ -4872,7 +4927,7 @@ style={{
     <div className="mx-auto max-w-3xl">
       <h2 className="mb-1 text-xl font-bold">Zatvoreni dani</h2>
 <p className="mb-6 text-sm text-gray-500">
-  Odredite dane kada salon ili određeni frizer nije dostupan za rezervacije.
+  Odredite dane kada salon ili određeni član osoblja nije dostupan za rezervacije.
 </p>
 
     <div className="mb-4 space-y-2">
@@ -4894,7 +4949,7 @@ style={{
               <p className="text-sm text-gray-600">
   {day.reason || "Bez razloga"} ·{" "}
   {day.barber_id
-    ? barbers.find((barber) => barber.id === day.barber_id)?.name || "Frizer"
+    ? barbers.find((barber) => barber.id === day.barber_id)?.name || "Osobolje"
     : "Cijeli salon"}
 </p>
             </div>
@@ -5091,9 +5146,9 @@ formatWeekDay={(dayName) => {
 {selectedSettings.includes("barbers") && (
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
     <div className="mx-auto max-w-3xl">
-      <h2 className="mb-1 text-xl font-bold">Frizeri</h2>
+      <h2 className="mb-1 text-xl font-bold">Osoblje</h2>
 <p className="mb-6 text-sm text-gray-500">
-  Dodajte frizere i odaberite da li će biti prikazani na stranici salona.
+  Dodajte članove osoblja i odaberite da li će biti prikazani na stranici salona.
 </p>
     <label className="mb-4 flex items-center gap-2">
   <input
@@ -5103,7 +5158,7 @@ formatWeekDay={(dayName) => {
   style={{ accentColor: "#611a1a" }}
 />
 
-  Prikaži frizere na stranici
+  Prikaži osoblje na stranici
 </label>
 
 
@@ -5141,7 +5196,7 @@ formatWeekDay={(dayName) => {
     <div>
 <input
   type="text"
-  placeholder="Ime frizera"
+  placeholder="Ime Osoblja"
   value={newBarberName}
   onChange={(e) => setNewBarberName(e.target.value)}
   className="mb-3 rounded-xl border border-gray-300 bg-white"
@@ -5162,7 +5217,7 @@ formatWeekDay={(dayName) => {
     border: "1px solid #611a1a",
   }}
 >
-   Dodaj frizera
+   Dodaj osoblje
 </button>
 
     <button
@@ -5277,21 +5332,7 @@ formatWeekDay={(dayName) => {
   </button>
 )}
 
-  <button
-    onClick={() => {
-      const nextWeek = new Date(calendarWeekStart);
-      nextWeek.setDate(calendarWeekStart.getDate() + 7);
-      setCalendarWeekStart(nextWeek);
-    }}
-    className="rounded-xl border px-4 py-2 text-sm font-medium"
-    style={{
-      borderColor: "#611a1a",
-      color: "#611a1a",
-      backgroundColor: "white",
-    }}
-  >
-    →
-  </button>
+  
   <div
   className="ml-2 text-sm font-semibold"
   style={{ color: "#611a1a" }}
@@ -5321,6 +5362,22 @@ formatWeekDay={(dayName) => {
   })()}
 </div>
 
+<button
+    onClick={() => {
+      const nextWeek = new Date(calendarWeekStart);
+      nextWeek.setDate(calendarWeekStart.getDate() + 7);
+      setCalendarWeekStart(nextWeek);
+    }}
+    className="rounded-xl border px-4 py-2 text-sm font-medium"
+    style={{
+      borderColor: "#611a1a",
+      color: "#611a1a",
+      backgroundColor: "white",
+    }}
+  >
+    →
+  </button>
+
   </div>
 
   <div
@@ -5339,8 +5396,8 @@ formatWeekDay={(dayName) => {
     >
       <span className="flex items-center gap-2">
   {calendarBarberFilter === "all"
-    ? "Frizer"
-    : barbers.find((barber) => barber.id === calendarBarberFilter)?.name || "Frizer"}
+    ? "Osooblje"
+    : barbers.find((barber) => barber.id === calendarBarberFilter)?.name || "Osoblje"}
 
   {calendarBarberFilter !== "all" && (
     <span
@@ -5387,7 +5444,7 @@ formatWeekDay={(dayName) => {
         {calendarBarberFilter === "all" ? "✓" : ""}
       </span>
 
-      <span>Svi frizeri</span>
+      <span>Svo osoblje</span>
     </button>
 
     {barbers.map((barber) => (
@@ -5620,10 +5677,10 @@ formatWeekDay={(dayName) => {
   >
     <span className="flex items-center gap-2">
       {calendarBarberFilter === "all"
-        ? "Frizer"
+        ? "Osoblje"
         : barbers.find(
             (barber) => barber.id === calendarBarberFilter
-          )?.name || "Frizer"}
+          )?.name || "Osoblje"}
 
       {calendarBarberFilter !== "all" && (
         <span
@@ -5672,7 +5729,7 @@ formatWeekDay={(dayName) => {
         {calendarBarberFilter === "all" ? "✓" : ""}
       </span>
 
-      <span>Svi frizeri</span>
+      <span>Svo osoblje</span>
     </button>
 
     {barbers.map((barber) => (
@@ -6353,7 +6410,7 @@ cursor: "pointer",
         overflow: "hidden",
       }}
     >
-      {booking.barber_name || "Bilo koji frizer"}
+      {booking.barber_name || "Bez preferencije"}
     </div>
     )}
     {(booking.duration_minutes || 30) >= 60 && (
@@ -6473,8 +6530,8 @@ hasParallelBookingInside && !isLaterOverlappingMultiStepBooking ? (
 </div>
 
 <div>
-  <strong>Frizer:</strong>{" "}
-  {selectedBooking.barber_name || "Bilo koji frizer"}
+  <strong>Osoblje:</strong>{" "}
+  {selectedBooking.barber_name || "Bez preferencije"}
 </div>
   <div>
   <strong>Datum:</strong>{" "}

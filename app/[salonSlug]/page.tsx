@@ -351,7 +351,7 @@ return (
 >
        <div className="mb-6">
   <p className="mb-2 text-sm font-bold uppercase tracking-[0.25em] text-gray-500">
-    Frizerski salon
+  salon
   </p>
 
   <h1
@@ -1135,7 +1135,7 @@ gap: "24px",
         color: "#111827",
       }}
     >
-      Frizer
+      Osoblje
     </p>
 
     <div
@@ -1156,15 +1156,14 @@ gap: "24px",
           }));
         }}
         style={{
-          width: "100%",
-          maxWidth: isMobile ? "170px" : "280px",
-          border: "1px solid #d1d5db",
-          borderRadius: "12px",
-          padding: "10px 12px",
-          backgroundColor: "white",
-        }}
+  width: "150px",
+  border: "1px solid #d1d5db",
+  borderRadius: "12px",
+  padding: "10px 12px",
+  backgroundColor: "white",
+}}
       >
-        <option value="">Bilo koji frizer</option>
+        <option value="">Bez preferencije</option>
 
         {barbers
           .filter((barber) => {
