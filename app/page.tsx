@@ -3,7 +3,15 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { IconType } from "react-icons";
-import { FiSearch, FiMenu, FiX, FiGrid } from "react-icons/fi";
+import {
+  FiSearch,
+  FiMenu,
+  FiX,
+  FiGrid,
+  FiMapPin,
+  FiClock,
+  FiArrowRight,
+} from "react-icons/fi";
 import { TbScissors, TbMassage, TbFlower, TbHandStop } from "react-icons/tb";
 import { GiEyelashes, GiLipstick } from "react-icons/gi";
 import { supabase } from "@/lib/supabase";
@@ -29,6 +37,17 @@ const CATEGORIES: { name: string; icon: IconType }[] = [
   { name: "Ljepota", icon: GiLipstick },
 ];
 
+// Veckodagarna i samma form som i Supabase (closed_weekdays och salon_shortened_hours).
+// JavaScript räknar söndag som dag 0.
+const WEEKDAY_CODES = ["Ned", "Pon", "Uto", "Sri", "Čet", "Pet", "Sub"];
+
+function todayDateString() {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${now.getFullYear()}-${month}-${day}`;
+}
+
 // Gör sökningen okänslig för stora/små bokstäver och č, ć, š, ž, đ.
 function normalize(text: string) {
   return text
@@ -40,6 +59,11 @@ function normalize(text: string) {
 
 export default function Home() {
   const [salons, setSalons] = useState<any[]>([]);
+  // Dagens förkortade öppettider och stängda salonger, per salong-id.
+  const [todayShortenedHours, setTodayShortenedHours] = useState<
+    Record<number, { start_time: string; end_time: string }>
+  >({});
+  const [closedTodayIds, setClosedTodayIds] = useState<number[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -100,7 +124,9 @@ export default function Home() {
     async function loadSalons() {
       const { data, error } = await supabase
         .from("salons")
-        .select("id, salon_name, slug, city, categories, address, image_url")
+        .select(
+          "id, salon_name, slug, city, categories, address, image_url, opening_hours, closed_weekdays"
+        )
         .eq("is_published", true)
         .order("salon_name", { ascending: true });
 
@@ -110,6 +136,26 @@ export default function Home() {
 
       setSalons(data || []);
       setLoading(false);
+
+      // Hämta bara det som gäller i dag, för "Otvoreno danas" på korten.
+      const [shortenedResult, closedResult] = await Promise.all([
+        supabase
+          .from("salon_shortened_hours")
+          .select("salon_id, start_time, end_time")
+          .eq("weekday", WEEKDAY_CODES[new Date().getDay()]),
+        supabase
+          .from("closed_days")
+          .select("salon_id")
+          .eq("date", todayDateString())
+          .is("barber_id", null),
+      ]);
+
+      const shortened: Record<number, { start_time: string; end_time: string }> = {};
+      (shortenedResult.data || []).forEach((row) => {
+        shortened[row.salon_id] = row;
+      });
+      setTodayShortenedHours(shortened);
+      setClosedTodayIds((closedResult.data || []).map((row) => row.salon_id));
     }
 
     loadSalons();
@@ -466,7 +512,23 @@ export default function Home() {
 
       {!loading && filteredSalons.length === 0 && <p>Nema pronađenih salona.</p>}
 
-            {filteredSalons.map((salon) => (
+      {filteredSalons.map((salon) => {
+        // Visa "Studio, Tuzla" men inte "Mercator centar, Tuzla, Tuzla".
+        const location =
+          salon.address && salon.city && !normalize(salon.address).includes(normalize(salon.city))
+            ? `${salon.address}, ${salon.city}`
+            : salon.address || salon.city;
+
+        // Dagens öppettider: stängd dag går före förkortade tider, som går före vanliga tider.
+        const shortened = todayShortenedHours[salon.id];
+        const isClosedToday =
+          closedTodayIds.includes(salon.id) ||
+          (salon.closed_weekdays || []).includes(WEEKDAY_CODES[new Date().getDay()]);
+        const todayHours = shortened
+          ? `${shortened.start_time.slice(0, 5)}–${shortened.end_time.slice(0, 5)}`
+          : salon.opening_hours?.replace("-", "–");
+
+        return (
         <Link
           key={salon.id}
           href={`/${salon.slug}`}
@@ -475,15 +537,16 @@ export default function Home() {
             marginBottom: 16,
             borderRadius: 16,
             overflow: "hidden",
-            border: "1px solid #eeeeee",
+            border: "1px solid #ececec",
             background: "#ffffff",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.06)",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)",
             textDecoration: "none",
             color: "inherit",
           }}
         >
           <div
             style={{
+              position: "relative",
               height: 150,
               display: "flex",
               alignItems: "center",
@@ -494,6 +557,37 @@ export default function Home() {
               backgroundPosition: "center",
             }}
           >
+            {salon.categories?.length > 0 && (
+              <div
+                className={sourceSans.className}
+                style={{
+                  position: "absolute",
+                  top: 10,
+                  left: 10,
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 6,
+                }}
+              >
+                {salon.categories.slice(0, 2).map((category: string) => (
+                  <span
+                    key={category}
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      padding: "4px 10px",
+                      borderRadius: 999,
+                      background: "#ffffff",
+                      color: "#611a1a",
+                      boxShadow: "0 1px 4px rgba(0, 0, 0, 0.12)",
+                    }}
+                  >
+                    {category}
+                  </span>
+                ))}
+              </div>
+            )}
+
             {/* Salonger utan bild visar Salonix-ikonen i stället för en tom ruta. */}
             {!salon.image_url && (
               <div style={{ width: 48, height: 48, overflow: "hidden", opacity: 0.85 }}>
@@ -506,46 +600,78 @@ export default function Home() {
             )}
           </div>
 
-          <div style={{ padding: "14px 16px 16px" }}>
-            <div
-              className={dmSerif.className}
-              style={{ fontSize: 22, color: "#1f1f1f", lineHeight: 1.2 }}
-            >
-              {salon.salon_name}
-            </div>
-
-            {salon.categories.length > 0 && (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+              padding: "12px 14px 14px",
+            }}
+          >
+            <div style={{ minWidth: 0 }}>
               <div
-                className={sourceSans.className}
-                style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 8 }}
+                className={dmSerif.className}
+                style={{ fontSize: 22, color: "#1f1f1f", lineHeight: 1.2 }}
               >
-                {salon.categories.slice(0, 3).map((category: string) => (
-                  <span
-                    key={category}
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      padding: "3px 10px",
-                      borderRadius: 999,
-                      background: "#f8eeee",
-                      color: "#611a1a",
-                    }}
-                  >
-                    {category}
-                  </span>
-                ))}
+                {salon.salon_name}
               </div>
-            )}
 
-            <div
-              className={sourceSans.className}
-              style={{ fontSize: 14, color: "#6b7280", marginTop: 10 }}
-            >
-              {[salon.city, salon.address].filter(Boolean).join(" · ")}
+              {location && (
+                <div
+                  className={sourceSans.className}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    fontSize: 14,
+                    color: "#6b7280",
+                    marginTop: 6,
+                  }}
+                >
+                  <FiMapPin size={14} style={{ flexShrink: 0 }} />
+                  {location}
+                </div>
+              )}
+
+              {(isClosedToday || todayHours) && (
+                <div
+                  className={sourceSans.className}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: isClosedToday ? "#9ca3af" : "#15803d",
+                    marginTop: 4,
+                  }}
+                >
+                  <FiClock size={14} style={{ flexShrink: 0 }} />
+                  {isClosedToday ? "Zatvoreno danas" : `Otvoreno danas · ${todayHours}`}
+                </div>
+              )}
             </div>
+
+            <span
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 38,
+                height: 38,
+                flexShrink: 0,
+                borderRadius: 999,
+                background: "#611a1a",
+                color: "#ffffff",
+              }}
+            >
+              <FiArrowRight size={18} />
+            </span>
           </div>
         </Link>
-      ))}
+        );
+      })}
     </main>
   );
 }
