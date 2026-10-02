@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { IconType } from "react-icons";
-import { FiSearch } from "react-icons/fi";
+import { FiSearch, FiMenu, FiX, FiGrid } from "react-icons/fi";
 import { TbScissors, TbMassage, TbFlower, TbHandStop } from "react-icons/tb";
 import { GiEyelashes, GiLipstick } from "react-icons/gi";
 import { supabase } from "@/lib/supabase";
@@ -44,8 +44,17 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showStickySearch, setShowStickySearch] = useState(false);
+  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
   const heroSearchRef = useRef<HTMLLabelElement>(null);
   const salonsHeadingRef = useRef<HTMLHeadingElement>(null);
+
+  // Lås sidan bakom panelen så att den inte scrollar medan panelen är öppen.
+  useEffect(() => {
+    document.body.style.overflow = categoryMenuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [categoryMenuOpen]);
 
   // Scrolla ner till salongerna när en kategori väljs, så att kunden ser resultatet.
   useEffect(() => {
@@ -108,6 +117,125 @@ export default function Home() {
 
   return (
     <main style={{ padding: 20, fontFamily: "Arial, sans-serif" }}>
+      {/* Mörk bakgrund bakom kategoripanelen. Ett tryck här stänger panelen. */}
+      <div
+        onClick={() => setCategoryMenuOpen(false)}
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 60,
+          background: "rgba(0, 0, 0, 0.4)",
+          opacity: categoryMenuOpen ? 1 : 0,
+          pointerEvents: categoryMenuOpen ? "auto" : "none",
+          transition: "opacity 0.25s ease",
+        }}
+      />
+
+      {/* Kategoripanelen som glider in från vänster. */}
+      <nav
+        aria-label="Kategorije"
+        className={sourceSans.className}
+        style={{
+          position: "fixed",
+          top: 0,
+          bottom: 0,
+          left: 0,
+          zIndex: 61,
+          width: "82%",
+          maxWidth: 320,
+          background: "#ffffff",
+          boxShadow: categoryMenuOpen ? "4px 0 20px rgba(0, 0, 0, 0.15)" : "none",
+          transform: categoryMenuOpen ? "translateX(0)" : "translateX(-100%)",
+          transition: "transform 0.25s ease",
+          overflowY: "auto",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "18px 20px",
+            borderBottom: "1px solid #eeeeee",
+          }}
+        >
+          <span
+            className={dmSerif.className}
+            style={{ fontSize: 22, color: "#1f1f1f" }}
+          >
+            Kategorije
+          </span>
+          <button
+            type="button"
+            onClick={() => setCategoryMenuOpen(false)}
+            aria-label="Zatvori"
+            style={{
+              display: "flex",
+              border: "none",
+              padding: 4,
+              background: "transparent",
+              color: "#1f1f1f",
+              cursor: "pointer",
+            }}
+          >
+            <FiX size={24} />
+          </button>
+        </div>
+
+        {[{ name: null, label: "Sve kategorije", icon: FiGrid as IconType },
+          ...CATEGORIES.map((c) => ({ name: c.name, label: c.name, icon: c.icon })),
+        ].map(({ name, label, icon: Icon }) => {
+          const isSelected = selectedCategory === name;
+          return (
+            <button
+              key={label}
+              type="button"
+              onClick={() => {
+                setSelectedCategory(name);
+                setCategoryMenuOpen(false);
+              }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 14,
+                width: "100%",
+                padding: "14px 20px",
+                border: "none",
+                borderBottom: "1px solid #f3f4f6",
+                background: isSelected ? "#fbf5f5" : "#ffffff",
+                textAlign: "left",
+                cursor: "pointer",
+              }}
+            >
+              <span
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 38,
+                  height: 38,
+                  flexShrink: 0,
+                  borderRadius: 999,
+                  background: isSelected ? "#611a1a" : "#f8eeee",
+                  color: isSelected ? "#ffffff" : "#611a1a",
+                }}
+              >
+                <Icon size={20} />
+              </span>
+              <span
+                style={{
+                  fontSize: 16,
+                  fontWeight: isSelected ? 700 : 600,
+                  color: isSelected ? "#611a1a" : "#1f1f1f",
+                }}
+              >
+                {label}
+              </span>
+            </button>
+          );
+        })}
+      </nav>
+
       {showStickySearch && (
         <div
           className={sourceSans.className}
@@ -147,6 +275,23 @@ export default function Home() {
             />
           </button>
 
+          <button
+            type="button"
+            onClick={() => setCategoryMenuOpen(true)}
+            aria-label="Kategorije"
+            style={{
+              display: "flex",
+              flexShrink: 0,
+              border: "none",
+              padding: 4,
+              background: "transparent",
+              color: "#1f1f1f",
+              cursor: "pointer",
+            }}
+          >
+            <FiMenu size={24} />
+          </button>
+
           <label
             style={{
               flex: 1,
@@ -180,8 +325,8 @@ export default function Home() {
         </div>
       )}
 
-            <header style={{ marginBottom: 24 }}>
-                <img
+      <header style={{ marginBottom: 24 }}>
+        <img
           src="/salonix-horisontell-maroon.png"
           alt="Salonix"
           style={{ height: 34, width: "auto", display: "block" }}
