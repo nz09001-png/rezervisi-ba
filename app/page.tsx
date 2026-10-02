@@ -672,6 +672,35 @@ export default function Home() {
         </Link>
         );
       })}
+
+      <footer
+        className={sourceSans.className}
+        style={{
+          margin: "40px -20px -20px",
+          padding: "28px 20px 32px",
+          background: "#faf6f6",
+          borderTop: "1px solid #f0e6e6",
+        }}
+      >
+        <img
+          src="/salonix-horisontell-maroon.png"
+          alt="Salonix"
+          style={{ height: 28, width: "auto", display: "block" }}
+        />
+        <p
+          style={{
+            fontSize: 14,
+            lineHeight: 1.5,
+            color: "#6b7280",
+            margin: "12px 0 0",
+          }}
+        >
+          Pronađite salon i rezervišite termin online – brzo i jednostavno.
+        </p>
+        <p style={{ fontSize: 13, color: "#9ca3af", margin: "20px 0 0" }}>
+          © {new Date().getFullYear()} Salonix · salonix.ba
+        </p>
+      </footer>
     </main>
   );
 }
