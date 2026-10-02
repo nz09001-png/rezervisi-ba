@@ -45,6 +45,14 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showStickySearch, setShowStickySearch] = useState(false);
   const heroSearchRef = useRef<HTMLLabelElement>(null);
+  const salonsHeadingRef = useRef<HTMLHeadingElement>(null);
+
+  // Scrolla ner till salongerna när en kategori väljs, så att kunden ser resultatet.
+  useEffect(() => {
+    if (selectedCategory) {
+      salonsHeadingRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [selectedCategory]);
 
   // Visa den vita listen högst upp när det stora sökfältet har scrollats bort.
   useEffect(() => {
@@ -288,8 +296,15 @@ export default function Home() {
       </div>
 
       <h2
+        ref={salonsHeadingRef}
         className={dmSerif.className}
-        style={{ fontSize: 22, color: "#1f1f1f", marginBottom: 12 }}
+        style={{
+          fontSize: 22,
+          color: "#1f1f1f",
+          marginBottom: 12,
+          // Plats för den vita listen högst upp.
+          scrollMarginTop: 76,
+        }}
       >
         Saloni{" "}
         {!loading && (
@@ -325,12 +340,26 @@ export default function Home() {
           <div
             style={{
               height: 150,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               backgroundColor: "#f5eded",
               backgroundImage: salon.image_url ? `url(${salon.image_url})` : "none",
               backgroundSize: "cover",
               backgroundPosition: "center",
             }}
-          />
+          >
+            {/* Salonger utan bild visar Salonix-ikonen i stället för en tom ruta. */}
+            {!salon.image_url && (
+              <div style={{ width: 48, height: 48, overflow: "hidden", opacity: 0.85 }}>
+                <img
+                  src="/salonix-horisontell-maroon.png"
+                  alt=""
+                  style={{ height: 48, width: "auto", maxWidth: "none", display: "block" }}
+                />
+              </div>
+            )}
+          </div>
 
           <div style={{ padding: "14px 16px 16px" }}>
             <div
