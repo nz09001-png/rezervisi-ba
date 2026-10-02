@@ -106,15 +106,14 @@ export default function Home() {
   }, []);
 
   const searchTerm = normalize(search.trim());
+  const matchesCategory = (salon: any) =>
+    !selectedCategory ||
+    (salon.categories || []).some(
+      (category: string) => normalize(category) === normalize(selectedCategory)
+    );
+
   const filteredSalons = salons.filter((salon) => {
-    if (
-      selectedCategory &&
-      !(salon.categories || []).some(
-        (category: string) => normalize(category) === normalize(selectedCategory)
-      )
-    ) {
-      return false;
-    }
+    if (!matchesCategory(salon)) return false;
     if (selectedCity && salon.city !== selectedCity) return false;
     if (!searchTerm) return true;
     const searchable = [
@@ -555,7 +554,8 @@ export default function Home() {
         }}
       >
         Saloni{" "}
-        {!loading && (
+        {/* Antalet visas bara när en stad är vald, aldrig totalt för hela Salonix. */}
+        {!loading && selectedCity && (
           <span
             className={sourceSans.className}
             style={{ fontSize: 15, color: "#9ca3af" }}
