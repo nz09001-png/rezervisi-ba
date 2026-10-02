@@ -11,6 +11,7 @@ import {
   FiMapPin,
   FiClock,
   FiArrowRight,
+  FiChevronDown,
 } from "react-icons/fi";
 import { TbScissors, TbMassage, TbFlower, TbHandStop } from "react-icons/tb";
 import { GiEyelashes, GiLipstick } from "react-icons/gi";
@@ -67,6 +68,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [showStickySearch, setShowStickySearch] = useState(false);
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
   const heroSearchRef = useRef<HTMLLabelElement>(null);
@@ -80,12 +82,17 @@ export default function Home() {
     };
   }, [categoryMenuOpen]);
 
-  // Scrolla ner till salongerna när en kategori väljs, så att kunden ser resultatet.
+  // Scrolla ner till salongerna när en kategori eller stad väljs, så att kunden ser resultatet.
   useEffect(() => {
-    if (selectedCategory) {
+    if (selectedCategory || selectedCity) {
       salonsHeadingRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [selectedCategory]);
+  }, [selectedCategory, selectedCity]);
+
+  // Städerna hämtas automatiskt från salongerna, i bokstavsordning.
+  const cities = Array.from(
+    new Set(salons.map((salon) => salon.city).filter(Boolean))
+  ).sort((a, b) => a.localeCompare(b, "bs")) as string[];
 
   // Visa den vita listen högst upp när det stora sökfältet har scrollats bort.
   useEffect(() => {
@@ -108,6 +115,7 @@ export default function Home() {
     ) {
       return false;
     }
+    if (selectedCity && salon.city !== selectedCity) return false;
     if (!searchTerm) return true;
     const searchable = [
       salon.salon_name,
@@ -425,6 +433,55 @@ export default function Home() {
             }}
           />
         </label>
+
+        {/* Välj stad. Telefonen visar sin egen lista när man trycker. */}
+        <label
+          className={sourceSans.className}
+          style={{
+            position: "relative",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            marginTop: 10,
+            padding: "0 18px",
+            height: 50,
+            borderRadius: 999,
+            background: "#ffffff",
+            boxShadow: "0 4px 14px rgba(0, 0, 0, 0.18)",
+          }}
+        >
+          <FiMapPin size={20} color="#1f1f1f" />
+          <select
+            value={selectedCity ?? ""}
+            onChange={(e) => setSelectedCity(e.target.value || null)}
+            aria-label="Grad"
+            style={{
+              flex: 1,
+              minWidth: 0,
+              height: "100%",
+              border: "none",
+              outline: "none",
+              background: "transparent",
+              appearance: "none",
+              WebkitAppearance: "none",
+              fontSize: 16,
+              color: selectedCity ? "#1f1f1f" : "#6b7280",
+              cursor: "pointer",
+            }}
+          >
+            <option value="">Svi gradovi</option>
+            {cities.map((city) => (
+              <option key={city} value={city}>
+                {city}
+              </option>
+            ))}
+          </select>
+          <FiChevronDown
+            size={18}
+            color="#6b7280"
+            style={{ flexShrink: 0, pointerEvents: "none" }}
+          />
+        </label>
       </section>
 
       <h2
@@ -507,6 +564,88 @@ export default function Home() {
           </span>
         )}
       </h2>
+
+      {/* Visar det kunden har valt. Ett tryck på ✕ tar bort just det valet. */}
+      {(selectedCity || selectedCategory || search.trim()) && (
+        <div
+          className={sourceSans.className}
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: 8,
+            marginBottom: 16,
+          }}
+        >
+          {[
+            selectedCity && {
+              key: "city",
+              label: selectedCity,
+              icon: FiMapPin,
+              onRemove: () => setSelectedCity(null),
+            },
+            selectedCategory && {
+              key: "category",
+              label: selectedCategory,
+              icon: CATEGORIES.find((c) => c.name === selectedCategory)?.icon,
+              onRemove: () => setSelectedCategory(null),
+            },
+            search.trim() && {
+              key: "search",
+              label: `„${search.trim()}“`,
+              icon: FiSearch,
+              onRemove: () => setSearch(""),
+            },
+          ]
+            .filter((chip) => !!chip)
+            .map(({ key, label, icon: Icon, onRemove }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={onRemove}
+                aria-label={`Ukloni ${label}`}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "6px 10px 6px 12px",
+                  borderRadius: 999,
+                  border: "1px solid #ead9d9",
+                  background: "#f8eeee",
+                  color: "#611a1a",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                {Icon && <Icon size={14} />}
+                {label}
+                <FiX size={15} />
+              </button>
+            ))}
+
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedCity(null);
+              setSelectedCategory(null);
+              setSearch("");
+            }}
+            style={{
+              border: "none",
+              padding: "6px 4px",
+              background: "transparent",
+              color: "#6b7280",
+              fontSize: 14,
+              fontWeight: 600,
+              textDecoration: "underline",
+              cursor: "pointer",
+            }}
+          >
+            Očisti sve
+          </button>
+        </div>
+      )}
 
       {loading && <p>Učitavanje...</p>}
 
