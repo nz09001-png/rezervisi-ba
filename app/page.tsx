@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { IconType } from "react-icons";
 import { FiSearch } from "react-icons/fi";
 import { TbScissors, TbMassage, TbFlower, TbHandStop } from "react-icons/tb";
@@ -43,6 +43,19 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [showStickySearch, setShowStickySearch] = useState(false);
+  const heroSearchRef = useRef<HTMLLabelElement>(null);
+
+  // Visa den vita listen högst upp när det stora sökfältet har scrollats bort.
+  useEffect(() => {
+    const heroSearch = heroSearchRef.current;
+    if (!heroSearch) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      setShowStickySearch(entry.boundingClientRect.bottom < 0);
+    });
+    observer.observe(heroSearch);
+    return () => observer.disconnect();
+  }, []);
 
   const searchTerm = normalize(search.trim());
   const filteredSalons = salons.filter((salon) => {
@@ -87,6 +100,78 @@ export default function Home() {
 
   return (
     <main style={{ padding: 20, fontFamily: "Arial, sans-serif" }}>
+      {showStickySearch && (
+        <div
+          className={sourceSans.className}
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 50,
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            padding: "10px 16px",
+            background: "#ffffff",
+            boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            aria-label="Salonix"
+            style={{
+              width: 30,
+              height: 30,
+              flexShrink: 0,
+              overflow: "hidden",
+              border: "none",
+              padding: 0,
+              background: "transparent",
+              cursor: "pointer",
+            }}
+          >
+            <img
+              src="/salonix-horisontell-maroon.png"
+              alt=""
+              style={{ height: 30, width: "auto", maxWidth: "none", display: "block" }}
+            />
+          </button>
+
+          <label
+            style={{
+              flex: 1,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "0 14px",
+              height: 40,
+              borderRadius: 999,
+              border: "1px solid #e5e7eb",
+              background: "#ffffff",
+            }}
+          >
+            <FiSearch size={17} color="#1f1f1f" />
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Šta želite rezervisati?"
+              style={{
+                flex: 1,
+                minWidth: 0,
+                border: "none",
+                outline: "none",
+                background: "transparent",
+                fontSize: 16,
+                color: "#1f1f1f",
+              }}
+            />
+          </label>
+        </div>
+      )}
+
             <header style={{ marginBottom: 24 }}>
                 <img
           src="/salonix-horisontell-maroon.png"
@@ -110,6 +195,7 @@ export default function Home() {
         </h1>
 
         <label
+          ref={heroSearchRef}
           className={sourceSans.className}
           style={{
             display: "flex",
