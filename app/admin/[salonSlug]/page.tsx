@@ -514,8 +514,11 @@ async function fetchServiceCategories() {
   setServiceCategories(data || []);
 }
 
-async function handleAddServiceCategory() {
-  if (!newServiceCategoryName.trim() || !salon?.id) return;
+// Utan namn används texten i fältet; med namn kommer det från en förslagsknapp.
+async function handleAddServiceCategory(suggestedName?: string) {
+  const categoryName = (suggestedName ?? newServiceCategoryName).trim();
+
+  if (!categoryName || !salon?.id) return;
 
   const nextSortOrder =
     serviceCategories.length > 0
@@ -526,7 +529,7 @@ async function handleAddServiceCategory() {
     .from("service_categories")
     .insert({
       salon_id: salon.id,
-      name: newServiceCategoryName.trim(),
+      name: categoryName,
       sort_order: nextSortOrder,
     });
 
@@ -535,7 +538,7 @@ async function handleAddServiceCategory() {
     return;
   }
 
-  setNewServiceCategoryName("");
+  if (!suggestedName) setNewServiceCategoryName("");
   fetchServiceCategories();
 }
 
@@ -555,6 +558,10 @@ async function handleDeleteServiceCategory(id: number) {
     alert("Kategorija se ne može obrisati jer sadrži usluge.");
     return;
   }
+
+  const confirmDelete = confirm("Da li ste sigurni da želite obrisati kategoriju?");
+
+  if (!confirmDelete) return;
 
   const { error } = await supabase
     .from("service_categories")
@@ -4191,83 +4198,231 @@ height: isMobile ? "90px" : "88px",
   </div>
 )}
 
-{selectedSettings.includes("serviceCategories") && (
-  <div className="mb-6 rounded-2xl bg-white p-4 shadow">
-    <div className="mx-auto max-w-2xl">
-      <h2 className="mb-1 text-xl font-bold">Kategorije usluga</h2>
+{selectedSettings.includes("serviceCategories") && (() => {
+  const categorySuggestions = [
+    "Šišanje",
+    "Muško šišanje",
+    "Žensko šišanje",
+    "Dječije šišanje",
+    "Šišanje i brada",
+    "Fade",
+    "Brada",
+    "Uređivanje brade",
+    "Brijanje",
+    "Farbanje",
+    "Pramenovi",
+    "Pranje i feniranje",
+    "Tretmani za kosu",
+    "Manikir",
+    "Pedikir",
+    "Gel nokti",
+    "Trepavice",
+    "Obrve",
+    "Depilacija",
+    "Masaža",
+    "Njega lica",
+    "Šminkanje",
+  ];
 
-    <p className="mb-6 text-sm text-gray-500">
-      Dodajte kategorije za organizaciju usluga na stranici salona.
+  const existingNames = serviceCategories.map((category) =>
+    String(category.name || "").trim().toLowerCase()
+  );
+
+  const visibleSuggestions = categorySuggestions.filter(
+    (name) => !existingNames.includes(name.toLowerCase())
+  );
+
+  return (
+  <div className="mb-6">
+    <h2 className="font-bold" style={{ fontSize: isMobile ? "24px" : "30px" }}>
+      Kategorije usluga
+    </h2>
+
+    <p className="text-gray-500" style={{ marginTop: "4px", fontSize: "15px", lineHeight: 1.4 }}>
+      Grupe u koje su podijeljene vaše usluge na stranici salona, npr. Šišanje, Brada.
     </p>
 
     <div
-  className="mb-4 space-y-2"
-  style={{
-    width: "500px",
-    maxWidth: "100%",
-  }}
->
-  {serviceCategories.map((category) => (
-   <div
-  key={category.id}
-  className="flex items-center justify-between rounded-xl"
-  style={{
-    width: isMobile ? "280px" : "320px",
-    maxWidth: "100%",
-    padding: isMobile ? "6px 8px" : "8px",
-    backgroundColor: "#ffffff",
-    border: "1px solid #ead1d1",
-  }}
->
-  <span>{category.name}</span>
+      className="rounded-2xl border bg-white shadow-sm"
+      style={{
+        marginTop: "16px",
+        padding: isMobile ? "16px" : "22px 24px",
+        maxWidth: "640px",
+        borderColor: "#ead1d1",
+      }}
+    >
+      <div className="flex items-baseline gap-2" style={{ paddingBottom: "10px" }}>
+        <p className="font-bold" style={{ fontSize: "17px", color: "#611a1a" }}>
+          Vaše kategorije
+        </p>
 
-  <button
-    type="button"
-    onClick={() => handleDeleteServiceCategory(category.id)}
-    className="rounded bg-red-500 text-white"
-    style={{
-      padding: isMobile ? "5px 10px" : "4px 12px",
-      fontSize: isMobile ? "13px" : undefined,
-    }}
-  >
-    Obriši
-  </button>
-</div>
-  ))}
-</div>
+        <span className="text-sm text-gray-500">{serviceCategories.length}</span>
+      </div>
 
-<div className="flex flex-col items-start gap-3">
-  <input
-  type="text"
-  placeholder="Naziv kategorije"
-  value={newServiceCategoryName}
-  onChange={(e) => setNewServiceCategoryName(e.target.value)}
-  className="rounded-lg border"
-  style={{
-    width: isMobile ? "280px" : "320px",
-    maxWidth: "100%",
-    padding: isMobile ? "8px 12px" : "12px",
-    fontSize: isMobile ? "14px" : undefined,
-  }}
-/>
+      {serviceCategories.length === 0 && (
+        <p
+          className="text-gray-500"
+          style={{ padding: "12px 0", fontSize: "15px", borderTop: "1px solid #f3e8e8" }}
+        >
+          Još nema kategorija. Izaberite neku ispod ili upišite svoju.
+        </p>
+      )}
 
-  <button
-  type="button"
-  onClick={handleAddServiceCategory}
-  className="rounded-xl font-medium text-white"
-  style={{
-    backgroundColor: "#611a1a",
-    padding: isMobile ? "8px 14px" : "12px 20px",
-    fontSize: isMobile ? "14px" : undefined,
-  }}
->
-  + Dodaj kategoriju
-</button>
-</div>
+      {serviceCategories.map((category) => {
+        const serviceCount = services.filter(
+          (service) => service.category_id === category.id
+        ).length;
 
+        return (
+          <div
+            key={category.id}
+            className="flex items-center"
+            style={{ gap: "12px", padding: "12px 0", borderTop: "1px solid #f3e8e8" }}
+          >
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p className="font-bold" style={{ fontSize: "16px" }}>
+                {category.name}
+              </p>
+
+              <p
+                style={{
+                  marginTop: "2px",
+                  fontSize: "13px",
+                  color: serviceCount > 0 ? "#6b7280" : "#b45309",
+                }}
+              >
+                {serviceCount > 0
+                  ? uslugaLabel(serviceCount)
+                  : "Prazna – klijenti je ne vide"}
+              </p>
+            </div>
+
+            {serviceCount > 0 ? (
+              <p
+                className="text-right text-gray-400"
+                style={{ fontSize: "12px", lineHeight: 1.3, maxWidth: "110px" }}
+              >
+                Ima usluge – ne može se obrisati
+              </p>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleDeleteServiceCategory(category.id)}
+                className="shrink-0 rounded-xl border bg-white font-semibold"
+                style={{
+                  height: "34px",
+                  padding: "0 12px",
+                  fontSize: "13px",
+                  color: "#ef4444",
+                  borderColor: "#ef4444",
+                }}
+              >
+                Obriši
+              </button>
+            )}
+          </div>
+        );
+      })}
+
+      <div style={{ marginTop: "6px", paddingTop: "14px", borderTop: "1px solid #f3e8e8" }}>
+        <p className="text-sm font-bold text-gray-700">
+          Dodaj novu kategoriju
+        </p>
+
+        {visibleSuggestions.length > 0 && (
+          <>
+            <p className="font-bold text-gray-700" style={{ marginTop: "12px", fontSize: "14px" }}>
+              Brzi izbor
+            </p>
+
+            <p className="text-gray-500" style={{ marginTop: "2px", fontSize: "13px" }}>
+              Dodirnite i kategorija se odmah dodaje.
+            </p>
+
+            <div className="flex flex-wrap" style={{ marginTop: "8px", gap: "8px" }}>
+              {visibleSuggestions.map((name) => (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => handleAddServiceCategory(name)}
+                  className="inline-flex items-center rounded-full font-semibold transition hover:opacity-80"
+                  style={{
+                    height: "38px",
+                    padding: "0 14px",
+                    fontSize: "14px",
+                    color: "#611a1a",
+                    border: "1px dashed #611a1a",
+                    backgroundColor: "#fdf8f8",
+                  }}
+                >
+                  + {name}
+                </button>
+              ))}
+            </div>
+
+            <div
+              className="flex items-center text-gray-400"
+              style={{ margin: "14px 0 8px", gap: "8px", fontSize: "13px" }}
+            >
+              <span style={{ flex: 1, height: "1px", backgroundColor: "#f0e4e4" }} />
+              ili upišite svoj naziv
+              <span style={{ flex: 1, height: "1px", backgroundColor: "#f0e4e4" }} />
+            </div>
+          </>
+        )}
+
+        <div
+          style={{
+            marginTop: visibleSuggestions.length > 0 ? "0" : "8px",
+            display: "grid",
+            gridTemplateColumns: "1fr auto",
+            gap: "8px",
+          }}
+        >
+          <input
+            type="text"
+            placeholder="Naziv kategorije"
+            value={newServiceCategoryName}
+            onChange={(e) => setNewServiceCategoryName(e.target.value)}
+            className="w-full rounded-xl border border-gray-300 bg-white px-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+            style={{ height: "46px", fontSize: "16px", minWidth: 0 }}
+          />
+
+          <button
+            type="button"
+            onClick={() => handleAddServiceCategory()}
+            className="rounded-xl font-bold text-white transition hover:opacity-90"
+            style={{
+              height: "46px",
+              padding: "0 18px",
+              fontSize: "15px",
+              backgroundColor: "#611a1a",
+              whiteSpace: "nowrap",
+            }}
+          >
+            + Dodaj
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      className="rounded-xl text-gray-600"
+      style={{
+        marginTop: "14px",
+        padding: "12px 14px",
+        maxWidth: "640px",
+        fontSize: "14px",
+        lineHeight: 1.45,
+        backgroundColor: "#faf7f7",
+      }}
+    >
+      💡 Usluge dodajete u kategoriju u <b>Postavke → Usluge</b>. Kategorija sa uslugama ne
+      može se obrisati – prvo premjestite njene usluge u drugu kategoriju.
     </div>
   </div>
-)}
+  );
+})()}
 
 {selectedSettings.includes("services") && (
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
