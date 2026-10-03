@@ -3793,7 +3793,7 @@ style={{
     <div className="space-y-1">
       {service.price && (
         <p className="font-bold">
-          {service.price} BAM
+          {service.price} KM
         </p>
       )}
 

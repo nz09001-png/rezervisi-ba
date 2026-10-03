@@ -1177,7 +1177,7 @@ gap: "24px",
         fontSize: "16px",
       }}
     >
-      {service.price} BAM
+      {service.price} KM
     </span>
   )}
 
