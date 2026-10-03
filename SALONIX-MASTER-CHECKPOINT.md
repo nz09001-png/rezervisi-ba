@@ -332,15 +332,33 @@ KLART i punkt 8 (3 oktober 2026):
   avbokningslänk orörda. Mejlet har "color-scheme: light only" så att
   iPhones Mail inte gör om det till mörka färger i mörkt läge.
 
+ADMIN-GENOMGÅNG (punkt 8, pågår). Ägaren loggar in själv i Claude-appens
+webbläsarpanel (Claude skriver aldrig lösenord). Inloggningen försvinner
+vid omladdning – ladda inte om sidan under genomgången.
+REGEL: Kalendern i admin (mobil OCH desktop) rörs INTE – den tas absolut
+sist. Ändringar i resten av admin får inte påverka kalendern.
+Klart i admin:
+- Mobil: knapparnas ordning Postavke → Obavijesti → Odjavi se (CSS order).
+  Desktop oförändrad.
+- Statistikrutan: siffran vinröd som "Današnje rezervacije". Etiketten
+  följer filtret: "Sve rezervacije" / "Rezervacije danas" / "Rezervacije
+  ove sedmice" / "Rezervacije ovog mjeseca" / "Rezervacije [datum]".
+Upptäckt (logik, fråga först): filtren "Ova sedmica"/"Ovaj mjesec" räknar
+från veckans/månadens början men utan slut (framtida bokningar räknas med),
+och på söndagar börjar "Ova sedmica" på nästa måndag. "Danas" använder
+UTC-datum (fel mellan 00 och 02).
+
 KVAR i punkt 8 (i den här ordningen):
-1. Resten av listan: admininloggningens
-   utseende, admin-stavfel ("Osooblje", "Osobolje", "Edit", "Ime Osoblja").
+1. Resten av listan: admin-stavfel ("Osooblje", "Osobolje", "Edit", "Ime Osoblja").
 
 Ägaren gör själv i admin: tjänster utan kategori hos Gentlemen Tuzla
 och Mostar Fade syns inte förrän de får en kategori.
 
 Säkerhet (punkt 10): gamla sidan /admin (app/admin/page.tsx) är aktiv
 med lösenordet admin123 och visar alla salongers bokningar – stäng den.
+Punkt 10: admininloggningen ("Admin prijava") byggs om säkert OCH får
+Salonix-utseende samtidigt (logga, salongens namn, vinröd knapp, röd text
+vid fel lösenord i stället för grå ruta). Ägarens beslut: inte i punkt 8.
 
 ============================================================
 SLUT PÅ MASTER CHECKPOINT – 3 OKTOBER 2026

@@ -2476,10 +2476,12 @@ style={{
     width: "105px",
   }}
 >
+        {/* Mobil: ordningen visas som Postavke, Obavijesti, Odjavi se (order). */}
         <button
           onClick={() => setIsLoggedIn(false)}
           className="rounded-xl border px-2 text-sm font-medium shadow-sm transition hover:opacity-90"
           style={{
+            order: 3,
             height: "40px",
             backgroundColor: "#ffffff",
             color: "#611a1a",
@@ -2492,6 +2494,7 @@ style={{
         <div
   ref={notificationsRef}
   style={{
+    order: 2,
     position: "relative",
     width: "100%",
   }}
@@ -2608,6 +2611,7 @@ overflowX: "hidden",
 
 <div
   style={{
+    order: 1,
     position: "relative",
     width: "100%",
   }}
@@ -2771,7 +2775,16 @@ height: isMobile ? "90px" : "88px",
         lineHeight: isMobile ? 1.35 : undefined,
       }}
     >
-      Ukupno rezervacija
+      {/* Etiketten visar vilket filter under "Statistika" som räknas. */}
+      {selectedDate
+        ? `Rezervacije ${selectedDate.split("-").reverse().join(".")}`
+        : filter === "today"
+        ? "Rezervacije danas"
+        : filter === "week"
+        ? "Rezervacije ove sedmice"
+        : filter === "month"
+        ? "Rezervacije ovog mjeseca"
+        : "Sve rezervacije"}
     </p>
 
     <p
@@ -2780,6 +2793,7 @@ height: isMobile ? "90px" : "88px",
         marginTop: isMobile ? "8px" : "8px",
         fontSize: isMobile ? "30px" : "36px",
         lineHeight: 1,
+        color: "#611a1a",
       }}
     >
       {filteredBookings.length}
