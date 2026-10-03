@@ -16,6 +16,7 @@ import {
   FiChevronDown,
   FiMap,
   FiList,
+  FiNavigation,
 } from "react-icons/fi";
 import { TbScissors, TbMassage, TbFlower, TbHandStop } from "react-icons/tb";
 import { GiEyelashes, GiLipstick } from "react-icons/gi";
@@ -91,6 +92,24 @@ function getTodayStatus(
   return { isClosedToday, todayHours, isOpenToday };
 }
 
+// Avstånd fågelvägen i kilometer mellan kunden och en salong.
+function distanceKm(from: { lat: number; lng: number }, lat: number, lng: number) {
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const dLat = toRad(lat - from.lat);
+  const dLng = toRad(lng - from.lng);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(from.lat)) * Math.cos(toRad(lat)) * Math.sin(dLng / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Visar "350 m" eller "1,2 km" (bosniskt decimalkomma).
+function formatDistance(km: number) {
+  if (km < 1) return `${Math.round(km * 1000)} m`;
+  if (km >= 10) return `${Math.round(km)} km`;
+  return `${km.toFixed(1).replace(".", ",")} km`;
+}
+
 // Gör sökningen okänslig för stora/små bokstäver och č, ć, š, ž, đ.
 function normalize(text: string) {
   return text
@@ -115,6 +134,42 @@ export default function Home() {
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
   const [showMap, setShowMap] = useState(false);
   const [openTodayOnly, setOpenTodayOnly] = useState(false);
+  // Kundens plats för "Najbliže meni". Sparas inte någonstans, bara medan sidan är öppen.
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(
+    null
+  );
+  const [locationStatus, setLocationStatus] = useState<"idle" | "loading">("idle");
+
+  function toggleNearest() {
+    if (userLocation) {
+      setUserLocation(null);
+      return;
+    }
+    // Om platsen inte går att få (kunden säger nej eller telefonen saknar stöd)
+    // öppnas kartan i stället, så att kunden själv kan hitta sin stad.
+    const showMapInstead = () => {
+      setLocationStatus("idle");
+      setShowMap(true);
+      setScrollRequest((n) => n + 1);
+    };
+    if (!navigator.geolocation) {
+      showMapInstead();
+      return;
+    }
+    setLocationStatus("loading");
+    // Telefonen frågar kunden om lov att använda platsen.
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        });
+        setLocationStatus("idle");
+      },
+      showMapInstead,
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+    );
+  }
   const heroSearchRef = useRef<HTMLLabelElement>(null);
   const salonsHeadingRef = useRef<HTMLHeadingElement>(null);
   // Ökas när kunden själv väljer kategori eller stad. Då scrollar sidan ner till salongerna.
@@ -204,7 +259,18 @@ export default function Home() {
           .filter(Boolean)
           .join(" ");
         return normalize(searchable).includes(searchTerm);
-      }),
+      })
+      // "Najbliže meni": närmast först. Salonger utan koordinater hamnar sist.
+      .map((salon) => ({
+        ...salon,
+        distanceKm:
+          userLocation && salon.latitude != null && salon.longitude != null
+            ? distanceKm(userLocation, salon.latitude, salon.longitude)
+            : null,
+      }))
+      .sort((a, b) =>
+        userLocation ? (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity) : 0
+      ),
     [
       salons,
       selectedCategory,
@@ -213,6 +279,7 @@ export default function Home() {
       openTodayOnly,
       todayShortenedHours,
       closedTodayIds,
+      userLocation,
     ]
   );
 
@@ -741,6 +808,30 @@ export default function Home() {
           {openTodayOnly && <FiX size={15} />}
         </button>
 
+        <button
+          type="button"
+          onClick={toggleNearest}
+          aria-pressed={!!userLocation}
+          disabled={locationStatus === "loading"}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            padding: "6px 12px",
+            borderRadius: 999,
+            border: userLocation ? "1px solid #611a1a" : "1px solid #e5e7eb",
+            background: userLocation ? "#611a1a" : "#ffffff",
+            color: userLocation ? "#ffffff" : "#1f1f1f",
+            fontSize: 14,
+            fontWeight: 600,
+            cursor: locationStatus === "loading" ? "wait" : "pointer",
+          }}
+        >
+          <FiNavigation size={14} />
+          {locationStatus === "loading" ? "Tražim lokaciju…" : "Najbliže meni"}
+          {userLocation && <FiX size={15} />}
+        </button>
+
           {[
             selectedCity && {
               key: "city",
@@ -788,7 +879,11 @@ export default function Home() {
               </button>
             ))}
 
-          {(selectedCity || selectedCategory || search.trim() || openTodayOnly) && (
+          {(selectedCity ||
+            selectedCategory ||
+            search.trim() ||
+            openTodayOnly ||
+            userLocation) && (
           <button
             type="button"
             onClick={() => {
@@ -796,6 +891,7 @@ export default function Home() {
               setSelectedCategory(null);
               setSearch("");
               setOpenTodayOnly(false);
+              setUserLocation(null);
             }}
             style={{
               border: "none",
@@ -935,6 +1031,11 @@ export default function Home() {
                 >
                   <FiMapPin size={14} style={{ flexShrink: 0 }} />
                   {location}
+                  {salon.distanceKm != null && (
+                    <span style={{ fontWeight: 600, color: "#611a1a", whiteSpace: "nowrap" }}>
+                      · {formatDistance(salon.distanceKm)}
+                    </span>
+                  )}
                 </div>
               )}
 
