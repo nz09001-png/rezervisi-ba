@@ -316,10 +316,14 @@ KLART i punkt 8 (3 oktober 2026):
   startsidan och de förkortade tiderna. Databasen oförändrad.
 - Salongssidan: galleripilar bara vid fler än 2 bilder; i helskärm bara
   vid fler än 1 bild.
+- Salongssidan: vit list överst med Salonix-loggan (länk till startsidan),
+  desktop även "← Svi saloni". Sidfot som startsidan: logga (länk),
+  "Pronađite još salona i rezervišite termin online.", © Salonix.
+  Ingen knapp "Pogledajte sve salone" (ägarens val).
+- Etiketten "SALON" ovanför salongsnamnet behålls som den är (ägarens val).
 
 KVAR i punkt 8 (i den här ordningen):
-1. Resten av listan: salongssidan (etiketten "salon"),
-   ingen väg tillbaka till startsidan, enkelt mejl, admininloggningens
+1. Resten av listan: enkelt mejl, admininloggningens
    utseende, admin-stavfel ("Osooblje", "Osobolje", "Edit", "Ime Osoblja").
 
 Ägaren gör själv i admin: tjänster utan kategori hos Gentlemen Tuzla

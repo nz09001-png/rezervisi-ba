@@ -398,6 +398,52 @@ return (
   className="min-h-screen"
   style={{ backgroundColor: "#f7f3ee" }}
 >
+    {/* Vit list med Salonix-loggan – leder tillbaka till startsidan. */}
+    <div
+      style={{
+        backgroundColor: "#ffffff",
+        borderBottom: "1px solid #f0e6e6",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "1000px",
+          margin: "0 auto",
+          padding: isMobile ? "12px 16px" : "14px 32px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Link href="/" aria-label="Salonix – početna" style={{ display: "block" }}>
+          <img
+            src="/salonix-horisontell-maroon.png"
+            alt="Salonix"
+            style={{
+              height: isMobile ? "30px" : "32px",
+              width: "auto",
+              display: "block",
+            }}
+          />
+        </Link>
+
+        {!isMobile && (
+          <Link
+            href="/"
+            className={sourceSans.className}
+            style={{
+              color: "#611a1a",
+              fontWeight: 600,
+              fontSize: "15px",
+              textDecoration: "none",
+            }}
+          >
+            ← Svi saloni
+          </Link>
+        )}
+      </div>
+    </div>
+
     <div style={{ position: "relative" }}>
   <img
     src={
@@ -1393,6 +1439,57 @@ gap: "24px",
             </div>
     </section>
   </div>
+
+    {/* Sidfot i samma stil som startsidan. */}
+    <footer
+      className={sourceSans.className}
+      style={{
+        backgroundColor: "#faf6f6",
+        borderTop: "1px solid #f0e6e6",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "1000px",
+          margin: "0 auto",
+          padding: isMobile ? "28px 20px 32px" : "28px 32px 32px",
+          display: isMobile ? "block" : "flex",
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+          gap: "24px",
+        }}
+      >
+        <div>
+          <Link href="/" aria-label="Salonix – početna" style={{ display: "inline-block" }}>
+            <img
+              src="/salonix-horisontell-maroon.png"
+              alt="Salonix"
+              style={{ height: "28px", width: "auto", display: "block" }}
+            />
+          </Link>
+          <p
+            style={{
+              fontSize: "14px",
+              lineHeight: 1.5,
+              color: "#6b7280",
+              margin: "12px 0 0",
+            }}
+          >
+            Pronađite još salona i rezervišite termin online.
+          </p>
+        </div>
+
+        <p
+          style={{
+            fontSize: "13px",
+            color: "#9ca3af",
+            margin: isMobile ? "20px 0 0" : 0,
+          }}
+        >
+          © {new Date().getFullYear()} Salonix · salonix.ba
+        </p>
+      </div>
+    </footer>
   </main>
 );
 }
