@@ -1653,20 +1653,30 @@ useEffect(() => {
 
 
 
-const today = new Date().toISOString().split("T")[0];
+// Datum som text ("2026-10-03") i lokal tid – samma form som booking_date.
+// (Används bara av statistiken, inte av kalendern.)
+const toLocalDateString = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(
+    date.getDate()
+  ).padStart(2, "0")}`;
+
+const today = toLocalDateString(new Date());
 const currentDate = new Date();
 
-const startOfWeek = new Date(currentDate);
-startOfWeek.setDate(currentDate.getDate() - currentDate.getDay() + 1);
-
-const startOfMonth = new Date(
-  currentDate.getFullYear(),
-  currentDate.getMonth(),
-  1
+// Statistik "Ova sedmica": måndag–söndag i den här veckan (även på söndagar).
+const statsWeekStart = new Date(currentDate);
+statsWeekStart.setDate(
+  currentDate.getDate() + (currentDate.getDay() === 0 ? -6 : 1 - currentDate.getDay())
 );
+const statsWeekEnd = new Date(statsWeekStart);
+statsWeekEnd.setDate(statsWeekStart.getDate() + 6);
+const statsWeekStartString = toLocalDateString(statsWeekStart);
+const statsWeekEndString = toLocalDateString(statsWeekEnd);
+
+// Statistik "Ovaj mjesec": hela den här månaden, t.ex. "2026-10".
+const statsMonthPrefix = today.slice(0, 7);
 
 const filteredBookings = bookings.filter((booking) => {
-  const bookingDate = new Date(booking.booking_date);
   const matchesSalon = booking.salon === salon?.salon_name;
 
   if (!matchesSalon) return false;
@@ -1680,11 +1690,14 @@ const filteredBookings = bookings.filter((booking) => {
   }
 
   if (filter === "week") {
-    return bookingDate >= startOfWeek;
+    return (
+      booking.booking_date >= statsWeekStartString &&
+      booking.booking_date <= statsWeekEndString
+    );
   }
 
   if (filter === "month") {
-    return bookingDate >= startOfMonth;
+    return booking.booking_date.startsWith(statsMonthPrefix);
   }
 
   return true;

@@ -343,10 +343,11 @@ Klart i admin:
 - Statistikrutan: siffran vinröd som "Današnje rezervacije". Etiketten
   följer filtret: "Sve rezervacije" / "Rezervacije danas" / "Rezervacije
   ove sedmice" / "Rezervacije ovog mjeseca" / "Rezervacije [datum]".
-Upptäckt (logik, fråga först): filtren "Ova sedmica"/"Ovaj mjesec" räknar
-från veckans/månadens början men utan slut (framtida bokningar räknas med),
-och på söndagar börjar "Ova sedmica" på nästa måndag. "Danas" använder
-UTC-datum (fel mellan 00 och 02).
+- Statistiken räknar rätt: "Danas" i lokal tid (även "Današnje
+  rezervacije"), "Ova sedmica" = måndag–söndag (även på söndagar),
+  "Ovaj mjesec" = hela månaden. Ändringen rör bara statistiken, inte kalendern.
+Ordning för resten av admin (ägarens val): bokningsrutan → Salonix-typsnitt
+(kalendern låst vid Arial) → Obavijesti → Postavke → kalendern sist.
 
 KVAR i punkt 8 (i den här ordningen):
 1. Resten av listan: admin-stavfel ("Osooblje", "Osobolje", "Edit", "Ime Osoblja").
