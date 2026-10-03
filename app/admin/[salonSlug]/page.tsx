@@ -216,6 +216,7 @@ const [calendarWeekStart, setCalendarWeekStart] = useState(() => {
 const [showNotifications, setShowNotifications] = useState(false);
 const [showSettingsMenu, setShowSettingsMenu] = useState(false);
 const [selectedSettings, setSelectedSettings] = useState<string[]>([]);
+const [showServiceForm, setShowServiceForm] = useState(false);
 const [isUploadingImage, setIsUploadingImage] = useState(false);
 const [selectedServiceBarberIds, setSelectedServiceBarberIds] = useState<number[]>([]);
 const [showFilterMenu, setShowFilterMenu] = useState(false);
@@ -236,6 +237,7 @@ useEffect(() => {
 
 
 function handleCancelServiceEdit() {
+  setShowServiceForm(false);
   setEditingServiceId(null);
   setServiceName("");
   setSelectedServiceCategoryId("");
@@ -1311,6 +1313,7 @@ setServiceSteps([
 ]);
 
 setSelectedServiceBarberIds([]);
+setShowServiceForm(false);
 
 fetchServices();
 }
@@ -3853,161 +3856,42 @@ style={{
   Dodajte i uredite usluge koje nudite u svom salonu.
 </p>
 
-  <div className="mb-4 space-y-2">
-   {services.map((service) => (
-  <div
-  key={service.id}
-  className="relative rounded-xl border transition-all"
-  style={{
-  maxWidth: "600px",
-  width: isMobile ? "100%" : "450px",
-  padding: isMobile ? "10px 12px" : "12px",
-  backgroundColor:
-    editingServiceId === service.id ? "#e5cccc" : "#ffffff",
-  borderColor:
-    editingServiceId === service.id ? "#611a1a" : "#d8caca",
-  borderWidth:
-    editingServiceId === service.id ? "2px" : "1px",
-}}
->
-    <div>
-        
-        <p
-  className="mb-1 text-xs font-semibold"
-  style={{ color: "#611a1a" }}
->
-  {
-    serviceCategories.find(
-      (category) => category.id === service.category_id
-    )?.name
-  }
-</p>
+  <div ref={serviceFormRef}></div>
 
-        <p className="text-lg font-semibold">
-          {service.name}
-        </p>
-
-        {service.description && (
-          <p className="mt-1 text-sm text-gray-500">
-            {service.description}
-          </p>
-        )}
-
-       <div
-  style={{
-    marginTop: isMobile ? "4px" : "8px",
-    display: "grid",
-    gridTemplateColumns: isMobile ? "1fr 42%" : "280px 1fr",
-    columnGap: isMobile ? "12px" : "20px",
-    alignItems: "start",
-  }}
->
-  {/* Vänster sida */}
-  <div>
-    <div className="space-y-1">
-      {service.price && (
-        <p className="font-bold">
-          {service.price} KM
-        </p>
-      )}
-
-      {service.duration_minutes && (
-        <p className="font-bold">
-          Trajanje: {service.duration_minutes} min
-        </p>
-      )}
-    </div>
-
-    <div
-      className="space-y-1"
+  {!showServiceForm && editingServiceId === null && (
+    <button
+      type="button"
+      onClick={() => setShowServiceForm(true)}
+      className="mb-6 rounded-xl text-white font-semibold shadow-sm transition hover:opacity-90"
       style={{
-        marginTop: isMobile ? "6px" : "12px",
+        backgroundColor: "#611a1a",
+        height: "48px",
+        width: isMobile ? "100%" : undefined,
+        padding: isMobile ? undefined : "0 28px",
+        fontSize: "16px",
       }}
     >
-      <p className="text-xs text-gray-500">
-        Cijena:{" "}
-        {service.show_price ? "Prikazana" : "Skrivena"}
-      </p>
+      + Dodaj novu uslugu
+    </button>
+  )}
 
-      <p className="text-xs text-gray-500">
-        Trajanje:{" "}
-        {service.show_duration ? "Prikazano" : "Skriveno"}
-      </p>
-    </div>
-  </div>
-
-  {/* Höger sida – frisörer */}
-  <div>
-    <p className="mb-1 text-base font-semibold text-gray-700">
-      Osoblje
-    </p>
-
-    {service.service_barbers?.length > 0 ? (
-      <div className="space-y-1">
-        {service.service_barbers.map((serviceBarber: any) => {
-          const barber = barbers.find(
-            (barber) => barber.id === serviceBarber.barber_id
-          );
-
-          if (!barber) return null;
-
-          return (
-            <p
-              key={serviceBarber.barber_id}
-              className="text-sm text-gray-600"
-            >
-              {barber.name}
-            </p>
-          );
-        })}
-      </div>
-    ) : (
-      <p className="text-sm text-gray-400">
-        Nije odabrano
-      </p>
-    )}
-  </div>
-</div>
-
-</div>
-
-<div
-  className="flex w-full gap-2"
-  style={{
-    marginTop: isMobile ? "8px" : "12px",
-  }}
->
-  <button
-  type="button"
-  onClick={() => handleEditService(service)}
-  className="rounded-lg border px-4 py-2"
-  style={{
-  backgroundColor: "#ffffff",
-  color: "#611a1a",
-  borderColor: "#611a1a",
-  marginLeft: "auto",
-  padding: isMobile ? "6px 12px" : undefined,
-}}
->
-  Edit
-</button>
-
-      <button
-        onClick={() => handleDeleteService(service.id)}
-        className="rounded-lg px-4 py-2 text-white"
-        style={{
-  backgroundColor: "#ef4444",
-  padding: isMobile ? "6px 12px" : undefined,
-}}
+  {(showServiceForm || editingServiceId !== null) && (
+    <div
+      className="mb-6 rounded-2xl border bg-white"
+      style={{
+        borderWidth: "2px",
+        borderColor: "#611a1a",
+        padding: isMobile ? "16px" : "24px",
+        maxWidth: "600px",
+      }}
+    >
+      <h3
+        className="mb-4 font-bold"
+        style={{ fontSize: "19px", color: "#611a1a" }}
       >
-        Obriši
-      </button>
-    </div>
-  </div>
-))}
-  </div>
+        {editingServiceId !== null ? "Uredi uslugu" : "Nova usluga"}
+      </h3>
 
-  <div ref={serviceFormRef}></div>
   <div className="mb-3">
   <select
     value={selectedServiceCategoryId}
@@ -4343,7 +4227,7 @@ style={{ maxWidth: "420px" }}
     {editingServiceId !== null ? "Sačuvaj izmjene" : "+ Dodaj uslugu"}
     </button>
 
-  {editingServiceId !== null && (
+  {(
     <button
       onClick={() => {
   handleCancelServiceEdit();
@@ -4370,10 +4254,167 @@ style={{ maxWidth: "420px" }}
     : {}),
 }}
     >
-      Otkaži editovanje
+      Odustani
     </button>
   )}
 </div>
+    </div>
+  )}
+
+  <div className="mb-4 space-y-2">
+   {services.map((service) => (
+  <div
+  key={service.id}
+  className="relative rounded-xl border transition-all"
+  style={{
+  maxWidth: "600px",
+  width: isMobile ? "100%" : "450px",
+  padding: isMobile ? "10px 12px" : "12px",
+  backgroundColor:
+    editingServiceId === service.id ? "#e5cccc" : "#ffffff",
+  borderColor:
+    editingServiceId === service.id ? "#611a1a" : "#d8caca",
+  borderWidth:
+    editingServiceId === service.id ? "2px" : "1px",
+}}
+>
+    <div>
+        
+        <p
+  className="mb-1 text-xs font-semibold"
+  style={{ color: "#611a1a" }}
+>
+  {
+    serviceCategories.find(
+      (category) => category.id === service.category_id
+    )?.name
+  }
+</p>
+
+        <p className="text-lg font-semibold">
+          {service.name}
+        </p>
+
+        {service.description && (
+          <p className="mt-1 text-sm text-gray-500">
+            {service.description}
+          </p>
+        )}
+
+       <div
+  style={{
+    marginTop: isMobile ? "4px" : "8px",
+    display: "grid",
+    gridTemplateColumns: isMobile ? "1fr 42%" : "280px 1fr",
+    columnGap: isMobile ? "12px" : "20px",
+    alignItems: "start",
+  }}
+>
+  {/* Vänster sida */}
+  <div>
+    <div className="space-y-1">
+      {service.price && (
+        <p className="font-bold">
+          {service.price} KM
+        </p>
+      )}
+
+      {service.duration_minutes && (
+        <p className="font-bold">
+          Trajanje: {service.duration_minutes} min
+        </p>
+      )}
+    </div>
+
+    <div
+      className="space-y-1"
+      style={{
+        marginTop: isMobile ? "6px" : "12px",
+      }}
+    >
+      <p className="text-xs text-gray-500">
+        Cijena:{" "}
+        {service.show_price ? "Prikazana" : "Skrivena"}
+      </p>
+
+      <p className="text-xs text-gray-500">
+        Trajanje:{" "}
+        {service.show_duration ? "Prikazano" : "Skriveno"}
+      </p>
+    </div>
+  </div>
+
+  {/* Höger sida – frisörer */}
+  <div>
+    <p className="mb-1 text-base font-semibold text-gray-700">
+      Osoblje
+    </p>
+
+    {service.service_barbers?.length > 0 ? (
+      <div className="space-y-1">
+        {service.service_barbers.map((serviceBarber: any) => {
+          const barber = barbers.find(
+            (barber) => barber.id === serviceBarber.barber_id
+          );
+
+          if (!barber) return null;
+
+          return (
+            <p
+              key={serviceBarber.barber_id}
+              className="text-sm text-gray-600"
+            >
+              {barber.name}
+            </p>
+          );
+        })}
+      </div>
+    ) : (
+      <p className="text-sm text-gray-400">
+        Nije odabrano
+      </p>
+    )}
+  </div>
+</div>
+
+</div>
+
+<div
+  className="flex w-full gap-2"
+  style={{
+    marginTop: isMobile ? "8px" : "12px",
+  }}
+>
+  <button
+  type="button"
+  onClick={() => handleEditService(service)}
+  className="rounded-lg border px-4 py-2"
+  style={{
+  backgroundColor: "#ffffff",
+  color: "#611a1a",
+  borderColor: "#611a1a",
+  marginLeft: "auto",
+  padding: isMobile ? "6px 12px" : undefined,
+}}
+>
+  Edit
+</button>
+
+      <button
+        onClick={() => handleDeleteService(service.id)}
+        className="rounded-lg px-4 py-2 text-white"
+        style={{
+  backgroundColor: "#ef4444",
+  padding: isMobile ? "6px 12px" : undefined,
+}}
+      >
+        Obriši
+      </button>
+    </div>
+  </div>
+))}
+  </div>
+
 
     </div>
   </div>
