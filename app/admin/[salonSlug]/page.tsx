@@ -1120,6 +1120,30 @@ async function handleDeleteClosedDay(id: number) {
   fetchClosedDays();
 }
 
+// Tar bort en hel period (flera dagar i rad) med en enda fråga.
+async function handleDeleteClosedDayGroup(ids: number[]) {
+  const confirmDelete = confirm(
+    ids.length === 1
+      ? "Da li ste sigurni da želite obrisati zatvoreni dan?"
+      : `Da li ste sigurni da želite obrisati ovih ${ids.length} zatvorenih dana?`
+  );
+
+  if (!confirmDelete) return;
+
+  const { error } = await supabase
+    .from("closed_days")
+    .delete()
+    .in("id", ids);
+
+  if (error) {
+    alert("Greška pri brisanju zatvorenog dana.");
+    console.error(error);
+    return;
+  }
+
+  fetchClosedDays();
+}
+
 async function handleAddService() {
   if (!selectedServiceCategoryId) {
     alert("Izaberite kategoriju.");
@@ -5471,50 +5495,222 @@ formatWeekDay={(dayName) => {
   </div>
 )}
 
-{selectedSettings.includes("closed") && (
-  <div className="mb-6 rounded-2xl bg-white p-4 shadow">
-    <div className="mx-auto max-w-3xl">
-      <h2 className="mb-1 text-xl font-bold">Zatvoreni dani</h2>
-<p className="mb-6 text-sm text-gray-500">
-  Odredite dane kada salon ili određeni član osoblja nije dostupan za rezervacije.
-</p>
+{selectedSettings.includes("closed") && (() => {
+  const monthShort = ["jan", "feb", "mar", "apr", "maj", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
+  const todayString = format(new Date(), "yyyy-MM-dd");
 
-    <div className="mb-4 space-y-2">
-      {closedDays.map((day) => (
+  const nextDayString = (dateString: string) => {
+    const date = new Date(`${dateString}T00:00:00`);
+    date.setDate(date.getDate() + 1);
+    return format(date, "yyyy-MM-dd");
+  };
+
+  // Dagar i rad med samma person och anledning visas som en period.
+  const closedGroups: {
+    ids: number[];
+    start: string;
+    end: string;
+    reason: string;
+    barberId: number | null;
+  }[] = [];
+
+  [...closedDays]
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)))
+    .forEach((day) => {
+      const barberId = day.barber_id ?? null;
+      const reason = day.reason || "";
+
+      const openGroup = closedGroups.find(
+        (group) =>
+          group.barberId === barberId &&
+          group.reason === reason &&
+          nextDayString(group.end) === day.date
+      );
+
+      if (openGroup) {
+        openGroup.ids.push(day.id);
+        openGroup.end = day.date;
+      } else {
+        closedGroups.push({
+          ids: [day.id],
+          start: day.date,
+          end: day.date,
+          reason,
+          barberId,
+        });
+      }
+    });
+
+  closedGroups.sort((a, b) => a.start.localeCompare(b.start));
+
+  const upcomingGroups = closedGroups.filter((group) => group.end >= todayString);
+  const pastGroups = closedGroups.filter((group) => group.end < todayString);
+
+  const renderClosedGroup = (group: (typeof closedGroups)[number]) => {
+    const startDate = new Date(`${group.start}T00:00:00`);
+    const endDate = new Date(`${group.end}T00:00:00`);
+    const dayCount = group.ids.length;
+    const weekday = format(startDate, "EEEE", { locale: bs });
+    const barberName = group.barberId
+      ? barbers.find((barber) => barber.id === group.barberId)?.name || "Član osoblja"
+      : null;
+
+    const title =
+      group.start === group.end
+        ? `${weekday.charAt(0).toUpperCase() + weekday.slice(1)}, ${format(startDate, "dd.MM.yyyy")}`
+        : startDate.getFullYear() === endDate.getFullYear()
+        ? `${format(startDate, "dd.MM.")} – ${format(endDate, "dd.MM.yyyy")}`
+        : `${format(startDate, "dd.MM.yyyy")} – ${format(endDate, "dd.MM.yyyy")}`;
+
+    return (
+      <div
+        key={group.ids[0]}
+        className="flex items-start"
+        style={{ gap: "12px", padding: "14px 0", borderTop: "1px solid #f3e8e8" }}
+      >
         <div
-  key={day.id}
-  className="rounded-xl border bg-white px-3 py-2"
-  style={{
-    width: "320px",
-    maxWidth: "100%",
-    borderColor: "#ead1d1",
-  }}
->
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-semibold">
-  {format(new Date(`${day.date}T00:00:00`), "dd.MM.yyyy")}
-</p>
-              <p className="text-sm text-gray-600">
-  {day.reason || "Bez razloga"} ·{" "}
-  {day.barber_id
-    ? barbers.find((barber) => barber.id === day.barber_id)?.name || "Osobolje"
-    : "Cijeli salon"}
-</p>
-            </div>
+          className="shrink-0 overflow-hidden rounded-xl border text-center"
+          style={{ width: "52px", borderColor: "#ead1d1" }}
+        >
+          <div
+            className="font-bold uppercase text-white"
+            style={{ fontSize: "11px", padding: "3px 0", backgroundColor: "#611a1a" }}
+          >
+            {monthShort[startDate.getMonth()]}
+          </div>
 
-            <button
-              onClick={() => handleDeleteClosedDay(day.id)}
-              className="rounded-lg bg-red-500 px-3 py-1 text-white"
-            >
-              Obriši
-            </button>
+          <div className="font-bold" style={{ fontSize: "20px", padding: "4px 0" }}>
+            {startDate.getDate()}
           </div>
         </div>
-      ))}
-    </div>
 
-    <label className="mb-1 block font-medium">Početni datum</label>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p className="font-bold" style={{ fontSize: "16px" }}>
+            {title}
+          </p>
+
+          <p className="text-gray-600" style={{ fontSize: "14px", marginTop: "3px" }}>
+            {group.reason || "Bez razloga"}
+            {dayCount > 1 ? ` · ${dayCount} dana` : ""}
+          </p>
+
+          <span
+            className="inline-block rounded-full"
+            style={{
+              marginTop: "6px",
+              fontSize: "12px",
+              padding: "3px 9px",
+              backgroundColor: barberName ? "#f3f4f6" : "#fdf2f2",
+              color: barberName ? "#374151" : "#611a1a",
+            }}
+          >
+            {barberName ? `👤 ${barberName}` : "🏠 Cijeli salon"}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => handleDeleteClosedDayGroup(group.ids)}
+          className="shrink-0 rounded-xl border bg-white font-semibold"
+          style={{
+            height: "36px",
+            padding: "0 14px",
+            fontSize: "14px",
+            color: "#ef4444",
+            borderColor: "#ef4444",
+          }}
+        >
+          Obriši
+        </button>
+      </div>
+    );
+  };
+
+  const selectedDayCount =
+    closedDate && closedEndDate && closedEndDate >= closedDate
+      ? Math.round(
+          (new Date(`${closedEndDate}T00:00:00`).getTime() -
+            new Date(`${closedDate}T00:00:00`).getTime()) /
+            86400000
+        ) + 1
+      : 0;
+
+  const selectedBarberName = closedBarberId
+    ? barbers.find((barber) => barber.id === closedBarberId)?.name
+    : null;
+
+  return (
+  <div className="mb-6">
+    <h2 className="font-bold" style={{ fontSize: isMobile ? "24px" : "30px" }}>
+      Zatvoreni dani
+    </h2>
+
+    <p className="text-gray-500" style={{ marginTop: "4px", fontSize: "15px", lineHeight: 1.4 }}>
+      Dani kada klijenti ne mogu rezervisati – za cijeli salon ili za jednog člana osoblja.
+    </p>
+
+    <div
+      style={{
+        marginTop: "16px",
+        display: "grid",
+        gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+        gap: isMobile ? "16px" : "24px",
+        alignItems: "start",
+      }}
+    >
+      <div
+        className="rounded-2xl border-2 bg-white"
+        style={{ padding: isMobile ? "16px" : "22px 24px", borderColor: "#611a1a" }}
+      >
+        <p className="font-bold" style={{ fontSize: "19px", color: "#611a1a" }}>
+          Dodaj zatvorene dane
+        </p>
+
+        <label className="mb-1.5 block text-sm font-bold text-gray-700" style={{ marginTop: "14px" }}>
+          Za koga?
+        </label>
+
+        <div className="flex flex-wrap gap-2">
+          {[
+            { id: null as number | null, name: "Cijeli salon" },
+            ...barbers.map((barber) => ({ id: barber.id as number | null, name: barber.name })),
+          ].map((option) => {
+            const isSelected = closedBarberId === option.id;
+
+            return (
+              <button
+                key={String(option.id)}
+                type="button"
+                onClick={() => setClosedBarberId(option.id)}
+                className="rounded-full border transition"
+                style={{
+                  height: "40px",
+                  padding: "0 14px",
+                  fontSize: "15px",
+                  fontWeight: isSelected ? 600 : 400,
+                  backgroundColor: isSelected ? "#611a1a" : "#ffffff",
+                  borderColor: isSelected ? "#611a1a" : "#d1d5db",
+                  color: isSelected ? "#ffffff" : "#111827",
+                }}
+              >
+                {option.name}
+              </button>
+            );
+          })}
+        </div>
+
+        <div
+          style={{
+            marginTop: "14px",
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: "10px",
+          }}
+        >
+          <div style={{ minWidth: 0 }}>
+            <label className="mb-1.5 block text-sm font-bold text-gray-700">
+              Od datuma
+            </label>
 
 <DatePicker
   ref={closedDatePickerRef}
@@ -5528,7 +5724,7 @@ formatWeekDay={(dayName) => {
   }}
   locale="bs"
 dateFormat="dd.MM.yyyy"
-placeholderText="Odaberite datum"
+placeholderText={isMobile ? "Odaberite" : "Odaberite datum"}
 popperPlacement={isMobile ? "bottom-start" : undefined}
 popperClassName={isMobile ? "mobile-datepicker-popper" : undefined}
 formatWeekDay={(dayName) => {
@@ -5573,10 +5769,16 @@ formatWeekDay={(dayName) => {
       </div>
     </CalendarContainer>
   )}
-  className="mb-4 w-full rounded-xl border border-gray-300 bg-white p-3"
+  className="w-full rounded-xl border border-gray-300 bg-white p-3"
+  wrapperClassName="block w-full"
 />
 
-    <label className="mb-1 block font-medium">Završni datum</label>
+          </div>
+
+          <div style={{ minWidth: 0 }}>
+            <label className="mb-1.5 block text-sm font-bold text-gray-700">
+              Do datuma
+            </label>
 
 <DatePicker
   ref={closedEndDatePickerRef}
@@ -5590,7 +5792,7 @@ formatWeekDay={(dayName) => {
   }}
   locale="bs"
  dateFormat="dd.MM.yyyy"
-placeholderText="Odaberite datum"
+placeholderText={isMobile ? "Odaberite" : "Odaberite datum"}
 popperPlacement={isMobile ? "bottom-start" : undefined}
 popperClassName={isMobile ? "mobile-datepicker-popper" : undefined}
 formatWeekDay={(dayName) => {
@@ -5635,62 +5837,139 @@ formatWeekDay={(dayName) => {
       </div>
     </CalendarContainer>
   )}
-  className="mb-4 w-full rounded-xl border border-gray-300 bg-white p-3"
+  className="w-full rounded-xl border border-gray-300 bg-white p-3"
+  wrapperClassName="block w-full"
 />
 
-    <div>
-      <label className="mb-1 block font-medium">Razlog</label>
-  <input
-    type="text"
-    placeholder="Razlog (npr. godišnji odmor)"
-    value={closedReason}
-    onChange={(e) => setClosedReason(e.target.value)}
-    className="mb-3 rounded-xl border border-gray-300 bg-white p-3"
-    style={{
-      width: "205px",
-      maxWidth: "100%",
-    }}
-  />
-</div>
+          </div>
+        </div>
 
-    <label className="mb-1 block font-medium">Za koga?</label>
+        <p className="text-gray-500" style={{ marginTop: "6px", fontSize: "13px" }}>
+          Za samo jedan dan izaberite isti datum u oba polja.
+        </p>
 
-<div>
-  <select
-    value={closedBarberId ?? ""}
-    onChange={(e) => {
-      const value = e.target.value;
-      setClosedBarberId(value ? Number(value) : null);
-    }}
-    className="mb-3 rounded-xl border border-gray-300 bg-white p-3"
-    style={{
-      width: "205px",
-      maxWidth: "100%",
-    }}
-  >
-    <option value="">Cijeli salon</option>
+        <label className="mb-1.5 block text-sm font-bold text-gray-700" style={{ marginTop: "14px" }}>
+          Razlog{" "}
+          <span className="font-normal text-gray-500" style={{ fontSize: "12px" }}>
+            (nije obavezno)
+          </span>
+        </label>
 
-    {barbers.map((barber) => (
-      <option key={barber.id} value={barber.id}>
-        {barber.name}
-      </option>
-    ))}
-  </select>
-</div>
+        <div className="flex flex-wrap gap-2">
+          {["Godišnji odmor", "Praznik", "Bolovanje", "Edukacija"].map((reason) => {
+            const isSelected = closedReason === reason;
 
-      <button
-    onClick={handleAddClosedDay}
-    className="rounded-lg px-4 py-2 font-medium text-white"
-    style={{
-      backgroundColor: "#611a1a",
-    }}
-  >
-     Dodaj zatvoren dan
-  </button>
+            return (
+              <button
+                key={reason}
+                type="button"
+                onClick={() => setClosedReason(isSelected ? "" : reason)}
+                className="rounded-full border transition"
+                style={{
+                  height: "36px",
+                  padding: "0 14px",
+                  fontSize: "14px",
+                  fontWeight: isSelected ? 600 : 400,
+                  backgroundColor: isSelected ? "#611a1a" : "#ffffff",
+                  borderColor: isSelected ? "#611a1a" : "#d1d5db",
+                  color: isSelected ? "#ffffff" : "#111827",
+                }}
+              >
+                {reason}
+              </button>
+            );
+          })}
+        </div>
 
+        <input
+          type="text"
+          placeholder="ili upišite svoj razlog"
+          value={closedReason}
+          onChange={(e) => setClosedReason(e.target.value)}
+          className="w-full rounded-xl border border-gray-300 bg-white px-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+          style={{ marginTop: "8px", height: "46px", fontSize: "16px" }}
+        />
+
+        {selectedDayCount > 0 && (
+          <div
+            className="rounded-xl"
+            style={{
+              marginTop: "16px",
+              padding: "12px 14px",
+              fontSize: "15px",
+              lineHeight: 1.45,
+              backgroundColor: "#faf7f7",
+            }}
+          >
+            {selectedBarberName ? `${selectedBarberName} neće raditi ` : "Salon će biti zatvoren "}
+            <b style={{ color: "#611a1a" }}>
+              {selectedDayCount === 1 ? "1 dan" : `${selectedDayCount} dana`}
+            </b>{" "}
+            ({selectedDayCount === 1
+              ? format(new Date(`${closedDate}T00:00:00`), "dd.MM.yyyy")
+              : `${format(new Date(`${closedDate}T00:00:00`), "dd.MM.")} – ${format(new Date(`${closedEndDate}T00:00:00`), "dd.MM.yyyy")}`}
+            ). Klijenti neće moći rezervisati
+            {selectedBarberName ? " kod ovog člana osoblja" : ""} u tim danima.
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={handleAddClosedDay}
+          className="rounded-xl font-bold text-white transition hover:opacity-90"
+          style={{
+            marginTop: "14px",
+            height: "52px",
+            width: isMobile ? "100%" : undefined,
+            padding: isMobile ? undefined : "0 28px",
+            fontSize: "16px",
+            backgroundColor: "#611a1a",
+          }}
+        >
+          Sačuvaj zatvorene dane
+        </button>
+      </div>
+
+      <div
+        className="rounded-2xl border bg-white shadow-sm"
+        style={{ padding: isMobile ? "16px" : "22px 24px", borderColor: "#ead1d1" }}
+      >
+        <div className="flex items-baseline gap-2" style={{ paddingBottom: "8px" }}>
+          <p className="font-bold" style={{ fontSize: "17px", color: "#611a1a" }}>
+            Zakazani zatvoreni dani
+          </p>
+
+          <span className="text-sm text-gray-500">{upcomingGroups.length}</span>
+        </div>
+
+        {upcomingGroups.length === 0 ? (
+          <p
+            className="text-gray-500"
+            style={{ padding: "14px 0", fontSize: "15px", borderTop: "1px solid #f3e8e8" }}
+          >
+            Nema zakazanih zatvorenih dana. Salon radi po redovnom rasporedu.
+          </p>
+        ) : (
+          upcomingGroups.map(renderClosedGroup)
+        )}
+
+        {pastGroups.length > 0 && (
+          <details style={{ marginTop: "6px" }}>
+            <summary
+              className="cursor-pointer font-semibold"
+              style={{ fontSize: "14px", color: "#611a1a" }}
+            >
+              Prikaži prošle dane ({pastGroups.length})
+            </summary>
+
+            <div style={{ opacity: 0.7 }}>{pastGroups.map(renderClosedGroup)}</div>
+          </details>
+        )}
+      </div>
     </div>
   </div>
-)}
+  );
+})()}
 
 {selectedSettings.includes("barbers") && (
   <div className="mb-6 rounded-2xl bg-white p-4 shadow">
