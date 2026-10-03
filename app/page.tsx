@@ -72,6 +72,25 @@ function todayDateString() {
   return `${now.getFullYear()}-${month}-${day}`;
 }
 
+// Dagens öppettider för en salong: stängd dag går före förkortade tider,
+// som går före vanliga tider. Används både på korten och i filtret "Otvoreno danas".
+function getTodayStatus(
+  salon: any,
+  todayShortenedHours: Record<number, { start_time: string; end_time: string }>,
+  closedTodayIds: number[]
+) {
+  const shortened = todayShortenedHours[salon.id];
+  const isClosedToday =
+    closedTodayIds.includes(salon.id) ||
+    (salon.closed_weekdays || []).includes(WEEKDAY_CODES[new Date().getDay()]);
+  const todayHours: string | undefined = shortened
+    ? `${shortened.start_time.slice(0, 5)}–${shortened.end_time.slice(0, 5)}`
+    : salon.opening_hours?.replace("-", "–");
+  // Salonger utan öppettider räknas inte som öppna, eftersom vi inte vet.
+  const isOpenToday = !isClosedToday && !!todayHours;
+  return { isClosedToday, todayHours, isOpenToday };
+}
+
 // Gör sökningen okänslig för stora/små bokstäver och č, ć, š, ž, đ.
 function normalize(text: string) {
   return text
@@ -95,6 +114,7 @@ export default function Home() {
   const [showStickySearch, setShowStickySearch] = useState(false);
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
   const [showMap, setShowMap] = useState(false);
+  const [openTodayOnly, setOpenTodayOnly] = useState(false);
   const heroSearchRef = useRef<HTMLLabelElement>(null);
   const salonsHeadingRef = useRef<HTMLHeadingElement>(null);
   // Ökas när kunden själv väljer kategori eller stad. Då scrollar sidan ner till salongerna.
@@ -168,6 +188,12 @@ export default function Home() {
           return false;
         }
         if (selectedCity && salon.city !== selectedCity) return false;
+        if (
+          openTodayOnly &&
+          !getTodayStatus(salon, todayShortenedHours, closedTodayIds).isOpenToday
+        ) {
+          return false;
+        }
         if (!searchTerm) return true;
         const searchable = [
           salon.salon_name,
@@ -179,7 +205,15 @@ export default function Home() {
           .join(" ");
         return normalize(searchable).includes(searchTerm);
       }),
-    [salons, selectedCategory, selectedCity, searchTerm]
+    [
+      salons,
+      selectedCategory,
+      selectedCity,
+      searchTerm,
+      openTodayOnly,
+      todayShortenedHours,
+      closedTodayIds,
+    ]
   );
 
   // Bara salonger som har koordinater kan visas på kartan.
@@ -673,18 +707,40 @@ export default function Home() {
         </button>
       </div>
 
-      {/* Visar det kunden har valt. Ett tryck på ✕ tar bort just det valet. */}
-      {(selectedCity || selectedCategory || search.trim()) && (
-        <div
-          className={sourceSans.className}
+      {/* Snabbfilter och det kunden har valt. Ett tryck på ✕ tar bort just det valet. */}
+      <div
+        className={sourceSans.className}
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          gap: 8,
+          marginBottom: 16,
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => setOpenTodayOnly((value) => !value)}
+          aria-pressed={openTodayOnly}
           style={{
             display: "flex",
-            flexWrap: "wrap",
             alignItems: "center",
-            gap: 8,
-            marginBottom: 16,
+            gap: 6,
+            padding: "6px 12px",
+            borderRadius: 999,
+            border: openTodayOnly ? "1px solid #15803d" : "1px solid #e5e7eb",
+            background: openTodayOnly ? "#15803d" : "#ffffff",
+            color: openTodayOnly ? "#ffffff" : "#1f1f1f",
+            fontSize: 14,
+            fontWeight: 600,
+            cursor: "pointer",
           }}
         >
+          <FiClock size={14} />
+          Otvoreno danas
+          {openTodayOnly && <FiX size={15} />}
+        </button>
+
           {[
             selectedCity && {
               key: "city",
@@ -732,12 +788,14 @@ export default function Home() {
               </button>
             ))}
 
+          {(selectedCity || selectedCategory || search.trim() || openTodayOnly) && (
           <button
             type="button"
             onClick={() => {
               chooseCity(null);
               setSelectedCategory(null);
               setSearch("");
+              setOpenTodayOnly(false);
             }}
             style={{
               border: "none",
@@ -752,8 +810,8 @@ export default function Home() {
           >
             Očisti sve
           </button>
-        </div>
-      )}
+          )}
+      </div>
 
       {loading && <p>Učitavanje...</p>}
 
@@ -768,14 +826,11 @@ export default function Home() {
             ? `${salon.address}, ${salon.city}`
             : salon.address || salon.city;
 
-        // Dagens öppettider: stängd dag går före förkortade tider, som går före vanliga tider.
-        const shortened = todayShortenedHours[salon.id];
-        const isClosedToday =
-          closedTodayIds.includes(salon.id) ||
-          (salon.closed_weekdays || []).includes(WEEKDAY_CODES[new Date().getDay()]);
-        const todayHours = shortened
-          ? `${shortened.start_time.slice(0, 5)}–${shortened.end_time.slice(0, 5)}`
-          : salon.opening_hours?.replace("-", "–");
+        const { isClosedToday, todayHours } = getTodayStatus(
+          salon,
+          todayShortenedHours,
+          closedTodayIds
+        );
 
         return (
         <Link
