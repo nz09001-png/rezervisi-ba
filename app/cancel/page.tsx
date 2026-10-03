@@ -152,7 +152,7 @@ if (bookingError || !bookingData) {
         <button
   onClick={handleCancel}
   disabled={loading}
-  className={`${geist.className} rounded px-6 py-3 text-white disabled:opacity-50`}
+  className={`${geist.className} rounded-2xl px-6 py-3 font-bold text-white disabled:opacity-50`}
   style={{
     backgroundColor: "#611a1a",
     color: "white",

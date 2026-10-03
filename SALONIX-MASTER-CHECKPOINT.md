@@ -291,10 +291,10 @@ KLART i punkt 8 (3 oktober 2026):
 - Rubrikfärger: sidrubriker svarta (#111827), även "Pregled rezervacije"
   på desktop. "Rezervacija potvrđena" vinröd. Cancel-sidans kortrubriker
   får vara kvar svarta (ägarens val).
+- Avbokningsknappen på /cancel: 16 px rundning och fet text.
 
 KVAR i punkt 8 (i den här ordningen):
-1. Avbokningsknappen: större rundade hörn som övriga knappar.
-2. Resten av listan: kunder utan e-post kan inte avboka, cancel-sidan
+1. Resten av listan: kunder utan e-post kan inte avboka, cancel-sidan
    visar inte bokningen, alert()-rutor, tom vecka utan text,
    salongssidan (klickbar telefon, öppettider, galleripilar, "salon"),
    ingen väg tillbaka till startsidan, enkelt mejl, admininloggningens
