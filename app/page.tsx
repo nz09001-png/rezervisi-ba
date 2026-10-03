@@ -69,6 +69,11 @@ const SalonMap = dynamic(() => import("@/components/SalonMap"), {
   ),
 });
 
+// Från den här skärmbredden visas desktopvyn.
+const DESKTOP_MIN_WIDTH = 1024;
+// Innehållets största bredd på desktop.
+const DESKTOP_MAX_CONTENT = 1200;
+
 // Namnet som vald stad sparas under i kundens webbläsare.
 const SAVED_CITY_KEY = "salonix_city";
 
@@ -213,6 +218,24 @@ export default function Home() {
     );
   }
   const heroSearchRef = useRef<HTMLLabelElement>(null);
+  const desktopHeroSearchRef = useRef<HTMLDivElement>(null);
+
+  // Desktop = bred skärm. Mobilvyn är standard och ändras inte av desktopkoden.
+  const [isDesktop, setIsDesktop] = useState(false);
+  // Luft på sidorna på desktop (px): minst 40, och innehållet blir högst 1200 brett.
+  const [desktopGutter, setDesktopGutter] = useState(40);
+  useEffect(() => {
+    const update = () => {
+      setIsDesktop(window.innerWidth >= DESKTOP_MIN_WIDTH);
+      // clientWidth räknar inte med rullningslisten, så inget sticker ut i sidled.
+      setDesktopGutter(
+        Math.max(40, (document.documentElement.clientWidth - DESKTOP_MAX_CONTENT) / 2)
+      );
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
   const salonsHeadingRef = useRef<HTMLHeadingElement>(null);
   // Ökas när kunden själv väljer kategori eller stad. Då scrollar sidan ner till salongerna.
   // (En stad som väljs automatiskt vid sidladdning ska inte få sidan att scrolla.)
@@ -259,15 +282,16 @@ export default function Home() {
   ).sort((a, b) => a.localeCompare(b, "bs")) as string[];
 
   // Visa den vita listen högst upp när det stora sökfältet har scrollats bort.
+  // (På desktop är det sökraden i den vinröda toppen som följs.)
   useEffect(() => {
-    const heroSearch = heroSearchRef.current;
+    const heroSearch = isDesktop ? desktopHeroSearchRef.current : heroSearchRef.current;
     if (!heroSearch) return;
     const observer = new IntersectionObserver(([entry]) => {
       setShowStickySearch(entry.boundingClientRect.bottom < 0);
     });
     observer.observe(heroSearch);
     return () => observer.disconnect();
-  }, []);
+  }, [isDesktop]);
 
   const searchTerm = normalize(search.trim());
 
@@ -395,7 +419,12 @@ export default function Home() {
   }, []);
 
   return (
-    <main style={{ padding: 20, fontFamily: "Arial, sans-serif" }}>
+    <main
+      style={{
+        padding: isDesktop ? `20px ${desktopGutter}px` : 20,
+        fontFamily: "Arial, sans-serif",
+      }}
+    >
       {/* Mörk bakgrund bakom kategoripanelen. Ett tryck här stänger panelen. */}
       <div
         onClick={() => setCategoryMenuOpen(false)}
@@ -604,6 +633,139 @@ export default function Home() {
         </div>
       )}
 
+      {/* ---------- DESKTOP: vinröd topp med logga, slogan och sökrad ---------- */}
+      {isDesktop && (
+        <section
+          style={{
+            margin: `-20px -${desktopGutter}px 48px`,
+            padding: `44px ${desktopGutter}px 52px`,
+            background: "#611a1a",
+            textAlign: "center",
+          }}
+        >
+          <img
+            src="/salonix-logo-ljus.png"
+            alt="Salonix – Brže | Lakše | Online"
+            style={{ width: 220, height: "auto", display: "block", margin: "0 auto" }}
+          />
+
+          <h1
+            className={dmSerif.className}
+            style={{
+              fontSize: 36,
+              lineHeight: 1.2,
+              color: "#ffffff",
+              margin: "32px 0 0",
+            }}
+          >
+            Sve za vašu ljepotu
+          </h1>
+
+          {/* Sök och stad i en rad, med knappen "Pretraži". */}
+          <div
+            ref={desktopHeroSearchRef}
+            className={sourceSans.className}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              maxWidth: 780,
+              height: 60,
+              margin: "24px auto 0",
+              padding: "0 8px 0 22px",
+              borderRadius: 999,
+              background: "#ffffff",
+              boxShadow: "0 6px 20px rgba(0, 0, 0, 0.2)",
+              textAlign: "left",
+            }}
+          >
+            <label style={{ flex: 1.4, display: "flex", alignItems: "center", gap: 10 }}>
+              <FiSearch size={20} color="#1f1f1f" style={{ flexShrink: 0 }} />
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Šta želite rezervisati?"
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  border: "none",
+                  outline: "none",
+                  background: "transparent",
+                  fontSize: 16,
+                  color: "#1f1f1f",
+                }}
+              />
+            </label>
+
+            <span style={{ width: 1, height: 30, background: "#e5e7eb", margin: "0 18px" }} />
+
+            <label
+              style={{
+                flex: 1,
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                height: "100%",
+              }}
+            >
+              <FiMapPin size={20} color="#1f1f1f" style={{ flexShrink: 0 }} />
+              <select
+                value={selectedCity ?? ""}
+                onChange={(e) => chooseCity(e.target.value || null)}
+                aria-label="Grad"
+                style={{
+                  flex: 1,
+                  minWidth: 0,
+                  height: "100%",
+                  border: "none",
+                  outline: "none",
+                  background: "transparent",
+                  appearance: "none",
+                  WebkitAppearance: "none",
+                  fontSize: 16,
+                  color: selectedCity ? "#1f1f1f" : "#6b7280",
+                  cursor: "pointer",
+                }}
+              >
+                <option value="">Svi gradovi</option>
+                {cities.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </select>
+              <FiChevronDown
+                size={18}
+                color="#6b7280"
+                style={{ flexShrink: 0, pointerEvents: "none", marginRight: 12 }}
+              />
+            </label>
+
+            <button
+              type="button"
+              onClick={() => setScrollRequest((n) => n + 1)}
+              style={{
+                flexShrink: 0,
+                height: 46,
+                padding: "0 28px",
+                borderRadius: 999,
+                border: "none",
+                background: "#611a1a",
+                color: "#ffffff",
+                fontSize: 16,
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              Pretraži
+            </button>
+          </div>
+        </section>
+      )}
+
+      {/* ---------- MOBIL (fryst): logga överst och vinröd topp ---------- */}
+      {!isDesktop && (
+      <>
       <header style={{ marginBottom: 24 }}>
         <img
           src="/salonix-horisontell-maroon.png"
@@ -708,6 +870,8 @@ export default function Home() {
           />
         </label>
       </section>
+      </>
+      )}
 
       <h2
         className={dmSerif.className}
@@ -720,9 +884,9 @@ export default function Home() {
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
-          gap: 12,
+          gap: isDesktop ? 18 : 12,
           // Extra luft så att kunden först väljer kategori innan salongerna börjar.
-          marginBottom: 48,
+          marginBottom: isDesktop ? 64 : 48,
         }}
       >
         {CATEGORIES.map(({ name, icon: Icon, image }) => {
@@ -735,7 +899,7 @@ export default function Home() {
               className={sourceSans.className}
               style={{
                 position: "relative",
-                height: 150,
+                height: isDesktop ? 280 : 150,
                 padding: 0,
                 overflow: "hidden",
                 borderRadius: 14,
@@ -773,12 +937,12 @@ export default function Home() {
                   inset: 0,
                   display: "flex",
                   alignItems: "flex-end",
-                  padding: "10px 12px",
+                  padding: isDesktop ? "18px 22px" : "10px 12px",
                   background: image
                     ? "linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.15) 55%, rgba(0,0,0,0) 100%)"
                     : "none",
                   color: image ? "#ffffff" : "#611a1a",
-                  fontSize: 16,
+                  fontSize: isDesktop ? 24 : 16,
                   fontWeight: 700,
                   textAlign: "left",
                   lineHeight: 1.2,
@@ -855,8 +1019,8 @@ export default function Home() {
           display: "flex",
           alignItems: "center",
           gap: 8,
-          margin: "0 -20px 12px",
-          padding: "2px 20px",
+          margin: isDesktop ? "0 0 12px" : "0 -20px 12px",
+          padding: isDesktop ? "2px 0" : "2px 20px",
           overflowX: "auto",
           scrollbarWidth: "none",
         }}
@@ -1194,8 +1358,10 @@ export default function Home() {
       <footer
         className={sourceSans.className}
         style={{
-          margin: "40px -20px -20px",
-          padding: "28px 20px 32px",
+          margin: isDesktop
+            ? `40px -${desktopGutter}px -20px`
+            : "40px -20px -20px",
+          padding: isDesktop ? `28px ${desktopGutter}px 32px` : "28px 20px 32px",
           background: "#faf6f6",
           borderTop: "1px solid #f0e6e6",
         }}
