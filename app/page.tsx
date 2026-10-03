@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { MapSalon } from "@/components/SalonMap";
 import type { IconType } from "react-icons";
 import {
   FiSearch,
@@ -12,6 +14,8 @@ import {
   FiClock,
   FiArrowRight,
   FiChevronDown,
+  FiMap,
+  FiList,
 } from "react-icons/fi";
 import { TbScissors, TbMassage, TbFlower, TbHandStop } from "react-icons/tb";
 import { GiEyelashes, GiLipstick } from "react-icons/gi";
@@ -37,6 +41,22 @@ const CATEGORIES: { name: string; icon: IconType }[] = [
   { name: "Njega lica", icon: TbFlower },
   { name: "Ljepota", icon: GiLipstick },
 ];
+
+// Kartan laddas först när kunden trycker på "Karta", och bara i webbläsaren
+// (kartverktyget fungerar inte på servern).
+const SalonMap = dynamic(() => import("@/components/SalonMap"), {
+  ssr: false,
+  loading: () => (
+    <div
+      style={{
+        height: "65vh",
+        minHeight: 380,
+        borderRadius: 16,
+        background: "#f5eded",
+      }}
+    />
+  ),
+});
 
 // Namnet som vald stad sparas under i kundens webbläsare.
 const SAVED_CITY_KEY = "salonix_city";
@@ -74,6 +94,7 @@ export default function Home() {
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [showStickySearch, setShowStickySearch] = useState(false);
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
+  const [showMap, setShowMap] = useState(false);
   const heroSearchRef = useRef<HTMLLabelElement>(null);
   const salonsHeadingRef = useRef<HTMLHeadingElement>(null);
   // Ökas när kunden själv väljer kategori eller stad. Då scrollar sidan ner till salongerna.
@@ -132,33 +153,50 @@ export default function Home() {
   }, []);
 
   const searchTerm = normalize(search.trim());
-  const matchesCategory = (salon: any) =>
-    !selectedCategory ||
-    (salon.categories || []).some(
-      (category: string) => normalize(category) === normalize(selectedCategory)
-    );
 
-  const filteredSalons = salons.filter((salon) => {
-    if (!matchesCategory(salon)) return false;
-    if (selectedCity && salon.city !== selectedCity) return false;
-    if (!searchTerm) return true;
-    const searchable = [
-      salon.salon_name,
-      salon.city,
-      salon.address,
-      ...(salon.categories || []),
-    ]
-      .filter(Boolean)
-      .join(" ");
-    return normalize(searchable).includes(searchTerm);
-  });
+  // useMemo: listan räknas bara om när salonger eller val ändras.
+  // Det gör att kartan inte zoomar om varje gång sidan scrollas.
+  const filteredSalons = useMemo(
+    () =>
+      salons.filter((salon) => {
+        if (
+          selectedCategory &&
+          !(salon.categories || []).some(
+            (category: string) => normalize(category) === normalize(selectedCategory)
+          )
+        ) {
+          return false;
+        }
+        if (selectedCity && salon.city !== selectedCity) return false;
+        if (!searchTerm) return true;
+        const searchable = [
+          salon.salon_name,
+          salon.city,
+          salon.address,
+          ...(salon.categories || []),
+        ]
+          .filter(Boolean)
+          .join(" ");
+        return normalize(searchable).includes(searchTerm);
+      }),
+    [salons, selectedCategory, selectedCity, searchTerm]
+  );
+
+  // Bara salonger som har koordinater kan visas på kartan.
+  const mapSalons = useMemo(
+    () =>
+      filteredSalons.filter(
+        (salon) => salon.latitude != null && salon.longitude != null
+      ) as MapSalon[],
+    [filteredSalons]
+  );
 
   useEffect(() => {
     async function loadSalons() {
       const { data, error } = await supabase
         .from("salons")
         .select(
-          "id, salon_name, slug, city, categories, address, image_url, opening_hours, closed_weekdays"
+          "id, salon_name, slug, city, categories, address, image_url, opening_hours, closed_weekdays, latitude, longitude"
         )
         .eq("is_published", true)
         .order("salon_name", { ascending: true });
@@ -578,13 +616,22 @@ export default function Home() {
         })}
       </div>
 
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+          marginBottom: 12,
+        }}
+      >
       <h2
         ref={salonsHeadingRef}
         className={dmSerif.className}
         style={{
           fontSize: 22,
           color: "#1f1f1f",
-          marginBottom: 12,
+          margin: 0,
           // Plats för den vita listen högst upp.
           scrollMarginTop: 76,
         }}
@@ -600,6 +647,31 @@ export default function Home() {
           </span>
         )}
       </h2>
+
+        {/* Växla mellan lista och karta. */}
+        <button
+          type="button"
+          onClick={() => setShowMap((value) => !value)}
+          className={sourceSans.className}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 7,
+            flexShrink: 0,
+            padding: "8px 14px",
+            borderRadius: 999,
+            border: "1px solid #611a1a",
+            background: showMap ? "#611a1a" : "#ffffff",
+            color: showMap ? "#ffffff" : "#611a1a",
+            fontSize: 14,
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          {showMap ? <FiList size={16} /> : <FiMap size={16} />}
+          {showMap ? "Lista" : "Karta"}
+        </button>
+      </div>
 
       {/* Visar det kunden har valt. Ett tryck på ✕ tar bort just det valet. */}
       {(selectedCity || selectedCategory || search.trim()) && (
@@ -687,7 +759,9 @@ export default function Home() {
 
       {!loading && filteredSalons.length === 0 && <p>Nema pronađenih salona.</p>}
 
-      {filteredSalons.map((salon) => {
+      {showMap && !loading && mapSalons.length > 0 && <SalonMap salons={mapSalons} />}
+
+      {!showMap && filteredSalons.map((salon) => {
         // Visa "Studio, Tuzla" men inte "Mercator centar, Tuzla, Tuzla".
         const location =
           salon.address && salon.city && !normalize(salon.address).includes(normalize(salon.city))
