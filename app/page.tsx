@@ -17,6 +17,8 @@ import {
   FiMap,
   FiList,
   FiNavigation,
+  FiThumbsUp,
+  FiStar,
 } from "react-icons/fi";
 import { TbScissors, TbMassage, TbFlower, TbHandStop } from "react-icons/tb";
 import { GiEyelashes, GiLipstick } from "react-icons/gi";
@@ -92,6 +94,31 @@ function getTodayStatus(
   return { isClosedToday, todayHours, isOpenToday };
 }
 
+// Poäng för "Preporučeno": öppet i dag väger tyngst, sedan en komplett profil.
+function recommendedScore(
+  salon: any,
+  todayShortenedHours: Record<number, { start_time: string; end_time: string }>,
+  closedTodayIds: number[]
+) {
+  let score = 0;
+  if (getTodayStatus(salon, todayShortenedHours, closedTodayIds).isOpenToday) score += 3;
+  if (salon.image_url) score += 1;
+  if (salon.opening_hours) score += 1;
+  if (salon.address) score += 1;
+  return score;
+}
+
+// Ett tal per salong som ändras varje dag. Salonger med samma poäng
+// byter då ordning dagligen, så att alla får chansen att synas överst.
+function dailyRotation(salonId: number) {
+  const seed = `${salonId}-${todayDateString()}`;
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash * 31 + seed.charCodeAt(i)) | 0;
+  }
+  return hash;
+}
+
 // Avstånd fågelvägen i kilometer mellan kunden och en salong.
 function distanceKm(from: { lat: number; lng: number }, lat: number, lng: number) {
   const toRad = (deg: number) => (deg * Math.PI) / 180;
@@ -140,9 +167,15 @@ export default function Home() {
   );
   const [locationStatus, setLocationStatus] = useState<"idle" | "loading">("idle");
 
-  function toggleNearest() {
+  // Ordningen på salongerna: "Preporučeno" (standard), "Novi saloni" eller "Najbliže meni".
+  const [sortMode, setSortMode] = useState<"recommended" | "newest" | "nearest">(
+    "recommended"
+  );
+
+  function chooseNearest() {
+    // Platsen är redan känd: byt bara ordning, fråga inte igen.
     if (userLocation) {
-      setUserLocation(null);
+      setSortMode("nearest");
       return;
     }
     // Om platsen inte går att få (kunden säger nej eller telefonen saknar stöd)
@@ -164,6 +197,7 @@ export default function Home() {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         });
+        setSortMode("nearest");
         setLocationStatus("idle");
       },
       showMapInstead,
@@ -260,18 +294,27 @@ export default function Home() {
           .join(" ");
         return normalize(searchable).includes(searchTerm);
       })
-      // "Najbliže meni": närmast först. Salonger utan koordinater hamnar sist.
       .map((salon) => ({
         ...salon,
         distanceKm:
           userLocation && salon.latitude != null && salon.longitude != null
             ? distanceKm(userLocation, salon.latitude, salon.longitude)
             : null,
+        score: recommendedScore(salon, todayShortenedHours, closedTodayIds),
+        rotation: dailyRotation(salon.id),
       }))
-      .sort((a, b) =>
-        userLocation ? (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity) : 0
-      ),
+      .sort((a, b) => {
+        // "Najbliže meni": närmast först. Salonger utan koordinater hamnar sist.
+        if (sortMode === "nearest" && userLocation) {
+          return (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity);
+        }
+        // "Novi saloni": högst id = senast tillagd.
+        if (sortMode === "newest") return b.id - a.id;
+        // "Preporučeno": högst poäng först, sedan dagens rättvisa rotation.
+        return b.score - a.score || a.rotation - b.rotation;
+      }),
     [
+      sortMode,
       salons,
       selectedCategory,
       selectedCity,
@@ -774,7 +817,98 @@ export default function Home() {
         </button>
       </div>
 
-      {/* Snabbfilter och det kunden har valt. Ett tryck på ✕ tar bort just det valet. */}
+      {/* Ordning (bara en åt gången) och filtret "Otvoreno danas". Går att scrolla i sidled. */}
+      <div
+        className={sourceSans.className}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          margin: "0 -20px 12px",
+          padding: "2px 20px",
+          overflowX: "auto",
+          scrollbarWidth: "none",
+        }}
+      >
+        {[
+          {
+            key: "recommended",
+            label: "Preporučeno",
+            icon: FiThumbsUp,
+            onClick: () => setSortMode("recommended"),
+          },
+          {
+            key: "newest",
+            label: "Novi saloni",
+            icon: FiStar,
+            onClick: () => setSortMode("newest"),
+          },
+          {
+            key: "nearest",
+            label: locationStatus === "loading" ? "Tražim lokaciju…" : "Najbliže meni",
+            icon: FiNavigation,
+            onClick: chooseNearest,
+          },
+        ].map(({ key, label, icon: Icon, onClick }) => {
+          const isActive =
+            sortMode === key && (key !== "nearest" || !!userLocation);
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={onClick}
+              aria-pressed={isActive}
+              disabled={key === "nearest" && locationStatus === "loading"}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                flexShrink: 0,
+                padding: "6px 12px",
+                borderRadius: 999,
+                border: isActive ? "1px solid #611a1a" : "1px solid #e5e7eb",
+                background: isActive ? "#611a1a" : "#ffffff",
+                color: isActive ? "#ffffff" : "#1f1f1f",
+                fontSize: 14,
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+                cursor: "pointer",
+              }}
+            >
+              <Icon size={14} />
+              {label}
+            </button>
+          );
+        })}
+
+        <button
+          type="button"
+          onClick={() => setOpenTodayOnly((value) => !value)}
+          aria-pressed={openTodayOnly}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+            flexShrink: 0,
+            padding: "6px 12px",
+            borderRadius: 999,
+            border: openTodayOnly ? "1px solid #15803d" : "1px solid #e5e7eb",
+            background: openTodayOnly ? "#15803d" : "#ffffff",
+            color: openTodayOnly ? "#ffffff" : "#1f1f1f",
+            fontSize: 14,
+            fontWeight: 600,
+            whiteSpace: "nowrap",
+            cursor: "pointer",
+          }}
+        >
+          <FiClock size={14} />
+          Otvoreno danas
+          {openTodayOnly && <FiX size={15} />}
+        </button>
+      </div>
+
+      {/* Det kunden har valt. Ett tryck på ✕ tar bort just det valet. */}
+      {(selectedCity || selectedCategory || search.trim()) && (
       <div
         className={sourceSans.className}
         style={{
@@ -785,52 +919,6 @@ export default function Home() {
           marginBottom: 16,
         }}
       >
-        <button
-          type="button"
-          onClick={() => setOpenTodayOnly((value) => !value)}
-          aria-pressed={openTodayOnly}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "6px 12px",
-            borderRadius: 999,
-            border: openTodayOnly ? "1px solid #15803d" : "1px solid #e5e7eb",
-            background: openTodayOnly ? "#15803d" : "#ffffff",
-            color: openTodayOnly ? "#ffffff" : "#1f1f1f",
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
-          <FiClock size={14} />
-          Otvoreno danas
-          {openTodayOnly && <FiX size={15} />}
-        </button>
-
-        <button
-          type="button"
-          onClick={toggleNearest}
-          aria-pressed={!!userLocation}
-          disabled={locationStatus === "loading"}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "6px 12px",
-            borderRadius: 999,
-            border: userLocation ? "1px solid #611a1a" : "1px solid #e5e7eb",
-            background: userLocation ? "#611a1a" : "#ffffff",
-            color: userLocation ? "#ffffff" : "#1f1f1f",
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: locationStatus === "loading" ? "wait" : "pointer",
-          }}
-        >
-          <FiNavigation size={14} />
-          {locationStatus === "loading" ? "Tražim lokaciju…" : "Najbliže meni"}
-          {userLocation && <FiX size={15} />}
-        </button>
 
           {[
             selectedCity && {
@@ -879,11 +967,6 @@ export default function Home() {
               </button>
             ))}
 
-          {(selectedCity ||
-            selectedCategory ||
-            search.trim() ||
-            openTodayOnly ||
-            userLocation) && (
           <button
             type="button"
             onClick={() => {
@@ -891,7 +974,6 @@ export default function Home() {
               setSelectedCategory(null);
               setSearch("");
               setOpenTodayOnly(false);
-              setUserLocation(null);
             }}
             style={{
               border: "none",
@@ -906,8 +988,8 @@ export default function Home() {
           >
             Očisti sve
           </button>
-          )}
       </div>
+      )}
 
       {loading && <p>Učitavanje...</p>}
 
