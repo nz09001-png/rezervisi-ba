@@ -148,8 +148,8 @@ OpenStreetMap) och sparas med SQL. Nya salonger måste få koordinater
 manuellt tills vidare.
 
 Studio M Exclusive (id 1): adress Kranjčevićeva 15, Sarajevo,
-koordinater 43.858024, 18.404882. Öppettider står som "09:00-18:01"
-(troligen skrivfel för 18:00 – rättas i admin).
+koordinater 43.858024, 18.404882. Öppettider 09:00–18:00 (rättat),
+Subota 10:00–15:00 (förkortad), Nedjelja stängd.
 
 ============================================================
 9. STARTSIDAN (PUNKT 6 + 7 – KLAR OCH FRYST)
@@ -312,9 +312,13 @@ KLART i punkt 8 (3 oktober 2026):
   Räknar bara synliga tidsknappar – tidsreglerna är orörda.
 - Salongssidan: telefonnumret är en ringlänk (tel:), samma utseende.
   Ingen egen bekräftelseruta – telefonen frågar själv (ägarens val).
+- Salongssidan: öppettider visas med långt streck (09:00–18:00), som
+  startsidan och de förkortade tiderna. Databasen oförändrad.
+- Salongssidan: galleripilar bara vid fler än 2 bilder; i helskärm bara
+  vid fler än 1 bild.
 
 KVAR i punkt 8 (i den här ordningen):
-1. Resten av listan: salongssidan (öppettider, galleripilar, "salon"),
+1. Resten av listan: salongssidan (etiketten "salon"),
    ingen väg tillbaka till startsidan, enkelt mejl, admininloggningens
    utseende, admin-stavfel ("Osooblje", "Osobolje", "Edit", "Ime Osoblja").
 

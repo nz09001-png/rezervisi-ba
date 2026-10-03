@@ -747,7 +747,8 @@ return (
             lineHeight: "1.5",
           }}
         >
-          {salon.opening_hours}
+          {/* Samma långa streck som startsidan och de förkortade tiderna. */}
+          {salon.opening_hours?.replace("-", "–")}
         </p>
         {shortenedHours.length > 0 && (
   <div
@@ -905,6 +906,9 @@ gap: "24px",
   />
 ))}
 
+      {/* Pilarna bara när det finns fler bilder än de två som syns. */}
+      {salonImages.length > 2 && (
+      <>
       <button
         type="button"
         onClick={previousGalleryImages}
@@ -950,6 +954,8 @@ gap: "24px",
       >
         ›
       </button>
+      </>
+      )}
     </div>
   </div>
 )}
@@ -1010,7 +1016,9 @@ gap: "24px",
         ×
       </button>
 
-      {/* FÖREGÅENDE */}
+      {/* FÖREGÅENDE och NÄSTA – bara när det finns mer än en bild. */}
+      {salonImages.length > 1 && (
+      <>
       <button
         type="button"
         onClick={() =>
@@ -1067,6 +1075,8 @@ gap: "24px",
       >
         ›
       </button>
+      </>
+      )}
 
       {/* BILDRÄKNARE */}
       <p
