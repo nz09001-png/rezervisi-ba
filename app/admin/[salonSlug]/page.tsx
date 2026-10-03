@@ -239,6 +239,7 @@ useEffect(() => {
 function handleCancelServiceEdit() {
   setShowServiceForm(false);
   setEditingServiceId(null);
+  setSelectedServiceBarberIds([]);
   setServiceName("");
   setSelectedServiceCategoryId("");
   setServiceDescription("");
@@ -3881,8 +3882,8 @@ style={{
       style={{
         borderWidth: "2px",
         borderColor: "#611a1a",
-        padding: isMobile ? "16px" : "24px",
-        maxWidth: "600px",
+        padding: isMobile ? "16px" : "24px 28px",
+        maxWidth: "760px",
       }}
     >
       <h3
@@ -3891,529 +3892,692 @@ style={{
       >
         {editingServiceId !== null ? "Uredi uslugu" : "Nova usluga"}
       </h3>
-
-  <div className="mb-3">
-  <select
-    value={selectedServiceCategoryId}
-    onChange={(e) =>
-      setSelectedServiceCategoryId(
-        e.target.value ? Number(e.target.value) : ""
-      )
-    }
-    className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-    style={{ maxWidth: "220px" }}
-  >
-    <option value="">Izaberite kategoriju</option>
-
-    {serviceCategories.map((category) => (
-      <option key={category.id} value={category.id}>
-        {category.name}
-      </option>
-    ))}
-  </select>
-</div>
-  <input
-  type="text"
-  placeholder="Naziv usluge"
-  value={serviceName}
-  onChange={(e) => setServiceName(e.target.value)}
-  className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-  style={{
-  maxWidth: "450px",
-  paddingTop: isMobile ? "9px" : undefined,
-  paddingBottom: isMobile ? "9px" : undefined,
-}}
-/>
-  <textarea
-  placeholder="Opis usluge (nije obavezno)"
-  value={serviceDescription}
-  onChange={(e) => setServiceDescription(e.target.value)}
-  className="mb-4 block w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-  style={{
-  maxWidth: "450px",
-  paddingTop: isMobile ? "9px" : undefined,
-  paddingBottom: isMobile ? "9px" : undefined,
-}}
-  rows={3}
-/>
-
-  <input
-  type="text"
-  placeholder="Cijena"
-  value={servicePrice}
-  onChange={(e) => setServicePrice(e.target.value)}
-  className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-  style={{
-    maxWidth: "450px",
-    paddingTop: isMobile ? "9px" : undefined,
-    paddingBottom: isMobile ? "9px" : undefined,
-  }}
-/>
-  <input
-  type="number"
-  placeholder="Trajanje u minutama, npr. 30"
-  value={hasServiceSteps ? totalDuration : serviceDuration}
-  onChange={(e) => setServiceDuration(e.target.value)}
-  disabled={hasServiceSteps}
-  className={`mb-3 block w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20 ${
-    hasServiceSteps
-      ? "cursor-not-allowed bg-gray-100 text-gray-500"
-      : ""
-  }`}
-  style={{ maxWidth: "450px" }}
-/>
-
-{hasServiceSteps && (
-  <p className="mb-3 text-sm text-gray-500">
-    Trajanje se automatski izračunava na osnovu koraka tretmana.
-  </p>
-)}
-
-<label className="mb-2 flex items-center gap-2">
-  <input
-  type="checkbox"
-  checked={showPrice}
-  onChange={(e) => setShowPrice(e.target.checked)}
-  style={{
-    width: "18px",
-    height: "18px",
-    accentColor: "#611a1a",
-    cursor: "pointer",
-  }}
-/>
-  Prikaži cijenu klijentima
-</label>
-
-<label className="mb-4 flex items-center gap-2">
-  <input
-  type="checkbox"
-  checked={showDuration}
-  onChange={(e) => setShowDuration(e.target.checked)}
-  style={{
-    width: "18px",
-    height: "18px",
-    accentColor: "#611a1a",
-    cursor: "pointer",
-  }}
-/>
-  Prikaži trajanje klijentima
-</label>
-
-<div className="mb-4">
-  <p className="mb-1 font-medium">
-  Izaberite osoblje za ovu uslugu
-</p>
-
-<div className="space-y-1">
-    {barbers.map((barber) => (
-      <label
-        key={barber.id}
-        className="flex items-center gap-2"
+      <p
+        className="text-sm text-gray-500"
+        style={{ marginTop: "-10px", marginBottom: "16px" }}
       >
+        Popunite polja i kliknite „{editingServiceId !== null ? "Sačuvaj izmjene" : "Sačuvaj uslugu"}“.
+      </p>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+          gap: isMobile ? "16px" : "16px 20px",
+        }}
+      >
+        <div>
+          <label className="mb-1.5 block font-bold" style={{ fontSize: "15px" }}>
+            Naziv usluge
+          </label>
+
+          <input
+            type="text"
+            placeholder="npr. Muško šišanje"
+            value={serviceName}
+            onChange={(e) => setServiceName(e.target.value)}
+            className="w-full rounded-xl border border-gray-300 px-4 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+            style={{ height: "48px", fontSize: "16px" }}
+          />
+        </div>
+
+        <div>
+          <label className="mb-1.5 block font-bold" style={{ fontSize: "15px" }}>
+            Kategorija
+          </label>
+
+          <select
+            value={selectedServiceCategoryId}
+            onChange={(e) =>
+              setSelectedServiceCategoryId(
+                e.target.value ? Number(e.target.value) : ""
+              )
+            }
+            className="w-full rounded-xl border border-gray-300 bg-white px-4 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+            style={{ height: "48px", fontSize: "16px" }}
+          >
+            <option value="">Izaberite kategoriju</option>
+
+            {serviceCategories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div style={{ marginTop: "16px" }}>
+        <label className="mb-1.5 block font-bold" style={{ fontSize: "15px" }}>
+          Opis{" "}
+          <span className="font-normal text-gray-500" style={{ fontSize: "13px" }}>
+            (nije obavezno)
+          </span>
+        </label>
+
+        <textarea
+          placeholder="npr. šišanje makazama i mašinicom, pranje kose"
+          value={serviceDescription}
+          onChange={(e) => setServiceDescription(e.target.value)}
+          className="block w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+          style={{ fontSize: "16px", resize: "none" }}
+          rows={3}
+        />
+      </div>
+
+      <div
+        style={{
+          marginTop: "16px",
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: isMobile ? "12px" : "20px",
+        }}
+      >
+        <div>
+          <label className="mb-1.5 block font-bold" style={{ fontSize: "15px" }}>
+            Cijena
+          </label>
+
+          <div style={{ position: "relative" }}>
+            <input
+              type="text"
+              placeholder="0"
+              value={servicePrice}
+              onChange={(e) => setServicePrice(e.target.value)}
+              className="w-full rounded-xl border border-gray-300 px-4 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+              style={{ height: "48px", fontSize: "16px", paddingRight: "44px" }}
+            />
+
+            <span
+              className="text-gray-500"
+              style={{ position: "absolute", right: "14px", top: "13px", fontSize: "15px", pointerEvents: "none" }}
+            >
+              KM
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <label className="mb-1.5 block font-bold" style={{ fontSize: "15px" }}>
+            Trajanje
+          </label>
+
+          <div style={{ position: "relative" }}>
+            <input
+              type="number"
+              placeholder="30"
+              value={hasServiceSteps ? totalDuration : serviceDuration}
+              onChange={(e) => setServiceDuration(e.target.value)}
+              disabled={hasServiceSteps}
+              className={`w-full rounded-xl border border-gray-300 px-4 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20 ${
+                hasServiceSteps ? "cursor-not-allowed bg-gray-100 text-gray-500" : ""
+              }`}
+              style={{ height: "48px", fontSize: "16px", paddingRight: "44px" }}
+            />
+
+            <span
+              className="text-gray-500"
+              style={{ position: "absolute", right: "14px", top: "13px", fontSize: "15px", pointerEvents: "none" }}
+            >
+              min
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {hasServiceSteps && (
+        <p className="text-sm text-gray-500" style={{ marginTop: "6px" }}>
+          Trajanje se automatski izračunava na osnovu koraka tretmana.
+        </p>
+      )}
+
+      <label className="flex items-center gap-2.5" style={{ marginTop: "14px", fontSize: "15px" }}>
         <input
-  type="checkbox"
-  style={{
-    width: "18px",
-    height: "18px",
-    accentColor: "#611a1a",
-    cursor: "pointer",
-  }}
-  checked={selectedServiceBarberIds.includes(barber.id)}
-          onChange={(e) => {
-            if (e.target.checked) {
-              setSelectedServiceBarberIds((prev) => [
-                ...prev,
-                barber.id,
-              ]);
-            } else {
-              setSelectedServiceBarberIds((prev) =>
-                prev.filter((id) => id !== barber.id)
-              );
+          type="checkbox"
+          checked={showPrice}
+          onChange={(e) => setShowPrice(e.target.checked)}
+          style={{ width: "20px", height: "20px", accentColor: "#611a1a", cursor: "pointer" }}
+        />
+        Prikaži cijenu klijentima
+      </label>
+
+      <label className="flex items-center gap-2.5" style={{ marginTop: "10px", fontSize: "15px" }}>
+        <input
+          type="checkbox"
+          checked={showDuration}
+          onChange={(e) => setShowDuration(e.target.checked)}
+          style={{ width: "20px", height: "20px", accentColor: "#611a1a", cursor: "pointer" }}
+        />
+        Prikaži trajanje klijentima
+      </label>
+
+      <div style={{ marginTop: "20px" }}>
+        <p className="mb-2 font-bold" style={{ fontSize: "15px" }}>
+          Ko radi ovu uslugu?
+        </p>
+
+        <div className="flex flex-wrap gap-2">
+          {barbers.map((barber) => {
+            const isSelected = selectedServiceBarberIds.includes(barber.id);
+
+            return (
+              <button
+                key={barber.id}
+                type="button"
+                onClick={() => {
+                  if (!isSelected) {
+                    setSelectedServiceBarberIds((prev) => [...prev, barber.id]);
+                  } else {
+                    setSelectedServiceBarberIds((prev) =>
+                      prev.filter((id) => id !== barber.id)
+                    );
+                  }
+                }}
+                className="rounded-full border transition"
+                style={{
+                  height: "42px",
+                  padding: "0 16px",
+                  fontSize: "15px",
+                  fontWeight: isSelected ? 600 : 400,
+                  backgroundColor: isSelected ? "#611a1a" : "#ffffff",
+                  borderColor: isSelected ? "#611a1a" : "#d1d5db",
+                  color: isSelected ? "#ffffff" : "#111827",
+                }}
+              >
+                {isSelected ? "✓ " : ""}
+                {barber.name}
+              </button>
+            );
+          })}
+        </div>
+
+        <p className="text-gray-500" style={{ marginTop: "6px", fontSize: "13px" }}>
+          Ako nikoga ne označite, klijenti mogu rezervisati kod svih članova osoblja.
+        </p>
+      </div>
+
+      <div
+        className="rounded-xl"
+        style={{ marginTop: "20px", padding: "12px 14px", backgroundColor: "#faf7f7" }}
+      >
+        <label className="flex items-start gap-2.5" style={{ cursor: "pointer" }}>
+          <input
+            type="checkbox"
+            checked={hasServiceSteps}
+            onChange={(e) => setHasServiceSteps(e.target.checked)}
+            style={{ width: "20px", height: "20px", accentColor: "#611a1a", cursor: "pointer", flexShrink: 0, marginTop: "1px" }}
+          />
+
+          <span>
+            <span className="block font-bold" style={{ fontSize: "15px" }}>
+              Tretman ima pauzu
+            </span>
+
+            <span className="block text-gray-500" style={{ fontSize: "13px", marginTop: "2px" }}>
+              Npr. farbanje: dok boja djeluje, član osoblja može primiti drugog klijenta.
+            </span>
+          </span>
+        </label>
+
+        {hasServiceSteps && (
+          <div style={{ marginTop: "14px", paddingTop: "12px", borderTop: "1px solid #ead1d1" }}>
+            <p className="font-bold" style={{ fontSize: "15px" }}>
+              Koraci tretmana
+            </p>
+
+            <p className="text-gray-500" style={{ fontSize: "13px", marginTop: "2px" }}>
+              Upišite korake redom. Tokom pauze drugi klijenti mogu rezervisati kod istog člana osoblja.
+            </p>
+
+            {serviceSteps.some((step) => Number(step.duration_minutes) > 0) && (
+              <>
+                <div
+                  className="flex overflow-hidden rounded-full"
+                  style={{ marginTop: "12px", height: "12px", gap: "2px" }}
+                >
+                  {serviceSteps.map((step, index) =>
+                    Number(step.duration_minutes) > 0 ? (
+                      <div
+                        key={index}
+                        style={{
+                          flex: Number(step.duration_minutes),
+                          backgroundColor: step.is_barber_busy ? "#611a1a" : "#e7d3d3",
+                        }}
+                      />
+                    ) : null
+                  )}
+                </div>
+
+                <div className="flex gap-4 text-gray-600" style={{ marginTop: "6px", fontSize: "12px" }}>
+                  <span className="flex items-center gap-1">
+                    <span style={{ width: "10px", height: "10px", borderRadius: "3px", backgroundColor: "#611a1a", display: "inline-block" }} />
+                    Osoblje radi
+                  </span>
+
+                  <span className="flex items-center gap-1">
+                    <span style={{ width: "10px", height: "10px", borderRadius: "3px", backgroundColor: "#e7d3d3", display: "inline-block" }} />
+                    Pauza
+                  </span>
+                </div>
+              </>
+            )}
+
+            {serviceSteps.map((step, index) => (
+              <div
+                key={index}
+                className="rounded-xl border bg-white"
+                style={{ marginTop: "12px", padding: "12px", borderColor: "#e5d5d5" }}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-bold" style={{ fontSize: "14px", color: "#611a1a" }}>
+                    Korak {index + 1}
+                  </span>
+
+                  {serviceSteps.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const shouldDelete = window.confirm(
+                          "Da li ste sigurni da želite izbrisati ovaj korak?"
+                        );
+
+                        if (!shouldDelete) return;
+
+                        setServiceSteps(
+                          serviceSteps.filter((_, stepIndex) => stepIndex !== index)
+                        );
+                      }}
+                      className="font-semibold"
+                      style={{ fontSize: "14px", color: "#ef4444" }}
+                    >
+                      Obriši
+                    </button>
+                  )}
+                </div>
+
+                <div
+                  style={{
+                    marginTop: "8px",
+                    display: "grid",
+                    gridTemplateColumns: isMobile ? "1fr 80px" : "1fr 140px",
+                    gap: "8px",
+                  }}
+                >
+                  <input
+                    type="text"
+                    placeholder="Naziv koraka"
+                    value={step.name}
+                    onChange={(e) => {
+                      const updatedSteps = [...serviceSteps];
+
+                      updatedSteps[index] = {
+                        ...updatedSteps[index],
+                        name: e.target.value,
+                      };
+
+                      setServiceSteps(updatedSteps);
+                    }}
+                    className="w-full rounded-xl border border-gray-300 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+                    style={{ height: "46px", fontSize: "16px", padding: "0 10px" }}
+                  />
+
+                  <div style={{ position: "relative" }}>
+                    <input
+                      type="number"
+                      onWheel={(e) => e.currentTarget.blur()}
+                      placeholder="0"
+                      value={step.duration_minutes}
+                      onChange={(e) => {
+                        const updatedSteps = [...serviceSteps];
+
+                        updatedSteps[index] = {
+                          ...updatedSteps[index],
+                          duration_minutes: e.target.value,
+                        };
+
+                        setServiceSteps(updatedSteps);
+                      }}
+                      className="w-full rounded-xl border border-gray-300 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+                      style={{ height: "46px", fontSize: "16px", padding: isMobile ? "0 34px 0 10px" : "0 38px 0 10px" }}
+                    />
+
+                    <span
+                      className="text-gray-500"
+                      style={{ position: "absolute", right: "10px", top: "13px", fontSize: "14px", pointerEvents: "none" }}
+                    >
+                      min
+                    </span>
+                  </div>
+                </div>
+
+                <div
+                  className="overflow-hidden rounded-xl border"
+                  style={{
+                    marginTop: "10px",
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    borderColor: "#d1d5db",
+                    maxWidth: isMobile ? undefined : "380px",
+                  }}
+                >
+                  {[
+                    { busy: true, label: "Osoblje radi" },
+                    { busy: false, label: "Pauza" },
+                  ].map((option) => {
+                    const isActive = step.is_barber_busy === option.busy;
+
+                    return (
+                      <button
+                        key={option.label}
+                        type="button"
+                        onClick={() => {
+                          const updatedSteps = [...serviceSteps];
+
+                          updatedSteps[index] = {
+                            ...updatedSteps[index],
+                            is_barber_busy: option.busy,
+                          };
+
+                          setServiceSteps(updatedSteps);
+                        }}
+                        style={{
+                          height: "40px",
+                          fontSize: "14px",
+                          fontWeight: isActive ? 600 : 400,
+                          backgroundColor: isActive ? "#611a1a" : "#ffffff",
+                          color: isActive ? "#ffffff" : "#374151",
+                        }}
+                      >
+                        {isActive ? "✓ " : ""}
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+
+            <button
+              type="button"
+              onClick={() => {
+                setServiceSteps([
+                  ...serviceSteps,
+                  {
+                    name: "",
+                    duration_minutes: "",
+                    is_barber_busy: true,
+                  },
+                ]);
+              }}
+              className="rounded-xl font-semibold"
+              style={{
+                marginTop: "12px",
+                height: "44px",
+                width: isMobile ? "100%" : undefined,
+                padding: isMobile ? undefined : "0 22px",
+                fontSize: "15px",
+                color: "#611a1a",
+                border: "1px dashed #611a1a",
+                backgroundColor: "#ffffff",
+              }}
+            >
+              + Dodaj korak
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div
+        className="flex gap-2.5"
+        style={{
+          marginTop: "22px",
+          flexDirection: isMobile ? "column" : "row-reverse",
+          justifyContent: isMobile ? undefined : "flex-start",
+        }}
+      >
+        <button
+          type="button"
+          onClick={handleAddService}
+          className="rounded-xl font-semibold text-white transition hover:opacity-90"
+          style={{
+            backgroundColor: "#611a1a",
+            height: "50px",
+            padding: isMobile ? undefined : "0 28px",
+            fontSize: "16px",
+          }}
+        >
+          {editingServiceId !== null ? "Sačuvaj izmjene" : "Sačuvaj uslugu"}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            handleCancelServiceEdit();
+
+            if (isMobile) {
+              setTimeout(() => {
+                serviceFormRef.current?.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                });
+              }, 50);
             }
           }}
-        />
-
-        <span>{barber.name}</span>
-      </label>
-    ))}
-  </div>
-</div>
-
-<label className="mt-5 mb-4 flex items-center gap-2">
-  <input
-    type="checkbox"
-    checked={hasServiceSteps}
-    onChange={(e) => setHasServiceSteps(e.target.checked)}
-    style={{
-      width: "18px",
-      height: "18px",
-      accentColor: "#611a1a",
-      cursor: "pointer",
-    }}
-  />
-  Osoblje nije zauzeto tokom cijelog tretmana
-</label>
-
-{hasServiceSteps && (
-  <div
-  className="mb-4 rounded-xl border p-4"
-  style={{
-    width: "500px",
-    maxWidth: "100%",
-    backgroundColor: "#fdfdfd",
-    borderColor: "#c9a3a3",
-  }}
->
-    <h3 className="mb-2 font-semibold">
-      Koraci tretmana
-    </h3>
-
-    {serviceSteps.map((step, index) => (
-  <div
-  key={index}
-  className="rounded-xl border bg-white"
-  style={{
-    borderColor: "#d8caca",
-    marginTop: isMobile ? "10px" : "16px",
-    padding: isMobile ? "12px" : "16px",
-  }}
->
-  <h4
-    className="text-lg font-semibold"
-    style={{
-      marginBottom: isMobile ? "10px" : "16px",
-    }}
-  >
-    Korak {index + 1}
-  </h4>
-
-    <input
-  type="text"
-  placeholder="Naziv koraka"
-  value={step.name}
-  onChange={(e) => {
-    const updatedSteps = [...serviceSteps];
-
-    updatedSteps[index] = {
-      ...updatedSteps[index],
-      name: e.target.value,
-    };
-
-    setServiceSteps(updatedSteps);
-  }}
-  className="mb-3 block w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-4 focus:ring-[#611a1a]/25"
-  style={{ maxWidth: "420px" }}
-/>
-
-    <input
-  type="number"
-  onWheel={(e) => e.currentTarget.blur()}
-  placeholder="Trajanje (min)"
-  value={step.duration_minutes}
-  onChange={(e) => {
-    const updatedSteps = [...serviceSteps];
-
-    updatedSteps[index] = {
-      ...updatedSteps[index],
-      duration_minutes: e.target.value,
-    };
-
-    setServiceSteps(updatedSteps);
-  }}
-  className="mb-3 block w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-4 focus:ring-[#611a1a]/25"
-style={{ maxWidth: "420px" }}
-/>
-
-    <label className="flex items-center gap-2">
-      <input
-  type="checkbox"
-  className="h-5 w-5"
-  style={{ accentColor: "#611a1a" }}
-  checked={step.is_barber_busy}
-  onChange={(e) => {
-    const updatedSteps = [...serviceSteps];
-
-    updatedSteps[index] = {
-      ...updatedSteps[index],
-      is_barber_busy: e.target.checked,
-    };
-
-    setServiceSteps(updatedSteps);
-  }}
-/>
-
-      Osoblje je zauzeto
-    </label>
-    {serviceSteps.length > 1 && (
-  <div
- style={{
-  display: "flex",
-  justifyContent: "flex-end",
-  width: "100%",
-  marginTop: "-22px",
-  paddingRight: "15px",
-}}
->
-   <button
-  type="button"
-  onClick={() => {
-    const shouldDelete = window.confirm(
-      "Da li ste sigurni da želite izbrisati ovaj korak?"
-    );
-
-    if (!shouldDelete) return;
-
-    setServiceSteps(
-      serviceSteps.filter((_, stepIndex) => stepIndex !== index)
-    );
-  }}
-  className="rounded-lg px-4 py-2 text-white"
-  style={{ backgroundColor: "#ef4444" }}
->
-  {isMobile ? "Obriši" : "Obriši korak"}
-</button>
-  </div>
-)}
-  </div>
-))}
-<button
-  type="button"
-  onClick={() => {
-    setServiceSteps([
-      ...serviceSteps,
-      {
-        name: "",
-        duration_minutes: "",
-        is_barber_busy: true,
-      },
-    ]);
-  }}
-  className="mt-4 rounded-lg border px-4 py-2"
-  style={{
-    backgroundColor: "#ffffff",
-    color: "#611a1a",
-    borderColor: "#611a1a",
-  }}
->
-  + Dodaj korak
-</button>
-  </div>
-)}
-<div
-  className="flex gap-3"
-  style={{
-    ...(isMobile
-      ? {
-          flexWrap: "nowrap",
-          width: "100%",
-        }
-      : {}),
-  }}
->
-  <button
-    onClick={handleAddService}
-    className="rounded-lg px-5 py-3 text-white font-medium"
-    style={{
-  backgroundColor: "#611a1a",
-  ...(isMobile
-    ? {
-        paddingLeft: "12px",
-        paddingRight: "12px",
-        whiteSpace: "nowrap",
-      }
-    : {}),
-}}
-  >
-    {editingServiceId !== null ? "Sačuvaj izmjene" : "+ Dodaj uslugu"}
-    </button>
-
-  {(
-    <button
-      onClick={() => {
-  handleCancelServiceEdit();
-
-  if (isMobile) {
-    setTimeout(() => {
-      serviceFormRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-    }, 50);
-  }
-}}
-      className="rounded-lg px-5 py-3 font-medium"
-      style={{
-  border: "2px solid #dc2626",
-  color: "#dc2626",
-  ...(isMobile
-    ? {
-        paddingLeft: "12px",
-        paddingRight: "12px",
-        whiteSpace: "nowrap",
-      }
-    : {}),
-}}
-    >
-      Odustani
-    </button>
-  )}
-</div>
+          className="rounded-xl border bg-white font-semibold transition hover:bg-gray-50"
+          style={{
+            height: "50px",
+            padding: isMobile ? undefined : "0 28px",
+            fontSize: "16px",
+            color: "#374151",
+            borderColor: "#d1d5db",
+          }}
+        >
+          Odustani
+        </button>
+      </div>
     </div>
   )}
 
-  <div className="mb-4 space-y-2">
-   {services.map((service) => (
-  <div
-  key={service.id}
-  className="relative rounded-xl border transition-all"
-  style={{
-  maxWidth: "600px",
-  width: isMobile ? "100%" : "450px",
-  padding: isMobile ? "10px 12px" : "12px",
-  backgroundColor:
-    editingServiceId === service.id ? "#e5cccc" : "#ffffff",
-  borderColor:
-    editingServiceId === service.id ? "#611a1a" : "#d8caca",
-  borderWidth:
-    editingServiceId === service.id ? "2px" : "1px",
-}}
->
-    <div>
-        
-        <p
-  className="mb-1 text-xs font-semibold"
-  style={{ color: "#611a1a" }}
->
-  {
-    serviceCategories.find(
-      (category) => category.id === service.category_id
-    )?.name
-  }
-</p>
+  {/* Lista: tjänsterna grupperade efter kategori (bara visning). */}
+  {[
+    ...serviceCategories.map((category) => ({
+      key: String(category.id),
+      name: category.name,
+      items: services.filter(
+        (service) => service.category_id === category.id
+      ),
+    })),
+    {
+      key: "none",
+      name: "Bez kategorije",
+      items: services.filter(
+        (service) =>
+          !serviceCategories.some(
+            (category) => category.id === service.category_id
+          )
+      ),
+    },
+  ]
+    .filter((group) => group.items.length > 0)
+    .map((group) => (
+      <div key={group.key} className="mb-6">
+        <div
+          className="flex items-baseline gap-2"
+          style={{
+            paddingBottom: "8px",
+            borderBottom: "1px solid #ead1d1",
+          }}
+        >
+          <h3
+            className="font-bold"
+            style={{ fontSize: "17px", color: "#611a1a" }}
+          >
+            {group.name}
+          </h3>
 
-        <p className="text-lg font-semibold">
-          {service.name}
-        </p>
+          <span className="text-sm text-gray-500">
+            {group.items.length === 1
+              ? "1 usluga"
+              : `${group.items.length} usluge`}
+          </span>
+        </div>
 
-        {service.description && (
-          <p className="mt-1 text-sm text-gray-500">
-            {service.description}
+        {group.key === "none" && (
+          <p
+            className="text-sm"
+            style={{ marginTop: "8px", color: "#b45309" }}
+          >
+            Ove usluge se ne prikazuju klijentima. Kliknite „Uredi“ i
+            izaberite kategoriju.
           </p>
         )}
 
-       <div
-  style={{
-    marginTop: isMobile ? "4px" : "8px",
-    display: "grid",
-    gridTemplateColumns: isMobile ? "1fr 42%" : "280px 1fr",
-    columnGap: isMobile ? "12px" : "20px",
-    alignItems: "start",
-  }}
->
-  {/* Vänster sida */}
-  <div>
-    <div className="space-y-1">
-      {service.price && (
-        <p className="font-bold">
-          {service.price} KM
-        </p>
-      )}
+        <div
+          style={{
+            marginTop: "12px",
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+            gap: isMobile ? "10px" : "14px",
+          }}
+        >
+          {group.items.map((service) => {
+            const isEditing = editingServiceId === service.id;
 
-      {service.duration_minutes && (
-        <p className="font-bold">
-          Trajanje: {service.duration_minutes} min
-        </p>
-      )}
-    </div>
+            const staffNames = (service.service_barbers || [])
+              .map(
+                (serviceBarber: any) =>
+                  barbers.find(
+                    (barber) => barber.id === serviceBarber.barber_id
+                  )?.name
+              )
+              .filter(Boolean);
 
-    <div
-      className="space-y-1"
-      style={{
-        marginTop: isMobile ? "6px" : "12px",
-      }}
-    >
-      <p className="text-xs text-gray-500">
-        Cijena:{" "}
-        {service.show_price ? "Prikazana" : "Skrivena"}
-      </p>
+            const priceAndDuration = [
+              service.duration_minutes
+                ? `${service.duration_minutes} min`
+                : null,
+              service.price ? `${service.price} KM` : null,
+            ]
+              .filter(Boolean)
+              .join(" · ");
 
-      <p className="text-xs text-gray-500">
-        Trajanje:{" "}
-        {service.show_duration ? "Prikazano" : "Skriveno"}
-      </p>
-    </div>
-  </div>
+            return (
+              <div
+                key={service.id}
+                className="flex flex-col rounded-2xl border shadow-sm"
+                style={{
+                  padding: "14px 16px",
+                  gap: "6px",
+                  backgroundColor: isEditing ? "#f5e6e6" : "#ffffff",
+                  borderColor: isEditing ? "#611a1a" : "#ead1d1",
+                  borderWidth: isEditing ? "2px" : "1px",
+                }}
+              >
+                <p
+                  className="font-bold"
+                  style={{ fontSize: "16px", lineHeight: 1.3 }}
+                >
+                  {service.name}
+                </p>
 
-  {/* Höger sida – frisörer */}
-  <div>
-    <p className="mb-1 text-base font-semibold text-gray-700">
-      Osoblje
-    </p>
+                {service.description && (
+                  <p
+                    className="text-sm text-gray-500"
+                    style={{ lineHeight: 1.4 }}
+                  >
+                    {service.description}
+                  </p>
+                )}
 
-    {service.service_barbers?.length > 0 ? (
-      <div className="space-y-1">
-        {service.service_barbers.map((serviceBarber: any) => {
-          const barber = barbers.find(
-            (barber) => barber.id === serviceBarber.barber_id
-          );
+                {priceAndDuration && (
+                  <p
+                    className="font-semibold"
+                    style={{ fontSize: "15px", color: "#111827" }}
+                  >
+                    {priceAndDuration}
+                  </p>
+                )}
 
-          if (!barber) return null;
+                <p className="text-sm text-gray-600">
+                  {staffNames.length > 0
+                    ? staffNames.join(", ")
+                    : "Svo osoblje"}
+                </p>
 
-          return (
-            <p
-              key={serviceBarber.barber_id}
-              className="text-sm text-gray-600"
-            >
-              {barber.name}
-            </p>
-          );
-        })}
+                {(!service.show_price || !service.show_duration) && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {!service.show_price && (
+                      <span
+                        className="rounded-full text-xs text-gray-600"
+                        style={{
+                          padding: "3px 8px",
+                          backgroundColor: "#f3f4f6",
+                        }}
+                      >
+                        Cijena skrivena
+                      </span>
+                    )}
+
+                    {!service.show_duration && (
+                      <span
+                        className="rounded-full text-xs text-gray-600"
+                        style={{
+                          padding: "3px 8px",
+                          backgroundColor: "#f3f4f6",
+                        }}
+                      >
+                        Trajanje skriveno
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                <div
+                  className="flex gap-2"
+                  style={{
+                    marginTop: "auto",
+                    paddingTop: "6px",
+                    justifyContent: isMobile ? undefined : "flex-end",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => handleEditService(service)}
+                    className="rounded-xl border bg-white font-semibold transition hover:opacity-90"
+                    style={{
+                      height: "40px",
+                      flex: isMobile ? 1 : undefined,
+                      padding: isMobile ? undefined : "0 20px",
+                      fontSize: "14px",
+                      color: "#611a1a",
+                      borderColor: "#611a1a",
+                    }}
+                  >
+                    Uredi
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteService(service.id)}
+                    className="rounded-xl border bg-white font-semibold transition hover:opacity-90"
+                    style={{
+                      height: "40px",
+                      flex: isMobile ? 1 : undefined,
+                      padding: isMobile ? undefined : "0 20px",
+                      fontSize: "14px",
+                      color: "#ef4444",
+                      borderColor: "#ef4444",
+                    }}
+                  >
+                    Obriši
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
-    ) : (
-      <p className="text-sm text-gray-400">
-        Nije odabrano
-      </p>
-    )}
-  </div>
-</div>
-
-</div>
-
-<div
-  className="flex w-full gap-2"
-  style={{
-    marginTop: isMobile ? "8px" : "12px",
-  }}
->
-  <button
-  type="button"
-  onClick={() => handleEditService(service)}
-  className="rounded-lg border px-4 py-2"
-  style={{
-  backgroundColor: "#ffffff",
-  color: "#611a1a",
-  borderColor: "#611a1a",
-  marginLeft: "auto",
-  padding: isMobile ? "6px 12px" : undefined,
-}}
->
-  Edit
-</button>
-
-      <button
-        onClick={() => handleDeleteService(service.id)}
-        className="rounded-lg px-4 py-2 text-white"
-        style={{
-  backgroundColor: "#ef4444",
-  padding: isMobile ? "6px 12px" : undefined,
-}}
-      >
-        Obriši
-      </button>
-    </div>
-  </div>
-))}
-  </div>
+    ))}
 
 
     </div>
