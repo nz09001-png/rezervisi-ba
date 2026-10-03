@@ -188,6 +188,20 @@ const formattedDate = date
   </p>
 )}
 
+      {/* Utan e-post finns ingen avbokningslänk – berätta hur man avbokar. */}
+      {!email?.trim() && (
+  <p
+    className={outfit.className}
+    style={{
+      color: "#666",
+      fontSize: "14px",
+      marginBottom: isMobile ? "14px" : "20px",
+    }}
+  >
+    Za otkazivanje termina kontaktirajte salon.
+  </p>
+)}
+
       {salonSlug && (
         <button
   type="button"

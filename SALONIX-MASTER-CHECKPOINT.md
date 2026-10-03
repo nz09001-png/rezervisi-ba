@@ -292,9 +292,12 @@ KLART i punkt 8 (3 oktober 2026):
   på desktop. "Rezervacija potvrđena" vinröd. Cancel-sidans kortrubriker
   får vara kvar svarta (ägarens val).
 - Avbokningsknappen på /cancel: 16 px rundning och fet text.
+- /uspjesno utan e-post: "Za otkazivanje termina kontaktirajte salon."
+  (ägaren vill INTE visa salongens telefonnummer där). Avbokningslänk i
+  sms kan komma efter punkt 12.
 
 KVAR i punkt 8 (i den här ordningen):
-1. Resten av listan: kunder utan e-post kan inte avboka, cancel-sidan
+1. Resten av listan: cancel-sidan
    visar inte bokningen, alert()-rutor, tom vecka utan text,
    salongssidan (klickbar telefon, öppettider, galleripilar, "salon"),
    ingen väg tillbaka till startsidan, enkelt mejl, admininloggningens
