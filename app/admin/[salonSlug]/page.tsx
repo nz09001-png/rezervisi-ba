@@ -217,6 +217,7 @@ const [showNotifications, setShowNotifications] = useState(false);
 const [showSettingsMenu, setShowSettingsMenu] = useState(false);
 const [selectedSettings, setSelectedSettings] = useState<string[]>([]);
 const [showServiceForm, setShowServiceForm] = useState(false);
+const [timesTab, setTimesTab] = useState<"week" | "day">("week");
 const [isUploadingImage, setIsUploadingImage] = useState(false);
 const [selectedServiceBarberIds, setSelectedServiceBarberIds] = useState<number[]>([]);
 const [showFilterMenu, setShowFilterMenu] = useState(false);
@@ -4584,26 +4585,655 @@ style={{
   </div>
 )}
 {selectedSettings.includes("times") && (
-  <div className="mb-6 rounded-2xl bg-white p-4 shadow">
-    <div className="mx-auto max-w-3xl">
-      <h2 className="mb-4 text-xl font-bold">Termini</h2>
+  <div className="mb-6">
+    <h2 className="font-bold" style={{ fontSize: isMobile ? "24px" : "30px" }}>
+      Slobodni termini
+    </h2>
 
-  <div
-  className="mb-4 rounded-xl border p-4"
-  style={{
-    width: "500px",
-    maxWidth: "100%",
-    backgroundColor: "#fdfdfd",
-    borderColor: "#c9a3a3",
+    <p className="text-gray-500" style={{ marginTop: "4px", fontSize: "15px", lineHeight: 1.4 }}>
+      Ovdje određujete u koje vrijeme klijenti mogu rezervisati.
+    </p>
+
+    <div
+      className="overflow-hidden rounded-2xl border"
+      style={{
+        marginTop: "16px",
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        borderColor: "#d1d5db",
+        maxWidth: isMobile ? undefined : "560px",
+      }}
+    >
+      {[
+        { key: "week" as const, title: "📅 Raspored po sedmici", text: "Za više sedmica odjednom" },
+        { key: "day" as const, title: "✏️ Jedan dan", text: "Izuzeci i pojedinačni termini" },
+      ].map((tab) => {
+        const isActive = timesTab === tab.key;
+
+        return (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => setTimesTab(tab.key)}
+            className="flex flex-col items-center justify-center text-center"
+            style={{
+              padding: "10px 6px",
+              backgroundColor: isActive ? "#611a1a" : "#ffffff",
+              color: isActive ? "#ffffff" : "#374151",
+            }}
+          >
+            <span className="font-semibold" style={{ fontSize: "15px" }}>
+              {tab.title}
+            </span>
+
+            <span
+              style={{
+                marginTop: "2px",
+                fontSize: "12px",
+                color: isActive ? "#f3dede" : "#6b7280",
+              }}
+            >
+              {tab.text}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+
+    {timesTab === "week" && (
+      <div
+        className="rounded-2xl border bg-white shadow-sm"
+        style={{
+          marginTop: "16px",
+          padding: isMobile ? "4px 16px 16px" : "8px 26px 22px",
+          borderColor: "#ead1d1",
+          maxWidth: "880px",
+        }}
+      >
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+            columnGap: "32px",
+          }}
+        >
+
+        <div
+          className="flex"
+          style={{ gap: "12px", padding: "14px 0", borderBottom: "1px solid #f1e4e4" }}
+        >
+          <div
+            className="flex shrink-0 items-center justify-center rounded-full font-bold text-white"
+            style={{ width: "28px", height: "28px", fontSize: "14px", backgroundColor: "#611a1a" }}
+          >
+            1
+          </div>
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p className="font-bold" style={{ fontSize: "16px" }}>
+              Za koga?
+            </p>
+            <p className="text-gray-500" style={{ fontSize: "13px", marginTop: "2px" }}>
+              Izaberite jednog ili više članova osoblja.
+            </p>
+
+            <div className="flex flex-wrap gap-2" style={{ marginTop: "10px" }}>
+              {(() => {
+                const allSelected =
+                  barbers.length > 0 &&
+                  barbers.every((barber) =>
+                    selectedScheduleBarberIds.includes(barber.id)
+                  );
+
+                return (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSelectedScheduleBarberIds(
+                        allSelected ? [] : barbers.map((barber) => barber.id)
+                      )
+                    }
+                    className="rounded-full border transition"
+                style={{
+                  height: "40px",
+                  padding: "0 14px",
+                  fontSize: "15px",
+                  fontWeight: allSelected ? 600 : 400,
+                  backgroundColor: allSelected ? "#611a1a" : "#ffffff",
+                  borderColor: allSelected ? "#611a1a" : "#d1d5db",
+                  color: allSelected ? "#ffffff" : "#111827",
+                }}
+                  >
+                    {allSelected ? "✓ " : ""}Svi
+                  </button>
+                );
+              })()}
+
+              {barbers.map((barber) => {
+                const isSelected = selectedScheduleBarberIds.includes(barber.id);
+
+                return (
+                  <button
+                    key={barber.id}
+                    type="button"
+                    onClick={() => {
+                      if (!isSelected) {
+                        setSelectedScheduleBarberIds((prev) => [
+                          ...prev,
+                          barber.id,
+                        ]);
+                      } else {
+                        setSelectedScheduleBarberIds((prev) =>
+                          prev.filter((id) => id !== barber.id)
+                        );
+                      }
+                    }}
+                    className="rounded-full border transition"
+                style={{
+                  height: "40px",
+                  padding: "0 14px",
+                  fontSize: "15px",
+                  fontWeight: isSelected ? 600 : 400,
+                  backgroundColor: isSelected ? "#611a1a" : "#ffffff",
+                  borderColor: isSelected ? "#611a1a" : "#d1d5db",
+                  color: isSelected ? "#ffffff" : "#111827",
+                }}
+                  >
+                    {isSelected ? "✓ " : ""}
+                    {barber.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="flex"
+          style={{ gap: "12px", padding: "14px 0", borderBottom: "1px solid #f1e4e4" }}
+        >
+          <div
+            className="flex shrink-0 items-center justify-center rounded-full font-bold text-white"
+            style={{ width: "28px", height: "28px", fontSize: "14px", backgroundColor: "#611a1a" }}
+          >
+            2
+          </div>
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p className="font-bold" style={{ fontSize: "16px" }}>
+              Za koji period?
+            </p>
+
+            <div
+              style={{
+                marginTop: "10px",
+                display: "grid",
+                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                gap: "10px",
+              }}
+            >
+              <div style={{ minWidth: 0 }}>
+                <label className="mb-1.5 block text-sm font-bold text-gray-700">
+                  Od datuma
+                </label>
+
+    <DatePicker
+  ref={scheduleStartDatePickerRef}
+  selected={
+    scheduleStartDate
+      ? new Date(`${scheduleStartDate}T00:00:00`)
+      : null
+  }
+  onChange={(date: Date | null) => {
+    setScheduleStartDate(date ? format(date, "yyyy-MM-dd") : "");
   }}
->
-  <h3 className="mb-1 text-lg font-semibold">
-    Posebni termini
-  </h3>
+  locale="bs"
+dateFormat="dd.MM.yyyy"
+placeholderText={isMobile ? "Odaberite" : "Odaberite datum"}
+popperPlacement={isMobile ? "bottom-start" : undefined}
+popperClassName={isMobile ? "mobile-datepicker-popper" : undefined}
+formatWeekDay={(dayName) => {
+    const days: Record<string, string> = {
+      nedjelja: "ned",
+      ponedjeljak: "pon",
+      utorak: "uto",
+      srijeda: "sri",
+      sreda: "sri",
+      četvrtak: "čet",
+      petak: "pet",
+      subota: "sub",
+    };
 
-<p className="mb-4 text-sm text-gray-500">
-  Pregledajte, dodajte ili uklonite pojedinačne termine.
-</p>
+    return days[dayName.toLowerCase()] ?? dayName.slice(0, 3);
+  }}
+  calendarContainer={({ className, children }) => (
+    <CalendarContainer className={className}>
+      {children}
+
+      <div
+        style={{
+          padding: "8px",
+          borderTop: "1px solid #e5e7eb",
+          textAlign: "center",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setScheduleStartDate("");
+            scheduleStartDatePickerRef.current?.setOpen(false);
+          }}
+          style={{
+            color: "#611a1a",
+            fontSize: "14px",
+            fontWeight: 600,
+          }}
+        >
+          Poništi
+        </button>
+      </div>
+    </CalendarContainer>
+  )}
+  className="w-full rounded-xl border border-gray-300 bg-white p-3"
+/>
+
+              </div>
+
+              <div style={{ minWidth: 0 }}>
+                <label className="mb-1.5 block text-sm font-bold text-gray-700">
+                  Do datuma
+                </label>
+
+    <DatePicker
+  ref={scheduleEndDatePickerRef}
+  selected={
+    scheduleEndDate
+      ? new Date(`${scheduleEndDate}T00:00:00`)
+      : null
+  }
+  onChange={(date: Date | null) => {
+    setScheduleEndDate(date ? format(date, "yyyy-MM-dd") : "");
+  }}
+locale="bs"
+dateFormat="dd.MM.yyyy"
+placeholderText={isMobile ? "Odaberite" : "Odaberite datum"}
+popperPlacement={isMobile ? "bottom-start" : undefined}
+popperClassName={isMobile ? "mobile-datepicker-popper-end" : undefined}
+formatWeekDay={(dayName) => {
+    const days: Record<string, string> = {
+      nedjelja: "ned",
+      ponedjeljak: "pon",
+      utorak: "uto",
+      srijeda: "sri",
+      sreda: "sri",
+      četvrtak: "čet",
+      petak: "pet",
+      subota: "sub",
+    };
+
+    return days[dayName.toLowerCase()] ?? dayName.slice(0, 3);
+  }}
+  calendarContainer={({ className, children }) => (
+    <CalendarContainer className={className}>
+      {children}
+
+      <div
+        style={{
+          padding: "8px",
+          borderTop: "1px solid #e5e7eb",
+          textAlign: "center",
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            setScheduleEndDate("");
+            scheduleEndDatePickerRef.current?.setOpen(false);
+          }}
+          style={{
+            color: "#611a1a",
+            fontSize: "14px",
+            fontWeight: 600,
+          }}
+        >
+          Poništi
+        </button>
+      </div>
+    </CalendarContainer>
+  )}
+  
+  className="w-full rounded-xl border border-gray-300 bg-white p-3"
+/>
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="flex"
+          style={{ gap: "12px", padding: "14px 0", borderBottom: "1px solid #f1e4e4" }}
+        >
+          <div
+            className="flex shrink-0 items-center justify-center rounded-full font-bold text-white"
+            style={{ width: "28px", height: "28px", fontSize: "14px", backgroundColor: "#611a1a" }}
+          >
+            3
+          </div>
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p className="font-bold" style={{ fontSize: "16px" }}>
+              Koje dane u sedmici?
+            </p>
+
+            <div className="flex flex-wrap gap-2" style={{ marginTop: "10px" }}>
+              {["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"].map((day) => {
+                const isSelected = selectedDays.includes(day);
+
+                return (
+                  <button
+                    key={day}
+                    type="button"
+                    onClick={() => {
+                      setSelectedDays((currentDays) =>
+                        currentDays.includes(day)
+                          ? currentDays.filter((selectedDay) => selectedDay !== day)
+                          : [...currentDays, day]
+                      );
+                    }}
+                    className="rounded-full border transition"
+                style={{
+                  height: "40px",
+                  padding: "0 14px",
+                  fontSize: "15px",
+                  fontWeight: isSelected ? 600 : 400,
+                  backgroundColor: isSelected ? "#611a1a" : "#ffffff",
+                  borderColor: isSelected ? "#611a1a" : "#d1d5db",
+                  color: isSelected ? "#ffffff" : "#111827",
+                  minWidth: "54px",
+                }}
+                  >
+                    {day}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="flex"
+          style={{ gap: "12px", padding: "14px 0", borderBottom: "1px solid #f1e4e4" }}
+        >
+          <div
+            className="flex shrink-0 items-center justify-center rounded-full font-bold text-white"
+            style={{ width: "28px", height: "28px", fontSize: "14px", backgroundColor: "#611a1a" }}
+          >
+            4
+          </div>
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p className="font-bold" style={{ fontSize: "16px" }}>
+              U koje vrijeme?
+            </p>
+
+            <div
+              style={{
+                marginTop: "10px",
+                display: "grid",
+                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                gap: "10px",
+              }}
+            >
+              <div style={{ minWidth: 0 }}>
+                <label className="mb-1.5 block text-sm font-bold text-gray-700">
+                  Od
+                </label>
+
+                <input
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="block w-full rounded-xl border border-gray-300 bg-white text-left [&::-webkit-date-and-time-value]:m-0 [&::-webkit-date-and-time-value]:text-left [&::-webkit-date-and-time-value]:leading-[44px]"
+                  style={{
+                    height: "46px",
+                    lineHeight: "44px",
+                    padding: "0 10px",
+                    fontSize: "16px",
+                    minWidth: 0,
+                    maxWidth: "100%",
+                    WebkitAppearance: "none",
+                    appearance: "none",
+                  }}
+                />
+              </div>
+
+              <div style={{ minWidth: 0 }}>
+                <label className="mb-1.5 block text-sm font-bold text-gray-700">
+                  Do
+                </label>
+
+                <input
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  className="block w-full rounded-xl border border-gray-300 bg-white text-left [&::-webkit-date-and-time-value]:m-0 [&::-webkit-date-and-time-value]:text-left [&::-webkit-date-and-time-value]:leading-[44px]"
+                  style={{
+                    height: "46px",
+                    lineHeight: "44px",
+                    padding: "0 10px",
+                    fontSize: "16px",
+                    minWidth: 0,
+                    maxWidth: "100%",
+                    WebkitAppearance: "none",
+                    appearance: "none",
+                  }}
+                />
+              </div>
+            </div>
+
+            <label className="mb-1.5 block text-sm font-bold text-gray-700" style={{ marginTop: "12px" }}>
+              Novi termin svakih
+            </label>
+
+            <div className="flex flex-wrap gap-2">
+              {["15", "30", "45", "60"].map((minutes) => {
+                const isSelected = intervalMinutes === minutes;
+
+                return (
+                  <button
+                    key={minutes}
+                    type="button"
+                    onClick={() => setIntervalMinutes(minutes)}
+                    className="rounded-full border transition"
+                style={{
+                  height: "40px",
+                  padding: "0 14px",
+                  fontSize: "15px",
+                  fontWeight: isSelected ? 600 : 400,
+                  backgroundColor: isSelected ? "#611a1a" : "#ffffff",
+                  borderColor: isSelected ? "#611a1a" : "#d1d5db",
+                  color: isSelected ? "#ffffff" : "#111827",
+                }}
+                  >
+                    {minutes} min
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        </div>
+
+        <div
+          className="flex"
+          style={{ gap: "12px", padding: "14px 0", borderBottom: "1px solid #f1e4e4" }}
+        >
+          <div
+            className="flex shrink-0 items-center justify-center rounded-full font-bold text-white"
+            style={{ width: "28px", height: "28px", fontSize: "14px", backgroundColor: "#611a1a" }}
+          >
+            5
+          </div>
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p className="font-bold" style={{ fontSize: "16px" }}>
+              Pregledajte termine
+            </p>
+            <p className="text-gray-500" style={{ fontSize: "13px", marginTop: "2px" }}>
+              Termini se ne čuvaju dok ne kliknete „Sačuvaj termine“.
+            </p>
+
+            <button
+              type="button"
+              onClick={handleGenerateTimes}
+              className="rounded-xl border font-semibold transition hover:bg-gray-50"
+              style={{
+                marginTop: "10px",
+                height: "46px",
+                padding: "0 20px",
+                fontSize: "15px",
+                color: "#611a1a",
+                borderColor: "#611a1a",
+                backgroundColor: "#ffffff",
+              }}
+            >
+              {generatedTimes.length > 0 ? "Osvježi pregled" : "Prikaži pregled"}
+            </button>
+          </div>
+        </div>
+
+        {generatedTimes.length > 0 && (() => {
+          const groupedTimes = Object.entries(
+            generatedTimes.reduce((grouped: Record<string, string[]>, slot) => {
+              if (!grouped[slot.date]) {
+                grouped[slot.date] = [];
+              }
+
+              grouped[slot.date].push(slot.time);
+              return grouped;
+            }, {})
+          );
+
+          const staffNames = barbers
+            .filter((barber) => selectedScheduleBarberIds.includes(barber.id))
+            .map((barber) => barber.name);
+
+          const firstDate = groupedTimes[0][0];
+          const lastDate = groupedTimes[groupedTimes.length - 1][0];
+
+          return (
+            <>
+              <div
+                className="rounded-2xl"
+                style={{ marginTop: "16px", padding: "14px", backgroundColor: "#faf7f7" }}
+              >
+                <p className="font-bold" style={{ fontSize: "15px", color: "#611a1a" }}>
+                  Pregled
+                </p>
+
+                <p style={{ fontSize: "14px", marginTop: "6px", lineHeight: 1.5 }}>
+                  <b>{staffNames.join(", ")}</b> ·{" "}
+                  {format(new Date(`${firstDate}T00:00:00`), "dd.MM.yyyy")}–
+                  {format(new Date(`${lastDate}T00:00:00`), "dd.MM.yyyy")}
+                </p>
+
+                <p style={{ fontSize: "14px", marginTop: "6px" }}>
+                  <span className="font-bold" style={{ fontSize: "22px", color: "#611a1a" }}>
+                    {groupedTimes.length} {groupedTimes.length === 1 ? "dan" : "dana"}
+                  </span>
+                  {" "}· {(groupedTimes[0][1] as string[]).length} termina po danu
+                </p>
+
+                {groupedTimes
+                  .slice(0, showPreview ? 5 : 1)
+                  .map(([date, dayTimes]) => (
+                    <div key={date} style={{ marginTop: "10px" }}>
+                      <p className="font-bold" style={{ fontSize: "13px" }}>
+                        {format(new Date(`${date}T00:00:00`), "dd.MM.yyyy")}
+                      </p>
+
+                      <div className="flex flex-wrap" style={{ gap: "6px", marginTop: "6px" }}>
+                        {(dayTimes as string[]).map((time) => (
+                          <span
+                            key={`${date}-${time}`}
+                            className="rounded-lg border bg-white"
+                            style={{ fontSize: "13px", padding: "4px 8px", borderColor: "#ead1d1" }}
+                          >
+                            {time}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+
+                {groupedTimes.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setShowPreview(!showPreview)}
+                    className="font-semibold"
+                    style={{ marginTop: "10px", fontSize: "13px", color: "#611a1a" }}
+                  >
+                    {showPreview ? "Prikaži manje" : "Prikaži još dana ›"}
+                  </button>
+                )}
+              </div>
+
+              <div
+                className="rounded-xl border"
+                style={{
+                  marginTop: "14px",
+                  padding: "12px",
+                  fontSize: "14px",
+                  lineHeight: 1.45,
+                  borderColor: "#f3c7a6",
+                  backgroundColor: "#fff7ed",
+                  color: "#9a3412",
+                }}
+              >
+                ⚠ Ako {staffNames.join(", ")} već {staffNames.length === 1 ? "ima" : "imaju"} termine
+                u ovim danima, oni će biti <b>zamijenjeni</b> novim terminima.
+              </div>
+            </>
+          );
+        })()}
+
+        <button
+          type="button"
+          onClick={handleReplaceTimes}
+          disabled={generatedTimes.length === 0}
+          className="rounded-xl font-bold text-white"
+          style={{
+            marginTop: "14px",
+            height: "52px",
+            width: isMobile ? "100%" : undefined,
+            padding: isMobile ? undefined : "0 30px",
+            fontSize: "16px",
+            backgroundColor: "#611a1a",
+            cursor: generatedTimes.length === 0 ? "not-allowed" : "pointer",
+            opacity: generatedTimes.length === 0 ? 0.5 : 1,
+          }}
+        >
+          {timesSaved ? "Sačuvano ✓" : "Sačuvaj termine"}
+        </button>
+      </div>
+    )}
+
+    {timesTab === "day" && (
+      <div
+        className="rounded-2xl border bg-white shadow-sm"
+        style={{
+          marginTop: "16px",
+          padding: isMobile ? "16px" : "22px 26px",
+          borderColor: "#ead1d1",
+          maxWidth: "880px",
+        }}
+      >
+        <div style={{ maxWidth: isMobile ? undefined : "260px" }}>
+          <label className="mb-1.5 block text-sm font-bold text-gray-700">
+            Datum
+          </label>
 
 <DatePicker
   ref={datePickerRef}
@@ -4659,585 +5289,185 @@ formatWeekDay={(dayName) => {
       </div>
     </CalendarContainer>
   )}
-  className="mb-4 w-full rounded-xl border border-gray-300 bg-white p-3"
-/>
-
-<div
-  className="mb-4"
-  style={{
-    width: "220px",
-    maxWidth: "100%",
-  }}
->
-  <label className="mb-2 block text-sm font-medium">
-    Osoblje
-  </label>
-
-  <select
-    value={manualTimeBarberId}
-    onChange={(e) =>
-      setManualTimeBarberId(
-        e.target.value === "all" ? "all" : Number(e.target.value)
-      )
-    }
-    className="w-full rounded-xl border border-gray-300 bg-white p-3"
-  >
-    <option value="all">Cijeli salon</option>
-
-    {barbers.map((barber) => (
-      <option key={barber.id} value={barber.id}>
-        {barber.name}
-      </option>
-    ))}
-  </select>
-</div>
-
-{selectedDate && (
-  <h4 className="mb-3 text-lg font-semibold">
-    Termini za {format(new Date(`${selectedDate}T00:00:00`), "dd.MM.yyyy")}
-  </h4>
-)}
-  {selectedDate && (
-  <>
-  {times.length === 0 ? (
-    <div className="rounded-xl bg-gray-100 p-4 text-center text-gray-500">
-      Nema termina za odabrani datum.
-    </div>
-  ) : (
-    <div
-  className="mb-4 space-y-1"
-  style={{
-    width: "350px",
-    maxWidth: "100%",
-  }}
->
-  {times
-  .filter(
-    (item, index, array) =>
-      manualTimeBarberId !== "all" ||
-      index === array.findIndex((other) => other.time === item.time)
-  )
-  .map((item) => (
-<div
-  key={item.id}
-  className="flex items-center justify-between rounded-xl"
-  style={{
-    backgroundColor: "#ffffff",
-    border: "1px solid #ead1d1",
-    padding: isMobile ? "5px 8px" : "6px 8px",
-  }}
->
-  <span>{item.time}</span>
-
-  <button
-    onClick={() => handleDeleteTime(item.id)}
-    className="rounded-lg font-medium text-white"
-    style={{
-      backgroundColor: "#ef4444",
-      padding: isMobile ? "4px 10px" : "4px 12px",
-    }}
-  >
-    Obriši
-  </button>
-</div>
-            ))}
-      </div>
-    )}
-  </>
-)}
-{selectedDate && (
-  <div
-    className="mt-4"
-    style={{
-      width: "500px",
-      maxWidth: "100%",
-    }}
-  >
-    <label className="mb-2 block text-sm font-medium">
-      Dodaj novi termin
-    </label>
-
-<div
-  style={{
-    display: "flex",
-    gap: isMobile ? "10px" : "12px",
-    width: "100%",
-    alignItems: "stretch",
-  }}
->
-  <input
-    type="time"
-    value={newTime}
-    onChange={(e) => setNewTime(e.currentTarget.value)}
-    className="rounded-lg border"
-    style={{
-      width: isMobile ? "150px" : "200px",
-      maxWidth: "100%",
-      padding: isMobile ? "8px 10px" : "8px",
-    }}
-  />
-
-  <button
-    type="button"
-    onClick={handleAddTime}
-    className="rounded-lg font-semibold text-white"
-    style={{
-      backgroundColor: "#611a1a",
-      color: "white",
-      border: "1px solid #611a1a",
-      padding: isMobile ? "8px 14px" : "8px 20px",
-      whiteSpace: "nowrap",
-    }}
-  >
-    Dodaj termin
-  </button>
-</div>
-
-    <button
-      type="button"
-      onClick={handleDeleteAllTimesForDate}
-      className="rounded-lg px-4 py-2 font-medium"
-      style={{
-  width: "355px",
-  maxWidth: "100%",
-  marginTop: "12px",
-  marginBottom: "15px",
-  backgroundColor: "#ef4444",
-  color: "white",
-  border: "1px solid #ef4444",
-}}
-    >
-      Obriši sve termine za datum
-    </button>
-  </div>
-)}
-  
-</div>
-
-<div
-  className="rounded-xl border p-4"
-  style={{
-    width: "500px",
-    maxWidth: "100%",
-    backgroundColor: "#fdfdfd",
-    borderColor: "#c9a3a3",
-  }}
->
-  <h3 className="text-lg font-bold">Standardni termini</h3>
-
-  <p className="mt-1 text-sm text-gray-500">
-    Odaberite radno vrijeme, interval i dane u sedmici.
-  </p>
-
-  <div className="mt-4">
-  <p className="mb-1 font-semibold">Osoblje</p>
-
-  <div className="flex flex-wrap gap-4">
-    {barbers.map((barber) => (
-      <label
-        key={barber.id}
-        className="flex items-center gap-2 cursor-pointer"
-      >
-        <input
-          type="checkbox"
-          checked={selectedScheduleBarberIds.includes(barber.id)}
-          style={{ accentColor: "#611a1a" }}
-          onChange={(e) => {
-            if (e.target.checked) {
-              setSelectedScheduleBarberIds((prev) => [
-                ...prev,
-                barber.id,
-              ]);
-            } else {
-              setSelectedScheduleBarberIds((prev) =>
-                prev.filter((id) => id !== barber.id)
-              );
-            }
-          }}
-        />
-
-        <span>{barber.name}</span>
-      </label>
-    ))}
-  </div>
-</div>
-
-  <div
-  className="mt-3"
-  style={{
-  display: "grid",
-  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-  gap: isMobile ? "10px" : "16px",
-  width: isMobile ? "100%" : "400px",
-  maxWidth: "100%",
-}}
->
-  <div
-  style={{
-    width: isMobile ? "100%" : "194px",
-    maxWidth: "100%",
-    minWidth: 0,
-  }}
->
-    <label className="mb-1 block text-sm font-semibold">
-      Od datuma
-    </label>
-
-    <DatePicker
-  ref={scheduleStartDatePickerRef}
-  selected={
-    scheduleStartDate
-      ? new Date(`${scheduleStartDate}T00:00:00`)
-      : null
-  }
-  onChange={(date: Date | null) => {
-    setScheduleStartDate(date ? format(date, "yyyy-MM-dd") : "");
-  }}
-  locale="bs"
-dateFormat="dd.MM.yyyy"
-placeholderText="Odaberite datum"
-popperPlacement={isMobile ? "bottom-start" : undefined}
-popperClassName={isMobile ? "mobile-datepicker-popper" : undefined}
-formatWeekDay={(dayName) => {
-    const days: Record<string, string> = {
-      nedjelja: "ned",
-      ponedjeljak: "pon",
-      utorak: "uto",
-      srijeda: "sri",
-      sreda: "sri",
-      četvrtak: "čet",
-      petak: "pet",
-      subota: "sub",
-    };
-
-    return days[dayName.toLowerCase()] ?? dayName.slice(0, 3);
-  }}
-  calendarContainer={({ className, children }) => (
-    <CalendarContainer className={className}>
-      {children}
-
-      <div
-        style={{
-          padding: "8px",
-          borderTop: "1px solid #e5e7eb",
-          textAlign: "center",
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => {
-            setScheduleStartDate("");
-            scheduleStartDatePickerRef.current?.setOpen(false);
-          }}
-          style={{
-            color: "#611a1a",
-            fontSize: "14px",
-            fontWeight: 600,
-          }}
-        >
-          Poništi
-        </button>
-      </div>
-    </CalendarContainer>
-  )}
   className="w-full rounded-xl border border-gray-300 bg-white p-3"
 />
-  </div>
 
-  <div
-  style={{
-    width: isMobile ? "100%" : "194px",
-    maxWidth: "100%",
-    minWidth: 0,
-  }}
->
-    <label className="mb-1 block text-sm font-semibold">
-      Do datuma
-    </label>
-
-    <DatePicker
-  ref={scheduleEndDatePickerRef}
-  selected={
-    scheduleEndDate
-      ? new Date(`${scheduleEndDate}T00:00:00`)
-      : null
-  }
-  onChange={(date: Date | null) => {
-    setScheduleEndDate(date ? format(date, "yyyy-MM-dd") : "");
-  }}
-locale="bs"
-dateFormat="dd.MM.yyyy"
-placeholderText="Odaberite datum"
-popperPlacement={isMobile ? "bottom-start" : undefined}
-popperClassName={isMobile ? "mobile-datepicker-popper-end" : undefined}
-formatWeekDay={(dayName) => {
-    const days: Record<string, string> = {
-      nedjelja: "ned",
-      ponedjeljak: "pon",
-      utorak: "uto",
-      srijeda: "sri",
-      sreda: "sri",
-      četvrtak: "čet",
-      petak: "pet",
-      subota: "sub",
-    };
-
-    return days[dayName.toLowerCase()] ?? dayName.slice(0, 3);
-  }}
-  calendarContainer={({ className, children }) => (
-    <CalendarContainer className={className}>
-      {children}
-
-      <div
-        style={{
-          padding: "8px",
-          borderTop: "1px solid #e5e7eb",
-          textAlign: "center",
-        }}
-      >
-        <button
-          type="button"
-          onClick={() => {
-            setScheduleEndDate("");
-            scheduleEndDatePickerRef.current?.setOpen(false);
-          }}
-          style={{
-            color: "#611a1a",
-            fontSize: "14px",
-            fontWeight: 600,
-          }}
-        >
-          Poništi
-        </button>
-      </div>
-    </CalendarContainer>
-  )}
-  
-  className="w-full rounded-xl border border-gray-300 bg-white p-3"
-/>
-  </div>
-</div>
-
-<div
-  className="mt-4"
-  style={{
-    display: "grid",
-    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-    gap: isMobile ? "10px" : "16px",
-    width: isMobile ? "100%" : "400px",
-    maxWidth: "100%",
-  }}
->
-  <div style={{ minWidth: 0 }}>
-  <label className="mb-1 block text-sm font-semibold">
-    Od
-  </label>
-
-    <input
-  type="time"
-  value={startTime}
-  onChange={(e) => setStartTime(e.target.value)}
-  className="w-full rounded-xl border border-gray-300 bg-white p-3"
-  style={{
-    minWidth: 0,
-    width: isMobile ? "100px" : "100%",
-    maxWidth: isMobile ? "100px" : "100%",
-    boxSizing: "border-box",
-    padding: isMobile ? "12px 8px" : undefined,
-  }}
-/>
-  </div>
-
-  <div style={{ minWidth: 0 }}>
-  <label className="mb-1 block text-sm font-semibold">
-    Do
-  </label>
-
-   <input
-  type="time"
-  value={endTime}
-  onChange={(e) => setEndTime(e.target.value)}
-  className="w-full rounded-xl border border-gray-300 bg-white p-3"
-  style={{
-    minWidth: 0,
-    width: isMobile ? "100px" : "100%",
-    maxWidth: isMobile ? "100px" : "100%",
-    boxSizing: "border-box",
-    padding: isMobile ? "12px 8px" : undefined,
-  }}
-/>
-  </div>
-
-  <div>
-    <label className="mb-1 block text-sm font-semibold">
-      Interval
-    </label>
-
-    <select
-      value={intervalMinutes}
-      onChange={(e) => setIntervalMinutes(e.target.value)}
-      className="w-full rounded-xl border border-gray-300 bg-white p-3"
-    >
-      <option value="15">15 min</option>
-      <option value="30">30 min</option>
-      <option value="45">45 min</option>
-      <option value="60">60 min</option>
-    </select>
-  </div>
-</div>
-
-  <div className="mt-4">
-    <p className="mb-2 text-sm font-semibold">
-      Dani
-    </p>
-
-    <div className="flex flex-wrap gap-2">
-      {["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"].map((day) => {
-        const isSelected = selectedDays.includes(day);
-
-        return (
-          <button
-            key={day}
-            type="button"
-            onClick={() => {
-              setSelectedDays((currentDays) =>
-                currentDays.includes(day)
-                  ? currentDays.filter((selectedDay) => selectedDay !== day)
-                  : [...currentDays, day]
-              );
-            }}
-  className="rounded-xl text-sm font-semibold"
-style={{
-  backgroundColor: isSelected ? "#611a1a" : "#ffffff",
-  color: isSelected ? "#ffffff" : "#374151",
-  border: isSelected
-    ? "1px solid #611a1a"
-    : "1px solid #d1d5db",
-  padding: isMobile ? "8px 12px" : "8px 16px",
-}}
-          >
-            {day}
-          </button>
-        );
-      })}
-    </div>
-  </div>
-
-  <div
-  style={{
-    display: "flex",
-    justifyContent: "flex-start",
-    width: "100%",
-    marginTop: "20px",
-  }}
->
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "flex-start",
-      gap: "12px",
-    }}
-  >
-<button
-  type="button"
-  onClick={handleGenerateTimes}
-  className="rounded-xl bg-black px-5 py-3 font-semibold text-white"
->
-  Generiši termine
-</button>
-
-    {generatedTimes.length > 0 && (
-      <div>
-        <p className="text-sm text-gray-600">
-          Generisano termina: {generatedTimes.length}
-        </p>
-
-        <button
-          type="button"
-          onClick={() => setShowPreview(!showPreview)}
-          className="mt-2 text-sm font-semibold text-black underline"
-        >
-          {showPreview ? "Sakrij pregled" : "Prikaži pregled"}
-        </button>
-      </div>
-    )}
-
-    <div
-      style={{
-        display: "flex",
-        gap: "12px",
-      }}
-    >
-      
-
-<button
-  type="button"
-  onClick={handleReplaceTimes}
-  disabled={generatedTimes.length === 0}
-  className="rounded-xl px-5 py-3 font-semibold"
-style={{
-  backgroundColor: "#611a1a",
-  color: "white",
-  border: "1px solid #611a1a",
-  cursor:
-    generatedTimes.length === 0 ? "not-allowed" : "pointer",
-  opacity:
-    generatedTimes.length === 0 ? 0.5 : 1,
-}}
->
-  {timesSaved ? "Sačuvano ✓" : "Sačuvaj termine"}
-</button>
-    </div>
-  </div>
-</div>
-
-{showPreview && (
-  <div
-    className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-4"
-    style={{
-      width: "500px",
-      maxWidth: "100%",
-    }}
-  >
-    {Object.entries(
-      generatedTimes.reduce((grouped: Record<string, string[]>, slot) => {
-        if (!grouped[slot.date]) {
-          grouped[slot.date] = [];
-        }
-
-        grouped[slot.date].push(slot.time);
-        return grouped;
-      }, {})
-    )
-      .slice(0, 5)
-      .map(([date, times]) => (
-        <div key={date} className="mb-3 last:mb-0">
-          <p className="mb-2 font-semibold">
-  {format(new Date(`${date}T00:00:00`), "dd.MM.yyyy")}
-</p>
-
-          <div className="flex flex-wrap gap-2">
-            {(times as string[]).map((time) => (
-              <span
-                key={`${date}-${time}`}
-                className="rounded-lg border border-gray-300 bg-white px-3 py-1 text-sm"
-              >
-                {time}
-              </span>
-            ))}
-          </div>
         </div>
-      ))}
 
-      <p className="mt-4 text-xs text-gray-500">
-    Prikazano prvih 5 dana.
-  </p>
-</div>
-)}
-</div>
+        <label className="mb-1.5 block text-sm font-bold text-gray-700" style={{ marginTop: "14px" }}>
+          Za koga?
+        </label>
 
-    </div>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { id: "all" as const, name: "Cijeli salon" },
+            ...barbers.map((barber) => ({ id: barber.id as number, name: barber.name })),
+          ].map((option) => {
+            const isSelected = manualTimeBarberId === option.id;
+
+            return (
+              <button
+                key={String(option.id)}
+                type="button"
+                onClick={() => setManualTimeBarberId(option.id)}
+                className="rounded-full border transition"
+                style={{
+                  height: "40px",
+                  padding: "0 14px",
+                  fontSize: "15px",
+                  fontWeight: isSelected ? 600 : 400,
+                  backgroundColor: isSelected ? "#611a1a" : "#ffffff",
+                  borderColor: isSelected ? "#611a1a" : "#d1d5db",
+                  color: isSelected ? "#ffffff" : "#111827",
+                }}
+              >
+                {option.name}
+              </button>
+            );
+          })}
+        </div>
+
+        {!selectedDate && (
+          <p className="text-gray-500" style={{ marginTop: "16px", fontSize: "15px" }}>
+            Izaberite datum da vidite termine za taj dan.
+          </p>
+        )}
+
+        {selectedDate && (() => {
+          const dayTimes = times.filter(
+            (item, index, array) =>
+              manualTimeBarberId !== "all" ||
+              index === array.findIndex((other) => other.time === item.time)
+          );
+
+          const dayTitle = format(
+            new Date(`${selectedDate}T00:00:00`),
+            "EEEE, dd.MM.yyyy",
+            { locale: bs }
+          );
+
+          return (
+            <>
+              <p className="font-bold" style={{ marginTop: "16px", fontSize: "18px" }}>
+                {dayTitle.charAt(0).toUpperCase() + dayTitle.slice(1)}
+              </p>
+
+              {dayTimes.length === 0 ? (
+                <div
+                  className="rounded-xl bg-gray-100 text-center text-gray-500"
+                  style={{ marginTop: "10px", padding: "16px" }}
+                >
+                  Nema termina za odabrani datum.
+                </div>
+              ) : (
+                <>
+                  <p className="text-gray-500" style={{ fontSize: "14px", marginTop: "2px" }}>
+                    {dayTimes.length} termina · kliknite ✕ da uklonite termin
+                  </p>
+
+                  <div
+                    style={{
+                      marginTop: "12px",
+                      display: "grid",
+                      gridTemplateColumns: isMobile ? "repeat(3, 1fr)" : "repeat(6, 1fr)",
+                      gap: "8px",
+                    }}
+                  >
+                    {dayTimes.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between rounded-xl border bg-white"
+                        style={{
+                          height: "46px",
+                          padding: "0 8px 0 12px",
+                          borderColor: "#ead1d1",
+                          fontSize: "16px",
+                          fontWeight: 600,
+                        }}
+                      >
+                        <span>{item.time}</span>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteTime(item.id)}
+                          aria-label={`Obriši termin ${item.time}`}
+                          className="flex items-center justify-center rounded-full"
+                          style={{
+                            width: "28px",
+                            height: "28px",
+                            fontSize: "16px",
+                            color: "#ef4444",
+                            backgroundColor: "#fef2f2",
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              <label className="mb-1.5 block text-sm font-bold text-gray-700" style={{ marginTop: "18px" }}>
+                Dodaj termin
+              </label>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr auto",
+                  gap: "8px",
+                  maxWidth: isMobile ? undefined : "380px",
+                }}
+              >
+                <input
+                  type="time"
+                  value={newTime}
+                  onChange={(e) => setNewTime(e.currentTarget.value)}
+                  className="block w-full rounded-xl border border-gray-300 bg-white text-left [&::-webkit-date-and-time-value]:m-0 [&::-webkit-date-and-time-value]:text-left [&::-webkit-date-and-time-value]:leading-[44px]"
+                  style={{
+                    height: "46px",
+                    lineHeight: "44px",
+                    padding: "0 10px",
+                    fontSize: "16px",
+                    minWidth: 0,
+                    maxWidth: "100%",
+                    WebkitAppearance: "none",
+                    appearance: "none",
+                  }}
+                />
+
+                <button
+                  type="button"
+                  onClick={handleAddTime}
+                  className="rounded-xl font-bold text-white"
+                  style={{
+                    height: "46px",
+                    padding: "0 18px",
+                    fontSize: "15px",
+                    backgroundColor: "#611a1a",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  + Dodaj
+                </button>
+              </div>
+
+              {dayTimes.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleDeleteAllTimesForDate}
+                  className="font-semibold"
+                  style={{ marginTop: "18px", fontSize: "15px", color: "#ef4444" }}
+                >
+                  Obriši sve termine za ovaj dan
+                </button>
+              )}
+            </>
+          );
+        })()}
+      </div>
+    )}
   </div>
 )}
 
