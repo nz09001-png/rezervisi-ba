@@ -1158,7 +1158,7 @@ className={
 
 export default function TimesPage() {
   return (
-    <Suspense fallback={<div>Laddar...</div>}>
+    <Suspense fallback={<div>Učitava se...</div>}>
       <TimesContent />
     </Suspense>
   );

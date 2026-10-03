@@ -755,7 +755,7 @@ async function markNotificationAsRead(id: number) {
 
   if (error) {
     console.error(error);
-    alert("Kunde inte markera notisen som läst.");
+    alert("Nije moguće označiti obavijest kao pročitanu.");
     return;
   }
 

@@ -283,7 +283,7 @@ useEffect(() => {
 }, [selectedImageIndex]);
 
 if (!salon) {
-  return <h1>Laddar salong...</h1>;
+  return <h1>Učitava se...</h1>;
 }
 const selectedClosedDay = closedDays.find(
   (day) => day.date === selectedDate

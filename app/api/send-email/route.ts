@@ -26,11 +26,11 @@ CALSCALE:GREGORIAN
 METHOD:PUBLISH
 BEGIN:VEVENT
 UID:${crypto.randomUUID()}
-SUMMARY:${serviceName} hos ${salonName}
+SUMMARY:${serviceName} – ${salonName}
 DTSTART:${formatDate(startDate)}
 DTEND:${formatDate(endDate)}
 LOCATION:${salonName}
-DESCRIPTION:Bokning för ${customerName}. Avboka här: ${cancelUrl}
+DESCRIPTION:Rezervacija za ${customerName}. Otkažite rezervaciju ovdje: ${cancelUrl}
 END:VEVENT
 END:VCALENDAR
 `.trim();
