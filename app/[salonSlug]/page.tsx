@@ -1045,7 +1045,9 @@ gap: "24px",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    gap: "24px",
+    gap: isMobile ? "12px" : "24px",
+    // Mobil: blir texten för lång hamnar Rezerviši på en egen rad under.
+    flexWrap: isMobile ? "wrap" : "nowrap",
     backgroundColor: "#ffffff",
     boxShadow: "0 4px 14px rgba(0, 0, 0, 0.04)",
   }}
@@ -1215,8 +1217,36 @@ gap: "24px",
   </div>
 )}
 
-
       </div>
+
+      {/* Mobil: när personal inte visas står Rezerviši till höger i kortet (som på desktop). */}
+      {isMobile && !salon.show_barbers && (
+        <Link
+          className={geist.className}
+          href={`/times?salon=${encodeURIComponent(
+            salon.salon_name
+          )}&salonSlug=${encodeURIComponent(
+            salonSlug
+          )}&serviceId=${service.id}&barberId=`}
+          style={{
+            display: "inline-block",
+            flexShrink: 0,
+            // Alltid i högerkanten, även när knappen hamnar på en egen rad.
+            marginLeft: "auto",
+            backgroundColor: "#611a1a",
+            padding: "11px 22px",
+            borderRadius: "12px",
+            color: "#ffffff",
+            fontWeight: "700",
+            fontSize: "15px",
+            textDecoration: "none",
+            whiteSpace: "nowrap",
+            boxShadow: "0 4px 10px rgba(97, 26, 26, 0.18)",
+          }}
+        >
+          Rezerviši
+        </Link>
+      )}
 
       <Link
         href={`/times?salon=${encodeURIComponent(

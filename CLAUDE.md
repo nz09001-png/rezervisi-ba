@@ -112,3 +112,10 @@ Finjustera aldrig godkänd design "för att det ser bättre ut".
 - Ändringar i databasen (Supabase) ska föreslås och godkännas först.
 - Efter varje steg: berätta på svenska vad som ändrades och hur man testar det.
 - Git-kommandon ges i ett enda block som går att kopiera.
+
+## Sammanfattning / checkpoint
+- Den fullständiga projektsammanfattningen finns i `SALONIX-MASTER-CHECKPOINT.md`.
+- När ägaren ber om en sammanfattning eller checkpoint: uppdatera den filen med
+  **samma struktur och samma rubriker (1–14)**, ändra datumet, lägg till allt nytt
+  och ta bort det som inte längre stämmer. Visa sedan hela texten i ett kodblock
+  så att den går att kopiera, och ge ett Git-kommando som sparar filen.
