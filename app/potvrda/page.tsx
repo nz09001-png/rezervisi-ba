@@ -577,6 +577,11 @@ if (email && email.trim()) {
       durationMinutes: service?.duration_minutes || 60,
       bookingId: data.id,
       cancelToken,
+      // Extra uppgifter som bara visas i mejlet (samma som på "Rezervacija potvrđena").
+      customerFirstName: ime || "",
+      staff: barberId ? finalBarberName || "" : "Bez preferencije",
+      price: service?.show_price && service?.price ? String(service.price) : "",
+      showDuration: !!service?.show_duration,
     }),
   });
 

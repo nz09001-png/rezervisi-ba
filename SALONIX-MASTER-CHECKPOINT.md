@@ -239,6 +239,8 @@ Punkt 12 (lansering):
   localhost – inte på mobil via wifi under utveckling.
 - Bokningsmejl: koppla salonix.ba till Resend och byt avsändare från
   onboarding@resend.dev. I testläge når mejlen bara Resend-kontots egen adress.
+- Bokningsmejl: byt texten "SALONIX" överst mot loggan som bild
+  (https://salonix.ba/salonix-horisontell-maroon.png) när sidan ligger ute.
 - Bekräftelse-sms från Salonix (Salonix skickar, inte salongerna):
   kräver företag, sms-tjänst (t.ex. Infobip/Twilio) och avsändar-ID "Salonix".
   Byggs efter deploy. Ändra då texten under Telefon på /podaci till t.ex.
@@ -321,9 +323,17 @@ KLART i punkt 8 (3 oktober 2026):
   "Pronađite još salona i rezervišite termin online.", © Salonix.
   Ingen knapp "Pogledajte sve salone" (ägarens val).
 - Etiketten "SALON" ovanför salongsnamnet behålls som den är (ägarens val).
+- Bokningsmejlet (alternativ A): "SALONIX" i text överst, vitt kort på
+  beige, "Rezervacija potvrđena", hälsning med förnamn, Salon/Usluga/
+  Osoblje/Datum/Vrijeme (+ Trajanje och Cijena om salongen visar dem),
+  kalenderrad, "Otkaži rezervaciju", sidfot. Ämne: "Rezervacija potvrđena –
+  [salong], [datum] u [tid]". /potvrda skickar med customerFirstName,
+  staff, price, showDuration. Kundtext escapas. Kalenderfil och
+  avbokningslänk orörda. Mejlet har "color-scheme: light only" så att
+  iPhones Mail inte gör om det till mörka färger i mörkt läge.
 
 KVAR i punkt 8 (i den här ordningen):
-1. Resten av listan: enkelt mejl, admininloggningens
+1. Resten av listan: admininloggningens
    utseende, admin-stavfel ("Osooblje", "Osobolje", "Edit", "Ime Osoblja").
 
 Ägaren gör själv i admin: tjänster utan kategori hos Gentlemen Tuzla
