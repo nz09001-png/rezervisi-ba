@@ -44,6 +44,21 @@ const barberId = searchParams.get("barberId");
 const [loading, setLoading] = useState(false);
 const [confirmed, setConfirmed] = useState(false);
 const [timeTaken, setTimeTaken] = useState(false);
+// Fel som visas i en vinröd ruta i kortet (i stället för grå alert-rutor).
+// canRetry = tekniskt fel, kunden kan trycka "Završi rezervaciju" igen.
+const [errorBox, setErrorBox] = useState<{
+  title: string;
+  text: string;
+  canRetry: boolean;
+} | null>(null);
+const showTimeError = (title: string) =>
+  setErrorBox({ title, text: "Molimo odaberite drugi termin.", canRetry: false });
+const showTechnicalError = () =>
+  setErrorBox({
+    title: "Došlo je do greške",
+    text: "Rezervacija nije spremljena. Molimo pokušajte ponovo.",
+    canRetry: true,
+  });
 const [serviceSteps, setServiceSteps] = useState<any[]>([]);
 const [eligibleBarberIds, setEligibleBarberIds] = useState<number[]>([]);
 const [isMobile, setIsMobile] = useState(false);
@@ -271,6 +286,7 @@ useEffect(() => {
 
 async function handleConfirmBooking() {
   if (confirmed) return;
+  setErrorBox(null);
   if (date && time) {
   const [year, month, day] = date.split("-").map(Number);
   const [hours, minutes] = time.split(":").map(Number);
@@ -284,7 +300,7 @@ async function handleConfirmBooking() {
   );
 
   if (bookingDateTime <= new Date()) {
-    alert("Odabrani termin je već prošao.");
+    showTimeError("Odabrani termin je već prošao");
     return;
   }
 }
@@ -294,7 +310,7 @@ async function handleConfirmBooking() {
   !eligibleBarberIds.includes(Number(barberId));
 
 if (isSelectedBarberIneligible) {
-  alert("Odabrani član osoblja ne pruža ovu uslugu.");
+  showTimeError("Odabrani član osoblja ne pruža ovu uslugu");
   return;
 }
 
@@ -330,7 +346,7 @@ if (
   isSelectedBarberClosed ||
   areAllBarbersClosed
 ) {
-  alert("Salon ili odabrani član osoblja nisu dostupni na ovaj datum.");
+  showTimeError("Salon ili član osoblja nije dostupan ovaj dan");
   return;
 }
 
@@ -366,7 +382,7 @@ const hasEnoughAvailableSlots = barberId
   : barbersWithEnoughAvailableSlots.length > 0;
 
 if (!hasEnoughAvailableSlots) {
-  alert("Odabrani termin nije dostupan za cijelo trajanje usluge.");
+  showTimeError("Termin nije dostupan za cijelo trajanje usluge");
   setLoading(false);
   return;
 }
@@ -382,7 +398,7 @@ const currentBusyIntervals =
 
 if (bookingsAtTimeError) {
   console.error(bookingsAtTimeError);
-  alert("Greška pri provjeri osoblja.");
+  showTechnicalError();
   setLoading(false);
   return;
 }
@@ -405,7 +421,7 @@ if (bookedServiceIds.length > 0) {
 
   if (stepsError) {
     console.error(stepsError);
-    alert("Greška pri provjeri koraka usluge.");
+    showTechnicalError();
     setLoading(false);
     return;
   }
@@ -525,7 +541,7 @@ cancel_token: cancelToken,
   .single();
   if (error) {
   console.error(error);
-  alert("Greška pri spremanju rezervacije.");
+  showTechnicalError();
   setLoading(false);
   return;
 }
@@ -1093,7 +1109,52 @@ router.replace(
     </button>
   </div>
 )}
-{!timeTaken && (
+{!timeTaken && errorBox && (
+  <div
+    className="mx-auto mt-8 max-w-md rounded-2xl p-5 text-center"
+    style={{
+      border: "2px solid #611a1a",
+      backgroundColor: "#fff7f7",
+    }}
+  >
+    <p
+      className="mb-2 text-lg font-bold"
+      style={{ color: "#611a1a" }}
+    >
+      ⚠ {errorBox.title}
+    </p>
+
+    <p
+      className={`text-sm text-gray-700 ${errorBox.canRetry ? "" : "mb-5"}`}
+    >
+      {errorBox.text}
+    </p>
+
+    {!errorBox.canRetry && (
+      <Link
+        href={`/times?salon=${encodeURIComponent(
+          salon || ""
+        )}&salonSlug=${encodeURIComponent(
+          salonSlug || ""
+        )}&serviceId=${serviceId}&barberId=${encodeURIComponent(
+          barberId || ""
+        )}`}
+        style={{
+          display: "inline-block",
+          backgroundColor: "#611a1a",
+          color: "white",
+          padding: "10px 24px",
+          borderRadius: "12px",
+          fontWeight: "bold",
+          textDecoration: "none",
+        }}
+      >
+        Odaberite drugi termin
+      </Link>
+    )}
+  </div>
+)}
+{!timeTaken && (!errorBox || errorBox.canRetry) && (
   <div
     className="flex justify-center"
     style={{

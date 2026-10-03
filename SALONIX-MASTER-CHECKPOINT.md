@@ -299,10 +299,14 @@ KLART i punkt 8 (3 oktober 2026):
   där avbokningslänken finns.
 - /podaci: inga grå alert-rutor. Fel visas som röd ram (#ef4444) + röd text
   under fältet (ägarens val "C"). Samma kontroller som förut.
-  Kvar med alert(): /potvrda (7 st), /cancel (4 st), admin (ca 74 st).
+- /potvrda: inga grå alert-rutor. Fel visas i en vinröd ruta i kortet
+  (samma stil som "Termin je upravo rezervisan"). Tidsfel → knappen
+  "Odaberite drugi termin" (till /times med samma tjänst och person).
+  Tekniska fel → "Došlo je do greške" + "Završi rezervaciju" står kvar.
+  Kvar med alert(): /cancel (4 st), admin (ca 74 st).
 
 KVAR i punkt 8 (i den här ordningen):
-1. Resten av listan: alert()-rutor på /potvrda och /cancel, tom vecka utan text,
+1. Resten av listan: alert()-rutor på /cancel, tom vecka utan text,
    salongssidan (klickbar telefon, öppettider, galleripilar, "salon"),
    ingen väg tillbaka till startsidan, enkelt mejl, admininloggningens
    utseende, admin-stavfel ("Osooblje", "Osobolje", "Edit", "Ime Osoblja").
