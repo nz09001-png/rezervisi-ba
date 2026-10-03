@@ -350,6 +350,19 @@ setSelectedServiceBarberIds(
   }
 }
 
+// Bosnisk böjning: 1 usluga, 2–4 usluge, 5+ usluga (21 usluga, 22 usluge …).
+function uslugaLabel(count: number) {
+  const lastDigit = count % 10;
+  const lastTwo = count % 100;
+
+  if (lastDigit === 1 && lastTwo !== 11) return `${count} usluga`;
+  if (lastDigit >= 2 && lastDigit <= 4 && (lastTwo < 12 || lastTwo > 14)) {
+    return `${count} usluge`;
+  }
+
+  return `${count} usluga`;
+}
+
 // Postavke-sidan: ett avsnitt i taget. Tom lista = rutorna visas.
 function openSetting(setting: string) {
   setSelectedSettings([setting]);
@@ -4441,9 +4454,7 @@ style={{
           </h3>
 
           <span className="text-sm text-gray-500">
-            {group.items.length === 1
-              ? "1 usluga"
-              : `${group.items.length} usluge`}
+            {uslugaLabel(group.items.length)}
           </span>
         </div>
 
@@ -5971,114 +5982,285 @@ formatWeekDay={(dayName) => {
   );
 })()}
 
-{selectedSettings.includes("barbers") && (
-  <div className="mb-6 rounded-2xl bg-white p-4 shadow">
-    <div className="mx-auto max-w-3xl">
-      <h2 className="mb-1 text-xl font-bold">Osoblje</h2>
-<p className="mb-6 text-sm text-gray-500">
-  Dodajte članove osoblja i odaberite da li će biti prikazani na stranici salona.
-</p>
-    <label className="mb-4 flex items-center gap-2">
-  <input
-  type="checkbox"
-  checked={showBarbers}
-  onChange={(e) => setShowBarbers(e.target.checked)}
-  style={{ accentColor: "#611a1a" }}
-/>
+{selectedSettings.includes("barbers") && (() => {
+  const colorNames = [
+    "Plava",
+    "Žuta",
+    "Zelena",
+    "Ljubičasta",
+    "Narandžasta",
+    "Tirkizna",
+    "Roza",
+    "Indigo",
+    "Svijetlozelena",
+    "Crvena",
+  ];
 
-  Prikaži osoblje na stranici
-</label>
+  const colorIndexFor = (barber: any) =>
+    barber.color_index !== null && barber.color_index !== undefined
+      ? Number(barber.color_index) % barberColors.length
+      : Math.abs(Number(barber.id)) % barberColors.length;
 
+  // Sparar direkt när strömbrytaren trycks (samma anrop som förut).
+  const handleToggleShowBarbers = async () => {
+    const newValue = !showBarbers;
+    setShowBarbers(newValue);
 
+    const { error } = await supabase
+      .from("salons")
+      .update({
+        show_barbers: newValue,
+      })
+      .eq("id", salon?.id);
+
+    if (error) {
+      setShowBarbers(!newValue);
+      alert("Greška pri spremanju postavke.");
+      console.error(error);
+    }
+  };
+
+  return (
+  <div className="mb-6">
+    <h2 className="font-bold" style={{ fontSize: isMobile ? "24px" : "30px" }}>
+      Osoblje
+    </h2>
+
+    <p className="text-gray-500" style={{ marginTop: "4px", fontSize: "15px", lineHeight: 1.4 }}>
+      Ko radi u salonu. Svaki član osoblja ima svoju boju u kalendaru.
+    </p>
 
     <div
-  className="mb-4 space-y-2"
-  style={{
-    width: "500px",
-    maxWidth: "100%",
-  }}
->
-      {barbers.map((barber) => (
-        <div
-  key={barber.id}
-  className="flex items-center justify-between rounded-xl p-2"
-  style={{
-    width: "320px",
-    maxWidth: "100%",
-    backgroundColor: "#ffffff",
-    border: "1px solid #ead1d1",
-  }}
->
-          <span>{barber.name}</span>
-
-          <button
-            onClick={() => handleDeleteBarber(barber.id)}
-            className="rounded-lg bg-red-500 px-3 py-1 text-white"
-          >
-            Obriši
-          </button>
-        </div>
-      ))}
-    </div>
-
-    <div>
-<input
-  type="text"
-  placeholder="Ime Osoblja"
-  value={newBarberName}
-  onChange={(e) => setNewBarberName(e.target.value)}
-  className="mb-3 rounded-xl border border-gray-300 bg-white"
-  style={{
-    width: "320px",
-    maxWidth: "100%",
-    padding: isMobile ? "10px 12px" : "12px",
-  }}
-/>
-
-  <div className="flex gap-2">
-   <button
-  onClick={handleAddBarber}
-  className="rounded-xl px-5 py-3 font-medium"
-  style={{
-    backgroundColor: "#ffffff",
-    color: "#611a1a",
-    border: "1px solid #611a1a",
-  }}
->
-   Dodaj osoblje
-</button>
-
-    <button
-      type="button"
-      onClick={async () => {
-        const { error } = await supabase
-          .from("salons")
-          .update({
-            show_barbers: showBarbers,
-          })
-          .eq("id", salon?.id);
-
-        if (error) {
-          alert("Greška pri spremanju postavke.");
-          console.error(error);
-          return;
-        }
-
-        alert("Postavka je uspješno spremljena.");
-      }}
-      className="rounded-xl px-5 py-3 font-medium text-white"
       style={{
-        backgroundColor: "#611a1a",
+        marginTop: "16px",
+        display: "grid",
+        gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+        gap: isMobile ? "16px" : "24px",
+        alignItems: "start",
       }}
     >
-      Sačuvaj postavku
-    </button>
-        </div>
-  </div>
+      <div
+        className="rounded-2xl border bg-white shadow-sm"
+        style={{ padding: isMobile ? "16px" : "22px 24px", borderColor: "#ead1d1" }}
+      >
+        <div className="flex items-baseline gap-2" style={{ paddingBottom: "10px" }}>
+          <p className="font-bold" style={{ fontSize: "17px", color: "#611a1a" }}>
+            Članovi osoblja
+          </p>
 
+          <span className="text-sm text-gray-500">{barbers.length}</span>
+        </div>
+
+        {barbers.length === 0 && (
+          <p
+            className="text-gray-500"
+            style={{ padding: "12px 0", fontSize: "15px", borderTop: "1px solid #f3e8e8" }}
+          >
+            Još nema članova osoblja. Dodajte prvog ispod.
+          </p>
+        )}
+
+        {barbers.map((barber) => {
+          const color = getBarberColor(barber.id);
+          const serviceCount = services.filter((service) =>
+            (service.service_barbers || []).some(
+              (serviceBarber: any) => serviceBarber.barber_id === barber.id
+            )
+          ).length;
+
+          return (
+            <div
+              key={barber.id}
+              className="flex items-center"
+              style={{ gap: "12px", padding: "12px 0", borderTop: "1px solid #f3e8e8" }}
+            >
+              <div
+                className="flex shrink-0 items-center justify-center rounded-full font-bold"
+                style={{
+                  width: "42px",
+                  height: "42px",
+                  fontSize: "17px",
+                  backgroundColor: color.backgroundColor,
+                  border: `2px solid ${color.borderColor}`,
+                  color: color.textColor,
+                }}
+              >
+                {(barber.name || "?").trim().charAt(0).toUpperCase()}
+              </div>
+
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p className="font-bold" style={{ fontSize: "16px" }}>
+                  {barber.name}
+                </p>
+
+                <p className="flex items-center text-gray-500" style={{ gap: "6px", fontSize: "13px", marginTop: "2px" }}>
+                  <span
+                    className="shrink-0 rounded"
+                    style={{
+                      width: "10px",
+                      height: "10px",
+                      backgroundColor: color.backgroundColor,
+                      border: `1px solid ${color.borderColor}`,
+                    }}
+                  />
+                  <span>
+                    {colorNames[colorIndexFor(barber)] ?? "Vlastita"} boja u kalendaru ·{" "}
+                    {uslugaLabel(serviceCount)}
+                  </span>
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handleDeleteBarber(barber.id)}
+                className="shrink-0 rounded-xl border bg-white font-semibold"
+                style={{
+                  height: "36px",
+                  padding: "0 14px",
+                  fontSize: "14px",
+                  color: "#ef4444",
+                  borderColor: "#ef4444",
+                }}
+              >
+                Obriši
+              </button>
+            </div>
+          );
+        })}
+
+        <div style={{ marginTop: "6px", paddingTop: "14px", borderTop: "1px solid #f3e8e8" }}>
+          <label className="mb-1.5 block text-sm font-bold text-gray-700">
+            Dodaj novog člana osoblja
+          </label>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "8px" }}>
+            <input
+              type="text"
+              placeholder="Ime, npr. Lejla"
+              value={newBarberName}
+              onChange={(e) => setNewBarberName(e.target.value)}
+              className="w-full rounded-xl border border-gray-300 bg-white px-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+              style={{ height: "46px", fontSize: "16px", minWidth: 0 }}
+            />
+
+            <button
+              type="button"
+              onClick={handleAddBarber}
+              className="rounded-xl font-bold text-white transition hover:opacity-90"
+              style={{
+                height: "46px",
+                padding: "0 18px",
+                fontSize: "15px",
+                backgroundColor: "#611a1a",
+                whiteSpace: "nowrap",
+              }}
+            >
+              + Dodaj
+            </button>
+          </div>
+
+          <p className="text-gray-500" style={{ marginTop: "6px", fontSize: "13px", lineHeight: 1.45 }}>
+            Novi član automatski dobija svoju boju u kalendaru. Zatim ga označite kod
+            usluga koje radi (Postavke → Usluge).
+          </p>
+        </div>
+      </div>
+
+      <div
+        className="rounded-2xl border bg-white shadow-sm"
+        style={{ padding: isMobile ? "16px" : "22px 24px", borderColor: "#ead1d1" }}
+      >
+        <p className="font-bold" style={{ fontSize: "17px", color: "#611a1a" }}>
+          Izbor osoblja za klijente
+        </p>
+
+        <button
+          type="button"
+          role="switch"
+          aria-checked={showBarbers}
+          onClick={handleToggleShowBarbers}
+          className="flex w-full items-start text-left"
+          style={{ gap: "14px", marginTop: "14px" }}
+        >
+          <span
+            className="relative shrink-0 rounded-full transition"
+            style={{
+              width: "52px",
+              height: "30px",
+              backgroundColor: showBarbers ? "#611a1a" : "#d1d5db",
+            }}
+          >
+            <span
+              className="absolute rounded-full bg-white transition-all"
+              style={{
+                top: "3px",
+                left: showBarbers ? "25px" : "3px",
+                width: "24px",
+                height: "24px",
+                boxShadow: "0 1px 2px rgba(0,0,0,0.2)",
+              }}
+            />
+          </span>
+
+          <span>
+            <span className="block font-bold" style={{ fontSize: "16px" }}>
+              Klijenti biraju člana osoblja
+            </span>
+
+            <span className="block text-gray-600" style={{ fontSize: "14px", marginTop: "4px", lineHeight: 1.45 }}>
+              {showBarbers
+                ? "Uključeno – na stranici salona klijent vidi osoblje kod svake usluge."
+                : "Isključeno – osoblje se ne prikazuje na stranici salona."}
+            </span>
+          </span>
+        </button>
+
+        <div style={{ marginTop: "14px", display: "grid", gap: "8px" }}>
+          {[
+            {
+              on: true,
+              title: "Uključeno",
+              text: "Klijent bira kod koga želi termin, ili „Bez preferencije“.",
+            },
+            {
+              on: false,
+              title: "Isključeno",
+              text: "Klijent bira samo uslugu i termin – sistem dodjeljuje slobodnog člana osoblja.",
+            },
+          ].map((option) => {
+            const isActive = showBarbers === option.on;
+
+            return (
+              <div
+                key={option.title}
+                className="rounded-xl border"
+                style={{
+                  padding: "10px 12px",
+                  fontSize: "14px",
+                  lineHeight: 1.4,
+                  color: "#374151",
+                  borderColor: isActive ? "#611a1a" : "#e5e7eb",
+                  backgroundColor: isActive ? "#fdf7f7" : "#ffffff",
+                }}
+              >
+                <span className="block font-bold" style={{ fontSize: "13px", color: "#111827", marginBottom: "2px" }}>
+                  {isActive ? "✓ " : ""}
+                  {option.title}
+                </span>
+                {option.text}
+              </div>
+            );
+          })}
+        </div>
+
+        <p className="text-gray-500" style={{ marginTop: "10px", fontSize: "13px" }}>
+          Promjena se čuva odmah.
+        </p>
+      </div>
     </div>
   </div>
-)}
+  );
+})()}
 
   </>
   )}
