@@ -46,15 +46,46 @@ Finjustera aldrig godkänd design "för att det ser bättre ut".
 `app/booking`. Ändra dem inte, och ta inte bort dem utan att fråga.
 
 ## Var vi är nu
-- Punkt 6: Salonix startsida/katalog (`app/page.tsx`), **mobil först**. Den är påbörjad:
-  - `salons` har fått kolumnerna `city`, `categories` (lista) och `is_published`.
-  - Startsidan visar logga, rubrik och salongskort (bild, namn, kategorier, stad, adress).
-    Bara salonger med `is_published = true` visas.
-  - Sökning och filtrering (stad/kategori) är inte byggda än.
-- Sedan: 7 desktop-startsida, 8 design/UX-kontroll, 9 QA, 10 säkerhet (RLS, admininloggning),
+- Punkt 6: Salonix startsida/katalog (`app/page.tsx`) – **mobilvyn är KLAR och FRYST**.
+  Ändra den inte utan att fråga först. Desktopvyn (punkt 7) får inte påverka mobilvyn.
+  Innehåll på mobil:
+  - Vinröd topp: rubrik "Sve za vašu ljepotu", sökfält och stadsval ("Svi gradovi").
+    Vald stad sparas i kundens webbläsare (localStorage).
+  - Åtta kategorikort med bilder (`public/categories/`): Frizura, Barber, Nokti,
+    Trepavice i obrve, Depilacija, Masaža, Njega lica, Solarijum.
+    Namnen måste stämma exakt med `salons.categories` i Supabase.
+  - Vit list som följer med vid scroll: Salonix-ikon, ☰ (kategoripanel från vänster), sökfält.
+  - Knapprad: Preporučeno (standard), Novi saloni, Najbliže meni (ordning, en åt gången)
+    och Otvoreno danas (filter).
+    - Preporučeno: öppet i dag + komplett profil (bild, öppettider, adress) ger poäng,
+      samma poäng roteras dagligen.
+    - Novi saloni: högst `id` först.
+    - Najbliže meni: kundens plats (sparas inte). Nekar kunden öppnas kartan.
+  - Etiketter för valda filter med ✕ och "Očisti sve".
+  - Antal salonger visas bara när en stad är vald, aldrig totalt.
+  - Salongskort: bild med kategorietikett, namn, adress (+ avstånd), "Otvoreno/Zatvoreno danas", pil.
+  - Karta (knappen "Karta"): `components/SalonMap.tsx`, Leaflet + OpenStreetMap.
+  - Sidfot med logga och © Salonix.
+- Nästa: **Punkt 7 – startsidan på desktop.**
+- Databasen: `salons` har `city`, `categories`, `is_published`, `latitude`, `longitude`.
+  Koordinater räknas fram från adressen en gång (geokodning) och sparas med SQL.
+  Adminpanelen sparar inte koordinater än, så nya salonger måste få koordinater manuellt.
+- Testsalonger finns (slug börjar med `test-`, ca 38 st). Tas bort efter punkt 7 med:
+  `delete from salons where slug like 'test-%';`
+- Sedan: 8 design/UX-kontroll, 9 QA, 10 säkerhet (RLS, admininloggning),
   11 databasstädning, 12 deploy till Vercel, 13 slutligt test i produktion.
 - Säkerheten är medvetet planerad till punkt 10. Systemet är inte produktionssäkert än.
   Påpeka allvarliga problem, men börja inte säkerhetsarbetet utan att fråga.
+- Att komma ihåg till punkt 10: kolumnen `salons.admin_password` kan läsas av alla
+  med den publika Supabase-nyckeln.
+- Att komma ihåg till punkt 12: byt OpenStreetMaps kartbilder mot en leverantör
+  med gratisnivå (t.ex. MapTiler) innan lansering.
+- Att komma ihåg till punkt 12: kategoribilderna i `public/categories/` kommer från
+  Unsplash (fria att använda), utom `solarijum.jpg` som kommer från Pinterest och
+  måste bytas mot en bild ni har rätt att använda innan lansering.
+- Idéer till senare: "Najpopularnije" (efter riktiga bokningar, via säker databasfunktion),
+  "Prvi slobodan termin" (efter QA, med samma regler som `/times`), etiketten "Istaknuto"
+  för betald synlighet, etiketten "Novo" (kräver datumkolumn i `salons`).
 
 ## Arbetssätt
 - Jobba i små steg: **en ändring i taget**. Ägaren testar och godkänner innan vi går vidare.
