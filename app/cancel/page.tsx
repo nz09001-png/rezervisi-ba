@@ -21,6 +21,21 @@ export default function CancelPage() {
   const [cancelled, setCancelled] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  // Frågan "Da li ste sigurni...?" visas i kortet i stället för en grå confirm-ruta.
+  const [askConfirm, setAskConfirm] = useState(false);
+  // Fel visas i en vinröd ruta i kortet. canRetry = tekniskt fel, går att försöka igen.
+  const [errorBox, setErrorBox] = useState<{
+    title: string;
+    text: string;
+    canRetry: boolean;
+  } | null>(null);
+
+  const showNotFound = () =>
+    setErrorBox({
+      title: "Rezervacija nije pronađena",
+      text: "Rezervacija je možda već otkazana ili link nije važeći.",
+      canRetry: false,
+    });
 
 useEffect(() => {
   const checkMobile = () => {
@@ -36,14 +51,13 @@ useEffect(() => {
 }, []);
 
   async function handleCancel() {
+    setErrorBox(null);
+
     if (!bookingId) {
-      alert("Nedostaje ID rezervacije.");
+      setAskConfirm(false);
+      showNotFound();
       return;
     }
-
-    const confirmCancel = confirm("Da li ste sigurni da želite otkazati rezervaciju?");
-
-    if (!confirmCancel) return;
 
     setLoading(true);
 
@@ -55,7 +69,8 @@ useEffect(() => {
   .single();
 
 if (bookingError || !bookingData) {
-  alert("Rezervacija nije pronađena ili link za otkazivanje nije važeći.");
+  setAskConfirm(false);
+  showNotFound();
   setLoading(false);
   return;
 }
@@ -73,8 +88,13 @@ if (bookingError || !bookingData) {
   .eq("cancel_token", token);
 
     if (error) {
-      alert("Greška pri otkazivanju rezervacije.");
       console.error(error);
+      setAskConfirm(false);
+      setErrorBox({
+        title: "Došlo je do greške",
+        text: "Rezervacija nije otkazana. Molimo pokušajte ponovo.",
+        canRetry: true,
+      });
       setLoading(false);
       return;
     }
@@ -145,12 +165,64 @@ if (bookingError || !bookingData) {
   Otkaži rezervaciju
 </h1>
 
+{!(errorBox && !errorBox.canRetry) && (
 <p className={`${outfit.className} mb-6 text-gray-600`}>
-  Kliknite na dugme ispod da otkažete svoju rezervaciju.
+  {askConfirm
+    ? "Da li ste sigurni da želite otkazati rezervaciju?"
+    : "Kliknite na dugme ispod da otkažete svoju rezervaciju."}
 </p>
+)}
 
+{errorBox && (
+  <div
+    className={`${outfit.className} rounded-2xl p-4`}
+    style={{
+      border: "2px solid #611a1a",
+      backgroundColor: "#fff7f7",
+      marginBottom: errorBox.canRetry ? "20px" : 0,
+    }}
+  >
+    <p className="mb-1 font-bold" style={{ color: "#611a1a" }}>
+      ⚠ {errorBox.title}
+    </p>
+    <p className="text-sm text-gray-700">{errorBox.text}</p>
+  </div>
+)}
+
+{askConfirm ? (
+  <div className="flex flex-wrap justify-center gap-3">
+    <button
+      onClick={handleCancel}
+      disabled={loading}
+      className={`${geist.className} rounded-2xl px-6 py-3 font-bold text-white disabled:opacity-50`}
+      style={{
+        backgroundColor: "#611a1a",
+        color: "white",
+      }}
+    >
+      {loading ? "Otkazujem..." : "Da, otkaži"}
+    </button>
+
+    <button
+      onClick={() => setAskConfirm(false)}
+      disabled={loading}
+      className={`${geist.className} rounded-2xl px-6 py-3 font-bold disabled:opacity-50`}
+      style={{
+        backgroundColor: "white",
+        color: "#611a1a",
+        border: "1px solid #611a1a",
+      }}
+    >
+      Ne
+    </button>
+  </div>
+) : (
+  (!errorBox || errorBox.canRetry) && (
         <button
-  onClick={handleCancel}
+  onClick={() => {
+    setErrorBox(null);
+    setAskConfirm(true);
+  }}
   disabled={loading}
   className={`${geist.className} rounded-2xl px-6 py-3 font-bold text-white disabled:opacity-50`}
   style={{
@@ -158,8 +230,10 @@ if (bookingError || !bookingData) {
     color: "white",
   }}
 >
-          {loading ? "Otkazujem..." : "Otkaži rezervaciju"}
+          Otkaži rezervaciju
         </button>
+  )
+)}
       </div>
     </main>
   );

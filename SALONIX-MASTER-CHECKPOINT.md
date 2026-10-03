@@ -303,10 +303,13 @@ KLART i punkt 8 (3 oktober 2026):
   (samma stil som "Termin je upravo rezervisan"). Tidsfel → knappen
   "Odaberite drugi termin" (till /times med samma tjänst och person).
   Tekniska fel → "Došlo je do greške" + "Završi rezervaciju" står kvar.
-  Kvar med alert(): /cancel (4 st), admin (ca 74 st).
+- /cancel: inga grå rutor. "Otkaži rezervaciju" → frågan i kortet med
+  "Da, otkaži" / "Ne". Fel i vinröd ruta: "Rezervacija nije pronađena"
+  (ingen knapp) eller "Došlo je do greške" (knappen står kvar).
+  Kvar med alert(): bara admin (ca 74 st).
 
 KVAR i punkt 8 (i den här ordningen):
-1. Resten av listan: alert()-rutor på /cancel, tom vecka utan text,
+1. Resten av listan: tom vecka utan text,
    salongssidan (klickbar telefon, öppettider, galleripilar, "salon"),
    ingen väg tillbaka till startsidan, enkelt mejl, admininloggningens
    utseende, admin-stavfel ("Osooblje", "Osobolje", "Edit", "Ime Osoblja").
