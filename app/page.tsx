@@ -38,6 +38,9 @@ const CATEGORIES: { name: string; icon: IconType }[] = [
   { name: "Ljepota", icon: GiLipstick },
 ];
 
+// Namnet som vald stad sparas under i kundens webbläsare.
+const SAVED_CITY_KEY = "salonix_city";
+
 // Veckodagarna i samma form som i Supabase (closed_weekdays och salon_shortened_hours).
 // JavaScript räknar söndag som dag 0.
 const WEEKDAY_CODES = ["Ned", "Pon", "Uto", "Sri", "Čet", "Pet", "Sub"];
@@ -73,6 +76,29 @@ export default function Home() {
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
   const heroSearchRef = useRef<HTMLLabelElement>(null);
   const salonsHeadingRef = useRef<HTMLHeadingElement>(null);
+  // Ökas när kunden själv väljer kategori eller stad. Då scrollar sidan ner till salongerna.
+  // (En stad som väljs automatiskt vid sidladdning ska inte få sidan att scrolla.)
+  const [scrollRequest, setScrollRequest] = useState(0);
+
+  function chooseCategory(category: string | null) {
+    setSelectedCategory(category);
+    if (category) setScrollRequest((n) => n + 1);
+  }
+
+  // Väljer stad och sparar den i kundens egen webbläsare, så att den är vald nästa gång.
+  function chooseCity(city: string | null) {
+    setSelectedCity(city);
+    if (city) setScrollRequest((n) => n + 1);
+    try {
+      if (city) {
+        localStorage.setItem(SAVED_CITY_KEY, city);
+      } else {
+        localStorage.removeItem(SAVED_CITY_KEY);
+      }
+    } catch {
+      // Vissa webbläsare (t.ex. privat läge) tillåter inte sparande. Då fungerar allt ändå.
+    }
+  }
 
   // Lås sidan bakom panelen så att den inte scrollar medan panelen är öppen.
   useEffect(() => {
@@ -84,10 +110,10 @@ export default function Home() {
 
   // Scrolla ner till salongerna när en kategori eller stad väljs, så att kunden ser resultatet.
   useEffect(() => {
-    if (selectedCategory || selectedCity) {
+    if (scrollRequest > 0) {
       salonsHeadingRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [selectedCategory, selectedCity]);
+  }, [scrollRequest]);
 
   // Städerna hämtas automatiskt från salongerna, i bokstavsordning.
   const cities = Array.from(
@@ -142,6 +168,16 @@ export default function Home() {
       }
 
       setSalons(data || []);
+
+      // Välj staden som kunden valde förra gången, om det fortfarande finns salonger där.
+      try {
+        const savedCity = localStorage.getItem(SAVED_CITY_KEY);
+        if (savedCity && (data || []).some((salon) => salon.city === savedCity)) {
+          setSelectedCity(savedCity);
+        }
+      } catch {
+        // Inget sparat eller sparande är avstängt. Då visas alla städer.
+      }
       setLoading(false);
 
       // Hämta bara det som gäller i dag, för "Otvoreno danas" på korten.
@@ -244,7 +280,7 @@ export default function Home() {
               key={label}
               type="button"
               onClick={() => {
-                setSelectedCategory(name);
+                chooseCategory(name);
                 setCategoryMenuOpen(false);
               }}
               style={{
@@ -452,7 +488,7 @@ export default function Home() {
           <FiMapPin size={20} color="#1f1f1f" />
           <select
             value={selectedCity ?? ""}
-            onChange={(e) => setSelectedCity(e.target.value || null)}
+            onChange={(e) => chooseCity(e.target.value || null)}
             aria-label="Grad"
             style={{
               flex: 1,
@@ -504,7 +540,7 @@ export default function Home() {
             <button
               key={name}
               type="button"
-              onClick={() => setSelectedCategory(isSelected ? null : name)}
+              onClick={() => chooseCategory(isSelected ? null : name)}
               className={sourceSans.className}
               style={{
                 display: "flex",
@@ -582,7 +618,7 @@ export default function Home() {
               key: "city",
               label: selectedCity,
               icon: FiMapPin,
-              onRemove: () => setSelectedCity(null),
+              onRemove: () => chooseCity(null),
             },
             selectedCategory && {
               key: "category",
@@ -627,7 +663,7 @@ export default function Home() {
           <button
             type="button"
             onClick={() => {
-              setSelectedCity(null);
+              chooseCity(null);
               setSelectedCategory(null);
               setSearch("");
             }}
