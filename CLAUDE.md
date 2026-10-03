@@ -15,12 +15,13 @@ Hosting senare: Vercel.
   Ägaren är ny på programmering, så förklara facktermer.
 
 ## Frysta delar – ändra INTE utan att fråga först
-Punkt 1–5 i lanseringsplanen är klara: mobil- och desktopvy för kundflödet och adminpanelen.
-Det gäller dessa filer:
+Punkt 1–7 i lanseringsplanen är klara: kundflödet, adminpanelen och startsidan
+(mobil, surfplatta och desktop). Det gäller dessa filer:
 - `app/[salonSlug]/page.tsx` (salongssidan)
 - `app/times`, `app/podaci`, `app/potvrda`, `app/uspjesno`, `app/cancel` (bokningsflödet)
 - `app/api/send-email/route.ts` (bokningsmejl)
 - `app/admin/[salonSlug]/page.tsx` (adminpanelen)
+- `app/page.tsx` och `components/SalonMap.tsx` (startsidan och kartan)
 
 Ändra dem bara om det finns en riktig bugg eller ett säkerhetsproblem, och fråga först.
 Finjustera aldrig godkänd design "för att det ser bättre ut".
@@ -40,14 +41,27 @@ Finjustera aldrig godkänd design "för att det ser bättre ut".
 - Stil: vit, ren, professionell, rundade hörn, subtila kanter och skuggor.
 - Typsnitt på publika sidor: DM Serif Display (rubriker), Source Sans 3 (text),
   Geist (knappar/UI), Outfit (vissa boknings-/successrubriker).
+  På startsidan: Montserrat för sektionsrubrikerna (KATEGORIJE, SALONI – versaler,
+  luft mellan bokstäverna, vinröd) och för salongsnamnen på korten.
+- Loggor i `public/`: `salonix-horisontell-maroon.png` (liggande, vinröd) och
+  `salonix-logo-ljus.png` (stående med slogan "BRŽE | LAKŠE | ONLINE", krämvit utan
+  bakgrund, för vinröd bakgrund).
+- Fliknamn, beskrivning och språk (`lang="bs"`) sätts i `app/layout.tsx`.
 
 ## Filer som inte används längre
 `app/salon-x-old`, `app/salon-y-old`, `app/salon-z-old`, `app/admin/salon-*-old`,
 `app/booking`. Ändra dem inte, och ta inte bort dem utan att fråga.
 
 ## Var vi är nu
-- Punkt 6: Salonix startsida/katalog (`app/page.tsx`) – **mobilvyn är KLAR och FRYST**.
-  Ändra den inte utan att fråga först. Desktopvyn (punkt 7) får inte påverka mobilvyn.
+- Punkt 6 och 7: Salonix startsida/katalog (`app/page.tsx`) – **KLAR och FRYST**
+  på mobil, surfplatta och desktop. Ändra den inte utan att fråga först.
+  Skärmstorlekar (känns av med `isDesktop` / `isTablet` i `app/page.tsx`):
+  - Mobil: under 600 px. Standardvyn.
+  - Surfplatta: 600–1023 px. Som mobil, men salongerna 2 per rad.
+  - Desktop: från 1024 px. Innehållet centrerat (högst 1200 px), vinröd topp med
+    stående logga + slogan, rubrik och sökrad (sök | stad | "Pretraži") i en rad,
+    kategorier 2 per rad (höga kort), salonger 3 per rad, vit list med hel logga och
+    "☰ Kategorije", sidfot på en rad.
   Innehåll på mobil:
   - Vinröd topp: rubrik "Sve za vašu ljepotu", sökfält och stadsval ("Svi gradovi").
     Vald stad sparas i kundens webbläsare (localStorage).
@@ -66,14 +80,18 @@ Finjustera aldrig godkänd design "för att det ser bättre ut".
   - Salongskort: bild med kategorietikett, namn, adress (+ avstånd), "Otvoreno/Zatvoreno danas", pil.
   - Karta (knappen "Karta"): `components/SalonMap.tsx`, Leaflet + OpenStreetMap.
   - Sidfot med logga och © Salonix.
-- Nästa: **Punkt 7 – startsidan på desktop.**
+  - Kategoripanelen (☰): små ikoner utan cirklar, samma på mobil och desktop.
+- Nästa: **Punkt 8 – design/UX-kontroll av hela Salonix** (startsida, salongssida,
+  bokningsflöde, admin; mobil och desktop). Idéer att ta upp där: salongsnamn i
+  Montserrat även på salongssidan, eget fliknamn per salongssida
+  (t.ex. "Studio M Exclusive – Salonix").
 - Databasen: `salons` har `city`, `categories`, `is_published`, `latitude`, `longitude`.
   Koordinater räknas fram från adressen en gång (geokodning) och sparas med SQL.
   Adminpanelen sparar inte koordinater än, så nya salonger måste få koordinater manuellt.
-- Testsalonger finns (slug börjar med `test-`, ca 38 st). Tas bort efter punkt 7 med:
-  `delete from salons where slug like 'test-%';`
-- Sedan: 8 design/UX-kontroll, 9 QA, 10 säkerhet (RLS, admininloggning),
-  11 databasstädning, 12 deploy till Vercel, 13 slutligt test i produktion.
+- Testsalonger finns (slug börjar med `test-`, ca 38 st). De behålls under punkt 8 och 9
+  och tas bort i punkt 11 med: `delete from salons where slug like 'test-%';`
+- Sedan: 9 QA, 10 säkerhet (RLS, admininloggning), 11 databasstädning,
+  12 deploy till Vercel, 13 slutligt test i produktion.
 - Säkerheten är medvetet planerad till punkt 10. Systemet är inte produktionssäkert än.
   Påpeka allvarliga problem, men börja inte säkerhetsarbetet utan att fråga.
 - Att komma ihåg till punkt 10: kolumnen `salons.admin_password` kan läsas av alla
