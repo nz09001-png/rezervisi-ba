@@ -218,6 +218,7 @@ const [showSettingsMenu, setShowSettingsMenu] = useState(false);
 const [selectedSettings, setSelectedSettings] = useState<string[]>([]);
 const [showServiceForm, setShowServiceForm] = useState(false);
 const [timesTab, setTimesTab] = useState<"week" | "day">("week");
+const [showShortenedForm, setShowShortenedForm] = useState(false);
 const [isUploadingImage, setIsUploadingImage] = useState(false);
 const [selectedServiceBarberIds, setSelectedServiceBarberIds] = useState<number[]>([]);
 const [showFilterMenu, setShowFilterMenu] = useState(false);
@@ -1681,6 +1682,7 @@ function handleAddShortenedHours() {
   setShortenedFrom("");
   setShortenedTo("");
   setSelectedShortenedWeekdays([]);
+  setShowShortenedForm(false);
 }
 
 function handleDeleteShortenedHours(id: number | string) {
@@ -3180,90 +3182,139 @@ height: isMobile ? "90px" : "88px",
     </button>
   
     {selectedSettings.includes("hero") && (
-  <div className="mb-6 rounded-3xl bg-white p-6 shadow">
-    <div className="mx-auto max-w-2xl">
-      <div className="mb-5">
-    <h2 className="text-xl font-bold">Naslovna slika</h2>
-    <p className="mt-1 text-sm text-gray-500">
-      Ova slika se prikazuje na vrhu stranice vašeg salona.
-    </p>
-  </div>
+  <div className="mb-6">
+    <h2 className="font-bold" style={{ fontSize: isMobile ? "24px" : "30px" }}>
+      Naslovna slika
+    </h2>
 
-  {salon?.image_url && (
-    <div className="mb-5 max-w-2xl">
-      <p className="mb-2 text-sm font-medium text-gray-700">
-        Trenutna slika
-      </p>
-
-      <img
-  src={salon.image_url}
-  alt="Naslovna slika"
-  className="aspect-[1000/360] w-full rounded-2xl border border-gray-200 object-cover shadow-sm"
-/>
-    </div>
-  )}
-
-<input
-  id="hero-image-upload"
-  type="file"
-  accept="image/*"
-  onChange={(e) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-
-      setSelectedFile(file);
-      setImagePreview(URL.createObjectURL(file));
-    }
-  }}
-  style={{ display: "none" }}
-/>
-
-<label
-  htmlFor="hero-image-upload"
-  style={{
-    display: "inline-flex",
-    cursor: "pointer",
-    alignItems: "center",
-    borderRadius: "12px",
-    backgroundColor: "#ffffff",
-    border: "1px solid #611a1a",
-    padding: "12px 20px",
-    fontWeight: 500,
-    color: "#611a1a",
-  }}
->
-  Izaberite naslovnu sliku
-</label>
-{selectedFile && (
-  <div className="mt-4">
-    <p className="text-sm text-gray-700">
-      Odabrana slika:{" "}
-      <span className="font-semibold">{selectedFile.name}</span>
+    <p className="text-gray-500" style={{ marginTop: "4px", fontSize: "15px", lineHeight: 1.4 }}>
+      Velika slika na vrhu stranice vašeg salona – prvo što klijenti vide.
     </p>
 
-    <p className="mt-1 text-sm text-gray-500">
-      Preporučeni format: široka fotografija (oko 1000 × 360 px ili sličan omjer).
-    </p>
-  </div>
-)}
+    <input
+      id="hero-image-upload"
+      type="file"
+      accept="image/*"
+      onChange={(e) => {
+        if (e.target.files && e.target.files[0]) {
+          const file = e.target.files[0];
 
+          setSelectedFile(file);
+          setImagePreview(URL.createObjectURL(file));
+        }
+      }}
+      style={{ display: "none" }}
+    />
 
-{imagePreview && (
-  <div className="mt-6">
-    <p className="font-medium text-gray-700">
-      Prilagodite sliku
-    </p>
+    {!selectedFile ? (
+      <div
+        className="rounded-2xl border bg-white shadow-sm"
+        style={{
+          marginTop: "16px",
+          padding: isMobile ? "16px" : "22px 26px",
+          maxWidth: "880px",
+          borderColor: "#ead1d1",
+        }}
+      >
+        <p className="font-bold" style={{ fontSize: "17px", color: "#611a1a" }}>
+          Trenutna slika
+        </p>
 
-    <p className="mb-3 mt-1 text-sm text-gray-500">
-      Pomjerite ili uvećajte sliku kako biste odabrali dio koji će biti prikazan.
-    </p>
+        {salon?.image_url ? (
+          <>
+            <p className="text-gray-500" style={{ marginTop: "2px", fontSize: "13px" }}>
+              Ovako je klijenti vide na vrhu stranice salona.
+            </p>
 
-    <div
-      className="relative w-full max-w-2xl overflow-hidden rounded-2xl bg-gray-100"
-  style={{
-    height: isMobile ? "220px" : "320px",
-  }}
->
+            <img
+              src={salon.image_url}
+              alt="Naslovna slika"
+              className="aspect-[1000/360] w-full rounded-2xl border border-gray-200 object-cover"
+              style={{ marginTop: "12px", backgroundColor: "#ffffff" }}
+            />
+          </>
+        ) : (
+          <p className="text-gray-500" style={{ marginTop: "6px", fontSize: "15px" }}>
+            Salon još nema naslovnu sliku.
+          </p>
+        )}
+
+        <label
+          htmlFor="hero-image-upload"
+          className="inline-flex cursor-pointer items-center rounded-xl font-bold text-white transition hover:opacity-90"
+          style={{
+            marginTop: "14px",
+            height: "48px",
+            padding: "0 22px",
+            gap: "8px",
+            fontSize: "15px",
+            backgroundColor: "#611a1a",
+          }}
+        >
+          📷 {salon?.image_url ? "Promijeni sliku" : "Izaberite sliku"}
+        </label>
+
+        <div
+          className="rounded-xl text-gray-600"
+          style={{
+            marginTop: "14px",
+            padding: "12px 14px",
+            fontSize: "14px",
+            lineHeight: 1.45,
+            backgroundColor: "#faf7f7",
+          }}
+        >
+          💡 Savjet: najbolje izgleda široka, svijetla fotografija salona, snimljena
+          vodoravno. Nakon izbora možete odabrati koji dio slike se vidi.
+        </div>
+      </div>
+    ) : (
+      <div
+        className="rounded-2xl border-2 bg-white"
+        style={{
+          marginTop: "16px",
+          padding: isMobile ? "16px" : "22px 26px",
+          maxWidth: "880px",
+          borderColor: "#611a1a",
+        }}
+      >
+        <p className="font-bold" style={{ fontSize: "17px", color: "#611a1a" }}>
+          Nova naslovna slika
+        </p>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+            gap: isMobile ? "0" : "24px",
+          }}
+        >
+          <div className="flex" style={{ gap: "12px", marginTop: "16px" }}>
+            <div
+              className="flex shrink-0 items-center justify-center rounded-full font-bold text-white"
+              style={{ width: "28px", height: "28px", fontSize: "14px", backgroundColor: "#611a1a" }}
+            >
+              1
+            </div>
+
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p className="font-bold" style={{ fontSize: "16px" }}>
+                Odaberite dio slike
+              </p>
+
+              <p className="text-gray-500" style={{ marginTop: "2px", fontSize: "13px" }}>
+                Pomjerite sliku prstom ili mišem. Uvećajte klizačem.
+              </p>
+
+              {imagePreview && (
+                <>
+                  <div
+                    className="relative w-full overflow-hidden rounded-2xl bg-gray-100"
+                    style={{
+                      marginTop: "10px",
+                      height: isMobile ? "220px" : "300px",
+                    }}
+                  >
     <Cropper
       image={imagePreview}
       crop={crop}
@@ -3288,523 +3339,854 @@ height: isMobile ? "90px" : "88px",
         }
       }}
         />
-    </div>
-    
-  </div>
-)}
-{selectedFile && (
-  <div className="mt-6">
-    <p className="mb-3 font-medium text-gray-700">
-      Ovako će izgledati na stranici
-    </p>
+                  </div>
 
-    <div
-  className="aspect-[1000/360] w-full max-w-2xl overflow-hidden rounded-2xl bg-gray-200"
->
-      {croppedPreviewUrl && (
-        <img
-          src={croppedPreviewUrl}
-          alt="Hero preview"
-          className="h-full w-full object-cover"
-        />
-      )}
-    </div>
-  </div>
-)}
-  {selectedFile && (
-  <div className="mt-4 flex gap-3">
-    <button
-  onClick={handleImageUpload}
-  disabled={isUploadingImage}
-  className={`rounded-xl px-5 py-3 font-medium text-white transition ${
-    isUploadingImage ? "cursor-not-allowed" : "hover:opacity-90"
-  }`}
-  style={{
-    backgroundColor: isUploadingImage ? "#6b7280" : "#611a1a",
-  }}
->
-  {isUploadingImage ? "Spremanje..." : "Sačuvaj sliku"}
-</button>
+                  <div className="flex items-center" style={{ marginTop: "12px", gap: "10px" }}>
+                    <button
+                      type="button"
+                      onClick={() => setZoom(Math.max(1, Math.round((zoom - 0.2) * 10) / 10))}
+                      aria-label="Smanji"
+                      className="flex shrink-0 items-center justify-center rounded-full border bg-white font-bold"
+                      style={{ width: "40px", height: "40px", fontSize: "20px", color: "#611a1a", borderColor: "#d1d5db" }}
+                    >
+                      −
+                    </button>
 
-    <button
-  type="button"
-  onClick={() => {
-    setImagePreview(null);
-    setSelectedFile(null);
-    setZoom(1);
-    setCrop({ x: 0, y: 0 });
-    setCroppedAreaPixels(null);
-  }}
-  className="rounded-xl bg-red-500 px-5 py-3 font-medium text-white transition hover:bg-red-600"
->
-  Otkaži
-</button>
+                    <input
+                      type="range"
+                      min={1}
+                      max={3}
+                      step={0.1}
+                      value={zoom}
+                      onChange={(e) => setZoom(Number(e.target.value))}
+                      aria-label="Uvećanje"
+                      className="w-full"
+                      style={{ accentColor: "#611a1a" }}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => setZoom(Math.min(3, Math.round((zoom + 0.2) * 10) / 10))}
+                      aria-label="Uvećaj"
+                      className="flex shrink-0 items-center justify-center rounded-full border bg-white font-bold"
+                      style={{ width: "40px", height: "40px", fontSize: "20px", color: "#611a1a", borderColor: "#d1d5db" }}
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <p className="text-center text-gray-500" style={{ marginTop: "4px", fontSize: "12px" }}>
+                    Uvećanje
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="flex" style={{ gap: "12px", marginTop: "16px" }}>
+            <div
+              className="flex shrink-0 items-center justify-center rounded-full font-bold text-white"
+              style={{ width: "28px", height: "28px", fontSize: "14px", backgroundColor: "#611a1a" }}
+            >
+              2
+            </div>
+
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p className="font-bold" style={{ fontSize: "16px" }}>
+                Ovako će izgledati
+              </p>
+
+              <p className="text-gray-500" style={{ marginTop: "2px", fontSize: "13px" }}>
+                Pregled vrha stranice salona.
+              </p>
+
+              <div
+                className="aspect-[1000/360] w-full overflow-hidden rounded-2xl bg-gray-200"
+                style={{ marginTop: "10px" }}
+              >
+                {croppedPreviewUrl && (
+                  <img
+                    src={croppedPreviewUrl}
+                    alt="Hero preview"
+                    className="h-full w-full object-cover"
+                  />
+                )}
+              </div>
+
+              <p className="text-gray-500" style={{ marginTop: "6px", fontSize: "12px", wordBreak: "break-all" }}>
+                {selectedFile.name}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div
+          className="flex"
+          style={{
+            marginTop: "18px",
+            gap: "10px",
+            flexDirection: isMobile ? "column" : "row",
+          }}
+        >
+          <button
+            type="button"
+            onClick={handleImageUpload}
+            disabled={isUploadingImage}
+            className={`rounded-xl font-bold text-white transition ${
+              isUploadingImage ? "cursor-not-allowed" : "hover:opacity-90"
+            }`}
+            style={{
+              height: "50px",
+              padding: isMobile ? undefined : "0 28px",
+              fontSize: "16px",
+              backgroundColor: isUploadingImage ? "#6b7280" : "#611a1a",
+            }}
+          >
+            {isUploadingImage ? "Spremanje..." : "Sačuvaj sliku"}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setImagePreview(null);
+              setSelectedFile(null);
+              setZoom(1);
+              setCrop({ x: 0, y: 0 });
+              setCroppedAreaPixels(null);
+
+              const fileInput = document.getElementById(
+                "hero-image-upload"
+              ) as HTMLInputElement | null;
+
+              if (fileInput) fileInput.value = "";
+            }}
+            className="rounded-xl border bg-white font-bold transition hover:bg-gray-50"
+            style={{
+              height: "50px",
+              padding: isMobile ? undefined : "0 28px",
+              fontSize: "16px",
+              color: "#374151",
+              borderColor: "#d1d5db",
+            }}
+          >
+            Odustani
+          </button>
+        </div>
+      </div>
+    )}
   </div>
-)}
-</div>
-</div>
 )}
 
 {selectedSettings.includes("gallery") && (
-  <div className="mb-6 rounded-2xl bg-white p-4 shadow">
-    <div className="mx-auto max-w-5xl">
-      <h2 className="mb-4 text-xl font-bold">Galerija slika</h2>
-  <p className="mb-6 text-sm text-gray-500">
-  Dodajte slike koje će se prikazivati na stranici salona.
-</p>
+  <div className="mb-6">
+    <h2 className="font-bold" style={{ fontSize: isMobile ? "24px" : "30px" }}>
+      Galerija
+    </h2>
 
-  <input
-  id="gallery-image-upload"
-  type="file"
-  accept="image/*"
-  onChange={(e) => {
-    if (e.target.files && e.target.files[0]) {
-  const file = e.target.files[0];
-
-  setGalleryFile(file);
-  setGalleryPreviewUrl(URL.createObjectURL(file));
-}
-  }}
-  style={{ display: "none" }}
-/>
-
-<label
-  htmlFor="gallery-image-upload"
-  style={{
-    display: "inline-flex",
-    cursor: "pointer",
-    alignItems: "center",
-    borderRadius: "12px",
-    backgroundColor: "#ffffff",
-    border: "1px solid #611a1a",
-    padding: "12px 20px",
-    fontWeight: 500,
-    color: "#611a1a",
-  }}
->
-  Izaberite sliku za galeriju
-</label>
-
-{galleryFile && (
-  <div className="mt-5">
-    <p className="mb-3 text-sm text-gray-600">
-      Odabrana slika:{" "}
-      <span className="font-semibold text-gray-800">
-        {galleryFile.name}
-      </span>
+    <p className="text-gray-500" style={{ marginTop: "4px", fontSize: "15px", lineHeight: 1.4 }}>
+      Slike koje klijenti vide na stranici salona.
     </p>
 
-    {galleryPreviewUrl && (
-  <img
-    src={galleryPreviewUrl}
-    alt="Pregled odabrane slike"
-    style={{
-      width: isMobile ? "140px" : "180px",
-      height: isMobile ? "100px" : "120px",
-      objectFit: "cover",
-      borderRadius: "12px",
-      display: "block",
-    }}
-  />
-)}
-
-    <button
-  onClick={handleGalleryImageUpload}
-  className={`mt-3 rounded-xl font-medium text-white transition hover:opacity-90 ${
-    isMobile ? "px-4 py-2 text-sm" : "px-5 py-3"
-  }`}
-  style={{
-    backgroundColor: "#611a1a",
-  }}
->
-  Sačuvaj u galeriju
-</button>
-  </div>
-)}
-
-  <div
-  style={{
-    marginTop: "24px",
-    display: "grid",
-    gridTemplateColumns: isMobile
-  ? "repeat(2, minmax(0, 1fr))"
-  : "repeat(4, 1fr)",
-    gap: isMobile ? "8px" : "12px",
-  }}
->
-    {galleryImages.map((image) => (
-     <div
-  key={image.id}
-  className={`rounded-2xl bg-white shadow ${
-    isMobile ? "p-2" : "p-4"
-  }`}
->
-        <img
-  src={image.image_url}
-  alt="Slika galerije"
-  style={{
-    width: "100%",
-    height: isMobile ? "100px" : "150px",
-    objectFit: "cover",
-    borderRadius: "12px",
-    display: "block",
-  }}
-/>
-
-        <button
-          onClick={() => handleDeleteGalleryImage(image.id)}
-          className={`w-full rounded-xl font-medium text-white transition hover:opacity-90 ${
-  isMobile ? "mt-2 px-2 py-1.5 text-sm" : "mt-4 px-3 py-2"
-}`}
-style={{ backgroundColor: "#ef4444" }}
-        >
-          Obriši
-        </button>
-      </div>
-    ))}
-        </div>
-
-    </div>
-  </div>
-)}
-
-  
-
-{selectedSettings.includes("info") && (
-  <div className="mb-6 rounded-2xl bg-white p-4 shadow">
-    <div className="mx-auto max-w-2xl">
-      <h2 className="mb-1 text-xl font-bold">Informacije o salonu</h2>
-  <p className="mb-6 text-sm text-gray-500">
-  Ovdje možete urediti osnovne informacije koje će biti prikazane na stranici salona.
-</p>
-
-  <label className="mb-1 block font-medium">Opis</label>
-  <textarea
-    value={description}
-    onChange={(e) => setDescription(e.target.value)}
-    className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-  style={{ maxWidth: "450px" }}
-  />
-
-  <label className="mb-1 block font-medium">Telefon</label>
-  <input
-  type="text"
-  value={phone}
-  onChange={(e) => setPhone(e.target.value)}
-  className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-  style={{ maxWidth: "450px" }}
-/>
-
-  <label className="mb-1 block font-medium">Adresa</label>
-  <input
-    type="text"
-    value={address}
-    onChange={(e) => setAddress(e.target.value)}
-    className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-    style={{ maxWidth: "450px" }}
-  />
-
-  <label className="mb-1 block font-medium">Radno vrijeme</label>
-
-<div
-  className="mb-3 flex"
-  style={{
-    maxWidth: "450px",
-    gap: isMobile ? "16px" : "12px",
-  }}
->
-  <div
-    style={{
-  width: isMobile ? "100px" : "50%",
-  minWidth: 0,
-}}
-  >
-    <label className="mb-1 block text-sm text-gray-500">Od</label>
-
     <input
-      type="time"
-      value={openingHoursFrom}
-      onChange={(e) => setOpeningHoursFrom(e.target.value)}
-      className="w-full rounded-xl border border-gray-300 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-      style={{
-  minWidth: 0,
-  width: isMobile ? "100px" : "100%",
-  maxWidth: isMobile ? "100px" : "100%",
-  boxSizing: "border-box",
-  padding: isMobile ? "12px 8px" : "12px 16px",
-}}
-    />
-  </div>
+      id="gallery-image-upload"
+      type="file"
+      accept="image/*"
+      onChange={(e) => {
+        if (e.target.files && e.target.files[0]) {
+          const file = e.target.files[0];
 
-  <div
-    style={{
-  width: isMobile ? "100px" : "50%",
-  minWidth: 0,
-}}
-  >
-    <label className="mb-1 block text-sm text-gray-500">Do</label>
-
-    <input
-      type="time"
-      value={openingHoursTo}
-      onChange={(e) => setOpeningHoursTo(e.target.value)}
-      className="w-full rounded-xl border border-gray-300 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-      style={{
-        minWidth: 0,
-        width: isMobile ? "100px" : "100%",
-        maxWidth: isMobile ? "100px" : "100%",
-        boxSizing: "border-box",
-        padding: isMobile ? "12px 8px" : "12px 16px",
-      }}
-    />
-  </div>
-</div>
-
-<label className="mb-2 block font-medium">Neradni dani</label>
-
-<div className="mb-4 flex flex-wrap gap-2" style={{ maxWidth: "450px" }}>
-  {["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"].map((day) => {
-    const isSelected = closedWeekdays.includes(day);
-
-    return (
-      <button
-        key={day}
-        type="button"
-        onClick={() =>
-          setClosedWeekdays((prev) =>
-            prev.includes(day)
-              ? prev.filter((item) => item !== day)
-              : [...prev, day]
-          )
+          setGalleryFile(file);
+          setGalleryPreviewUrl(URL.createObjectURL(file));
         }
-        className="rounded-xl text-sm font-medium transition"
+      }}
+      style={{ display: "none" }}
+    />
+
+    {!galleryFile ? (
+      <div
+        className="rounded-2xl text-center"
         style={{
-  backgroundColor: isSelected ? "#611a1a" : "#ffffff",
-  color: isSelected ? "#ffffff" : "#611a1a",
-  border: "1px solid #611a1a",
-  padding: isMobile ? "8px 12px" : "8px 16px",
-}}
+          marginTop: "16px",
+          padding: isMobile ? "22px 16px" : "28px",
+          maxWidth: "880px",
+          border: "2px dashed #c9a3a3",
+          backgroundColor: "#fdf8f8",
+        }}
       >
-        {day}
-      </button>
-    );
-  })}
-</div>
+        <div style={{ fontSize: "34px", lineHeight: 1 }}>📷</div>
 
-<div
-  className="mb-4 mt-5"
-  style={{ maxWidth: "450px" }}
->
-  <label className="mb-1 block font-medium">
-    Skraćeno radno vrijeme
-  </label>
+        <p className="font-bold" style={{ marginTop: "8px", fontSize: "17px", color: "#611a1a" }}>
+          Dodaj novu sliku
+        </p>
 
-  <p className="mb-4 text-sm text-gray-500">
-    Odaberite dane kada salon radi kraće od uobičajenog radnog vremena.
-  </p>
+        <p className="text-gray-500" style={{ marginTop: "4px", fontSize: "14px" }}>
+          Izaberite sliku sa telefona ili računara.
+        </p>
 
-  <div
-    className="mb-3 flex"
-    style={{
-      gap: isMobile ? "16px" : "12px",
-    }}
-  >
-    <div
-      style={{
-        width: isMobile ? "100px" : "50%",
-        minWidth: 0,
-      }}
-    >
-      <label className="mb-1 block text-sm text-gray-500">Od</label>
-
-      <input
-        type="time"
-        value={shortenedFrom}
-        onChange={(e) => setShortenedFrom(e.target.value)}
-        className="w-full rounded-xl border border-gray-300 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-        style={{
-          minWidth: 0,
-          width: isMobile ? "100px" : "100%",
-          maxWidth: isMobile ? "100px" : "100%",
-          boxSizing: "border-box",
-          padding: isMobile ? "12px 8px" : "12px 16px",
-        }}
-      />
-    </div>
-
-    <div
-      style={{
-        width: isMobile ? "100px" : "50%",
-        minWidth: 0,
-      }}
-    >
-      <label className="mb-1 block text-sm text-gray-500">Do</label>
-
-      <input
-        type="time"
-        value={shortenedTo}
-        onChange={(e) => setShortenedTo(e.target.value)}
-        className="w-full rounded-xl border border-gray-300 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-        style={{
-          minWidth: 0,
-          width: isMobile ? "100px" : "100%",
-          maxWidth: isMobile ? "100px" : "100%",
-          boxSizing: "border-box",
-          padding: isMobile ? "12px 8px" : "12px 16px",
-        }}
-      />
-    </div>
-  </div>
-
-  <div className="mb-4 flex flex-wrap gap-2">
-    {["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"].map((day) => {
-      const isSelected = selectedShortenedWeekdays.includes(day);
-
-      return (
-        <button
-          key={day}
-          type="button"
-          onClick={() =>
-            setSelectedShortenedWeekdays((prev) =>
-              prev.includes(day)
-                ? prev.filter((item) => item !== day)
-                : [...prev, day]
-            )
-          }
-          className="rounded-xl text-sm font-medium transition"
+        <label
+          htmlFor="gallery-image-upload"
+          className="inline-flex cursor-pointer items-center rounded-xl font-bold text-white transition hover:opacity-90"
           style={{
-            backgroundColor: isSelected ? "#611a1a" : "#ffffff",
-            color: isSelected ? "#ffffff" : "#611a1a",
-            border: "1px solid #611a1a",
-            padding: isMobile ? "8px 12px" : "8px 16px",
+            marginTop: "12px",
+            height: "46px",
+            padding: "0 22px",
+            fontSize: "15px",
+            backgroundColor: "#611a1a",
           }}
         >
-          {day}
-        </button>
-      );
-    })}
-  </div>
+          Izaberite sliku
+        </label>
+      </div>
+    ) : (
+      <div
+        className="rounded-2xl border-2 bg-white"
+        style={{
+          marginTop: "16px",
+          padding: isMobile ? "16px" : "20px 24px",
+          maxWidth: "880px",
+          borderColor: "#611a1a",
+        }}
+      >
+        <p className="font-bold" style={{ fontSize: "17px", color: "#611a1a" }}>
+          Nova slika
+        </p>
 
-  <button
-  type="button"
-  onClick={handleAddShortenedHours}
-  className="rounded-xl font-medium text-white transition hover:opacity-90"
-    style={{
-      backgroundColor: "#611a1a",
-      padding: isMobile ? "9px 14px" : "10px 16px",
-    }}
-  >
-    Dodaj
-  </button>
-  {shortenedHours.length > 0 && (
-  <div className="mt-4 space-y-2">
-    {shortenedHours.map((item) => {
-      const dayNames: Record<string, string> = {
-        Pon: "Ponedjeljak",
-        Uto: "Utorak",
-        Sri: "Srijeda",
-        Čet: "Četvrtak",
-        Pet: "Petak",
-        Sub: "Subota",
-        Ned: "Nedjelja",
-      };
+        <div className="flex items-start" style={{ marginTop: "12px", gap: "14px" }}>
+          {galleryPreviewUrl && (
+            <img
+              src={galleryPreviewUrl}
+              alt="Pregled odabrane slike"
+              style={{
+                width: isMobile ? "140px" : "200px",
+                height: isMobile ? "105px" : "150px",
+                objectFit: "cover",
+                borderRadius: "12px",
+                display: "block",
+                flexShrink: 0,
+              }}
+            />
+          )}
 
-      return (
+          <div style={{ minWidth: 0 }}>
+            <p className="font-bold" style={{ fontSize: "15px" }}>
+              Odabrana slika
+            </p>
+
+            <p className="text-gray-600" style={{ marginTop: "4px", fontSize: "14px", wordBreak: "break-all" }}>
+              {galleryFile.name}
+            </p>
+          </div>
+        </div>
+
         <div
-  key={item.id}
-  className="flex items-center justify-between rounded-xl px-3 py-2"
-  style={{
-    border: "1px solid rgba(97, 26, 26, 0.45)",
-  }}
->
-  <div>
-    <p className="text-sm font-medium">
-      {dayNames[item.weekday] || item.weekday}
-    </p>
+          className="flex"
+          style={{
+            marginTop: "14px",
+            gap: "10px",
+            flexDirection: isMobile ? "column" : "row",
+          }}
+        >
+          <button
+            type="button"
+            onClick={handleGalleryImageUpload}
+            className="rounded-xl font-bold text-white transition hover:opacity-90"
+            style={{
+              height: "48px",
+              padding: isMobile ? undefined : "0 26px",
+              fontSize: "15px",
+              backgroundColor: "#611a1a",
+            }}
+          >
+            Sačuvaj u galeriju
+          </button>
 
-    <p className="text-sm text-gray-500">
-      {item.start_time.slice(0, 5)}–{item.end_time.slice(0, 5)}
-    </p>
-  </div>
+          <button
+            type="button"
+            onClick={() => {
+              setGalleryFile(null);
+              setGalleryPreviewUrl(null);
 
-<button
-  type="button"
-  onClick={() => handleDeleteShortenedHours(item.id)}
-  className="rounded-lg text-sm font-medium text-white transition hover:opacity-90"
-  style={{
-    backgroundColor: "#ef4444",
-    padding: isMobile ? "7px 10px" : "8px 12px",
-  }}
->
-  Obriši
-</button>
-</div>
-      );
-    })}
+              const fileInput = document.getElementById(
+                "gallery-image-upload"
+              ) as HTMLInputElement | null;
+
+              if (fileInput) fileInput.value = "";
+            }}
+            className="rounded-xl border bg-white font-bold transition hover:bg-gray-50"
+            style={{
+              height: "48px",
+              padding: isMobile ? undefined : "0 26px",
+              fontSize: "15px",
+              color: "#374151",
+              borderColor: "#d1d5db",
+            }}
+          >
+            Odustani
+          </button>
+        </div>
+      </div>
+    )}
+
+    <div
+      className="flex items-baseline gap-2"
+      style={{ marginTop: "22px", paddingBottom: "8px", borderBottom: "1px solid #ead1d1" }}
+    >
+      <p className="font-bold" style={{ fontSize: "17px", color: "#611a1a" }}>
+        Slike u galeriji
+      </p>
+
+      <span className="text-sm text-gray-500">
+        {galleryImages.length === 1 ? "1 slika" : `${galleryImages.length} slika`}
+      </span>
+    </div>
+
+    {galleryImages.length === 0 ? (
+      <p className="text-gray-500" style={{ marginTop: "12px", fontSize: "15px" }}>
+        Još nema slika u galeriji.
+      </p>
+    ) : (
+      <>
+        <p className="text-gray-500" style={{ marginTop: "8px", fontSize: "13px" }}>
+          Slike se prikazuju na stranici salona ovim redom. Slika 1 se vidi prva.
+        </p>
+
+        <div
+          style={{
+            marginTop: "12px",
+            display: "grid",
+            gridTemplateColumns: isMobile ? "repeat(2, minmax(0, 1fr))" : "repeat(4, 1fr)",
+            gap: isMobile ? "10px" : "14px",
+          }}
+        >
+          {galleryImages.map((image, index) => (
+            <div
+              key={image.id}
+              className="relative overflow-hidden rounded-2xl"
+              style={{
+                aspectRatio: "4 / 3",
+                backgroundColor: "#f3f4f6",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+              }}
+            >
+              <img
+                src={image.image_url}
+                alt="Slika galerije"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  display: "block",
+                }}
+              />
+
+              <span
+                className="absolute flex items-center justify-center rounded-full font-bold"
+                style={{
+                  top: "8px",
+                  left: "8px",
+                  minWidth: "26px",
+                  height: "26px",
+                  padding: "0 7px",
+                  fontSize: "13px",
+                  backgroundColor: index === 0 ? "#611a1a" : "rgba(255,255,255,0.92)",
+                  color: index === 0 ? "#ffffff" : "#111827",
+                }}
+              >
+                {index + 1}
+              </span>
+
+              <button
+                type="button"
+                onClick={() => handleDeleteGalleryImage(image.id)}
+                className="absolute flex items-center rounded-full font-bold"
+                style={{
+                  top: "8px",
+                  right: "8px",
+                  height: "32px",
+                  padding: "0 10px",
+                  gap: "4px",
+                  fontSize: "13px",
+                  color: "#ef4444",
+                  backgroundColor: "rgba(255,255,255,0.95)",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
+                }}
+              >
+                ✕ Obriši
+              </button>
+            </div>
+          ))}
+        </div>
+      </>
+    )}
+
+    <div
+      className="rounded-xl text-gray-600"
+      style={{
+        marginTop: "16px",
+        padding: "12px 14px",
+        maxWidth: "880px",
+        fontSize: "14px",
+        lineHeight: 1.45,
+        backgroundColor: "#faf7f7",
+      }}
+    >
+      💡 Savjet: koristite svijetle i oštre slike – izgled salona, vaše radove i tim.
+    </div>
   </div>
 )}
-</div>
 
+{selectedSettings.includes("info") && (
+  <div className="mb-6" style={{ paddingBottom: "90px" }}>
+    <h2 className="font-bold" style={{ fontSize: isMobile ? "24px" : "30px" }}>
+      Informacije o salonu
+    </h2>
 
-<label
-  className="mb-1 block font-medium"
-  style={{ marginTop: isMobile ? "20px" : "20px" }}
->
-  Instagram
-</label>
-<input
-  type="text"
-  placeholder="https://instagram.com/..."
-  value={instagramUrl}
-  onChange={(e) => setInstagramUrl(e.target.value)}
-  className="w-full rounded-xl border border-gray-300 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-style={{
-  maxWidth: "450px",
-  padding: isMobile ? "9px 12px" : "12px 16px",
-  marginBottom: isMobile ? "8px" : "12px",
-}}
-/>
+    <p className="text-gray-500" style={{ marginTop: "4px", fontSize: "15px", lineHeight: 1.4 }}>
+      Podaci koje klijenti vide na stranici vašeg salona.
+    </p>
 
-<label className="mb-1 block font-medium">Facebook</label>
-<input
-  type="text"
-  placeholder="https://facebook.com/..."
-  value={facebookUrl}
-  onChange={(e) => setFacebookUrl(e.target.value)}
-  className="w-full rounded-xl border border-gray-300 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-style={{
-  maxWidth: "450px",
-  padding: isMobile ? "9px 12px" : "12px 16px",
-  marginBottom: isMobile ? "8px" : "12px",
-}}
-/>
+    <div
+      style={{
+        marginTop: "16px",
+        display: "grid",
+        gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+        gap: isMobile ? "16px" : "24px",
+        alignItems: "start",
+      }}
+    >
+      <div style={{ display: "grid", gap: isMobile ? "16px" : "24px" }}>
+      <div
+        className="rounded-2xl border bg-white shadow-sm"
+        style={{ padding: isMobile ? "16px" : "22px 24px", borderColor: "#ead1d1" }}
+      >
+        <p className="font-bold" style={{ fontSize: "17px", color: "#611a1a" }}>
+          📝 O salonu
+        </p>
 
-<label className="mb-1 block font-medium">TikTok</label>
-<input
-  type="text"
-  placeholder="https://tiktok.com/@..."
-  value={tiktokUrl}
-  onChange={(e) => setTiktokUrl(e.target.value)}
-  className="w-full rounded-xl border border-gray-300 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
-style={{
-  maxWidth: "450px",
-  padding: isMobile ? "9px 12px" : "12px 16px",
-  marginBottom: isMobile ? "8px" : "12px",
-}}
-/>
+        <label className="mb-1.5 block text-sm font-bold text-gray-700" style={{ marginTop: "14px" }}>
+          Opis
+        </label>
 
-    <button
-  onClick={handleSalonInfoUpdate}
-  className="mt-4 rounded-xl font-medium text-white transition hover:opacity-90"
-  style={{
-    backgroundColor: "#611a1a",
-    display: "block",
-    padding: isMobile ? "9px 14px" : "12px 20px",
-  }}
->
-  Sačuvaj informacije
-</button>
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={4}
+          className="block w-full rounded-xl border border-gray-300 px-3 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+          style={{ fontSize: "15px", lineHeight: 1.45 }}
+        />
 
+        <p className="text-gray-500" style={{ marginTop: "6px", fontSize: "13px", lineHeight: 1.4 }}>
+          Nekoliko rečenica o salonu – šta radite i po čemu ste posebni.
+        </p>
+
+        <label className="mb-1.5 block text-sm font-bold text-gray-700" style={{ marginTop: "14px" }}>
+          Telefon
+        </label>
+
+        <input
+          type="text"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          className="w-full rounded-xl border border-gray-300 bg-white px-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+          style={{ height: "46px", fontSize: "16px" }}
+        />
+
+        <p className="text-gray-500" style={{ marginTop: "6px", fontSize: "13px", lineHeight: 1.4 }}>
+          Klijenti vas mogu pozvati jednim dodirom sa stranice salona.
+        </p>
+
+        <label className="mb-1.5 block text-sm font-bold text-gray-700" style={{ marginTop: "14px" }}>
+          Adresa
+        </label>
+
+        <input
+          type="text"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          className="w-full rounded-xl border border-gray-300 bg-white px-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+          style={{ height: "46px", fontSize: "16px" }}
+        />
+
+        <p className="text-gray-500" style={{ marginTop: "6px", fontSize: "13px", lineHeight: 1.4 }}>
+          Ako promijenite adresu, javite Salonixu da ažurira lokaciju na karti.
+        </p>
+      </div>
+
+      <div
+        className="rounded-2xl border bg-white shadow-sm"
+        style={{ padding: isMobile ? "16px" : "22px 24px", borderColor: "#ead1d1" }}
+      >
+        <p className="font-bold" style={{ fontSize: "17px", color: "#611a1a" }}>
+          🔗 Društvene mreže <span className="font-normal text-gray-500" style={{ fontSize: "13px" }}>(nije obavezno)</span>
+        </p>
+
+        <div className="flex items-center" style={{ gap: "10px", marginTop: "14px" }}>
+          <span
+            aria-hidden="true"
+            className="flex shrink-0 items-center justify-center rounded-xl font-bold text-white"
+            style={{ width: "38px", height: "38px", fontSize: "15px", background: "linear-gradient(45deg, #f58529, #dd2a7b, #8134af)" }}
+          >
+            IG
+          </span>
+
+          <input
+            type="text"
+            aria-label="Instagram"
+            placeholder="https://instagram.com/..."
+            value={instagramUrl}
+            onChange={(e) => setInstagramUrl(e.target.value)}
+            className="w-full rounded-xl border border-gray-300 bg-white px-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+            style={{ height: "46px", fontSize: "15px", minWidth: 0 }}
+          />
+        </div>
+
+        <div className="flex items-center" style={{ gap: "10px", marginTop: "14px" }}>
+          <span
+            aria-hidden="true"
+            className="flex shrink-0 items-center justify-center rounded-xl font-bold text-white"
+            style={{ width: "38px", height: "38px", fontSize: "15px", background: "#1877f2" }}
+          >
+            f
+          </span>
+
+          <input
+            type="text"
+            aria-label="Facebook"
+            placeholder="https://facebook.com/..."
+            value={facebookUrl}
+            onChange={(e) => setFacebookUrl(e.target.value)}
+            className="w-full rounded-xl border border-gray-300 bg-white px-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+            style={{ height: "46px", fontSize: "15px", minWidth: 0 }}
+          />
+        </div>
+
+        <div className="flex items-center" style={{ gap: "10px", marginTop: "14px" }}>
+          <span
+            aria-hidden="true"
+            className="flex shrink-0 items-center justify-center rounded-xl font-bold text-white"
+            style={{ width: "38px", height: "38px", fontSize: "15px", background: "#111111" }}
+          >
+            ♪
+          </span>
+
+          <input
+            type="text"
+            aria-label="TikTok"
+            placeholder="https://tiktok.com/@..."
+            value={tiktokUrl}
+            onChange={(e) => setTiktokUrl(e.target.value)}
+            className="w-full rounded-xl border border-gray-300 bg-white px-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
+            style={{ height: "46px", fontSize: "15px", minWidth: 0 }}
+          />
+        </div>
+      </div>
+      </div>
+
+      <div
+        className="rounded-2xl border bg-white shadow-sm"
+        style={{ padding: isMobile ? "16px" : "22px 24px", borderColor: "#ead1d1" }}
+      >
+        <p className="font-bold" style={{ fontSize: "17px", color: "#611a1a" }}>
+          🕘 Radno vrijeme
+        </p>
+
+        <label className="mb-1.5 block text-sm font-bold text-gray-700" style={{ marginTop: "14px" }}>
+          Uobičajeno radno vrijeme
+        </label>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "10px" }}>
+            <div style={{ minWidth: 0 }}>
+              <label className="mb-1 block text-xs text-gray-500">Od</label>
+              <input
+                type="time"
+                value={openingHoursFrom}
+                onChange={(e) => setOpeningHoursFrom(e.target.value)}
+                className="block w-full rounded-xl border border-gray-300 bg-white text-left shadow-sm [&::-webkit-date-and-time-value]:m-0 [&::-webkit-date-and-time-value]:text-left [&::-webkit-date-and-time-value]:leading-[44px]"
+                style={{
+                height: "46px",
+                lineHeight: "44px",
+                padding: "0 10px",
+                fontSize: "16px",
+                minWidth: 0,
+                maxWidth: "100%",
+                WebkitAppearance: "none",
+                appearance: "none",
+              }}
+              />
+            </div>
+
+            <div style={{ minWidth: 0 }}>
+              <label className="mb-1 block text-xs text-gray-500">Do</label>
+              <input
+                type="time"
+                value={openingHoursTo}
+                onChange={(e) => setOpeningHoursTo(e.target.value)}
+                className="block w-full rounded-xl border border-gray-300 bg-white text-left shadow-sm [&::-webkit-date-and-time-value]:m-0 [&::-webkit-date-and-time-value]:text-left [&::-webkit-date-and-time-value]:leading-[44px]"
+                style={{
+                height: "46px",
+                lineHeight: "44px",
+                padding: "0 10px",
+                fontSize: "16px",
+                minWidth: 0,
+                maxWidth: "100%",
+                WebkitAppearance: "none",
+                appearance: "none",
+              }}
+              />
+            </div>
+          </div>
+
+        <label className="mb-1.5 block text-sm font-bold text-gray-700" style={{ marginTop: "14px" }}>
+          Neradni dani
+        </label>
+
+        <div className="flex flex-wrap gap-2">
+            {["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"].map((day) => {
+              const isSelected = closedWeekdays.includes(day);
+
+              return (
+                <button
+                  key={day}
+                  type="button"
+                  onClick={() =>
+                    setClosedWeekdays((prev) =>
+                      prev.includes(day)
+                        ? prev.filter((item) => item !== day)
+                        : [...prev, day]
+                    )
+                  }
+                  className="rounded-full border transition"
+                  style={{
+                    height: "38px",
+                    minWidth: "52px",
+                    padding: "0 12px",
+                    fontSize: "14px",
+                    fontWeight: isSelected ? 600 : 400,
+                    backgroundColor: isSelected ? "#611a1a" : "#ffffff",
+                    borderColor: isSelected ? "#611a1a" : "#d1d5db",
+                    color: isSelected ? "#ffffff" : "#111827",
+                  }}
+                >
+                  {day}
+                </button>
+              );
+            })}
+          </div>
+
+        <div style={{ marginTop: "18px", paddingTop: "14px", borderTop: "1px solid #f3e8e8" }}>
+          <p className="font-bold" style={{ fontSize: "15px" }}>
+            Skraćeno radno vrijeme
+          </p>
+
+          <p className="text-gray-500" style={{ marginTop: "2px", fontSize: "13px" }}>
+            Dani kada salon radi kraće, npr. subotom.
+          </p>
+
+          {shortenedHours.map((item) => {
+            const dayNames: Record<string, string> = {
+              Pon: "Ponedjeljak",
+              Uto: "Utorak",
+              Sri: "Srijeda",
+              Čet: "Četvrtak",
+              Pet: "Petak",
+              Sub: "Subota",
+              Ned: "Nedjelja",
+            };
+
+            return (
+              <div
+                key={item.id}
+                className="flex items-center justify-between rounded-xl border"
+                style={{ marginTop: "10px", padding: "10px 12px", borderColor: "#ead1d1", gap: "10px" }}
+              >
+                <div style={{ minWidth: 0 }}>
+                  <p className="font-bold" style={{ fontSize: "15px" }}>
+                    {dayNames[item.weekday] || item.weekday}
+                  </p>
+
+                  <p className="text-gray-500" style={{ fontSize: "13px", marginTop: "2px" }}>
+                    {String(item.start_time).slice(0, 5)}–{String(item.end_time).slice(0, 5)}
+                    {String(item.id).startsWith("temp-") && (
+                      <span style={{ color: "#b45309", fontWeight: 600 }}> · još nije sačuvano</span>
+                    )}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleDeleteShortenedHours(item.id)}
+                  className="shrink-0 rounded-xl border bg-white font-semibold"
+                  style={{ height: "34px", padding: "0 12px", fontSize: "13px", color: "#ef4444", borderColor: "#ef4444" }}
+                >
+                  Obriši
+                </button>
+              </div>
+            );
+          })}
+
+          {!showShortenedForm ? (
+            <button
+              type="button"
+              onClick={() => setShowShortenedForm(true)}
+              className="rounded-xl font-bold"
+              style={{
+                marginTop: "10px",
+                height: "44px",
+                padding: "0 18px",
+                width: isMobile ? "100%" : undefined,
+                fontSize: "15px",
+                color: "#611a1a",
+                border: "1px dashed #611a1a",
+                backgroundColor: "#ffffff",
+              }}
+            >
+              + Dodaj skraćeno radno vrijeme
+            </button>
+          ) : (
+            <div
+              className="rounded-xl"
+              style={{ marginTop: "10px", padding: "12px", backgroundColor: "#faf7f7" }}
+            >
+              <label className="mb-1.5 block text-sm font-bold text-gray-700">
+                Koji dani?
+              </label>
+
+              <div className="flex flex-wrap gap-2">
+            {["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"].map((day) => {
+              const isSelected = selectedShortenedWeekdays.includes(day);
+
+              return (
+                <button
+                  key={day}
+                  type="button"
+                  onClick={() =>
+                    setSelectedShortenedWeekdays((prev) =>
+                      prev.includes(day)
+                        ? prev.filter((item) => item !== day)
+                        : [...prev, day]
+                    )
+                  }
+                  className="rounded-full border transition"
+                  style={{
+                    height: "38px",
+                    minWidth: "52px",
+                    padding: "0 12px",
+                    fontSize: "14px",
+                    fontWeight: isSelected ? 600 : 400,
+                    backgroundColor: isSelected ? "#611a1a" : "#ffffff",
+                    borderColor: isSelected ? "#611a1a" : "#d1d5db",
+                    color: isSelected ? "#ffffff" : "#111827",
+                  }}
+                >
+                  {day}
+                </button>
+              );
+            })}
+          </div>
+
+              <label className="mb-1.5 block text-sm font-bold text-gray-700" style={{ marginTop: "12px" }}>
+                Radno vrijeme tih dana
+              </label>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "10px" }}>
+            <div style={{ minWidth: 0 }}>
+              <label className="mb-1 block text-xs text-gray-500">Od</label>
+              <input
+                type="time"
+                value={shortenedFrom}
+                onChange={(e) => setShortenedFrom(e.target.value)}
+                className="block w-full rounded-xl border border-gray-300 bg-white text-left shadow-sm [&::-webkit-date-and-time-value]:m-0 [&::-webkit-date-and-time-value]:text-left [&::-webkit-date-and-time-value]:leading-[44px]"
+                style={{
+                height: "46px",
+                lineHeight: "44px",
+                padding: "0 10px",
+                fontSize: "16px",
+                minWidth: 0,
+                maxWidth: "100%",
+                WebkitAppearance: "none",
+                appearance: "none",
+              }}
+              />
+            </div>
+
+            <div style={{ minWidth: 0 }}>
+              <label className="mb-1 block text-xs text-gray-500">Do</label>
+              <input
+                type="time"
+                value={shortenedTo}
+                onChange={(e) => setShortenedTo(e.target.value)}
+                className="block w-full rounded-xl border border-gray-300 bg-white text-left shadow-sm [&::-webkit-date-and-time-value]:m-0 [&::-webkit-date-and-time-value]:text-left [&::-webkit-date-and-time-value]:leading-[44px]"
+                style={{
+                height: "46px",
+                lineHeight: "44px",
+                padding: "0 10px",
+                fontSize: "16px",
+                minWidth: 0,
+                maxWidth: "100%",
+                WebkitAppearance: "none",
+                appearance: "none",
+              }}
+              />
+            </div>
+          </div>
+
+              <div className="flex" style={{ marginTop: "12px", gap: "8px" }}>
+                <button
+                  type="button"
+                  onClick={handleAddShortenedHours}
+                  className="rounded-xl font-bold text-white"
+                  style={{ height: "44px", padding: "0 18px", fontSize: "15px", backgroundColor: "#611a1a" }}
+                >
+                  Dodaj
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowShortenedForm(false);
+                    setShortenedFrom("");
+                    setShortenedTo("");
+                    setSelectedShortenedWeekdays([]);
+                  }}
+                  className="rounded-xl border bg-white font-bold"
+                  style={{ height: "44px", padding: "0 18px", fontSize: "15px", color: "#374151", borderColor: "#d1d5db" }}
+                >
+                  Odustani
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+
+    <div
+      style={{
+        position: "fixed",
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 45,
+        backgroundColor: "#ffffff",
+        borderTop: "1px solid #ead1d1",
+        boxShadow: "0 -4px 14px rgba(0,0,0,0.06)",
+        padding: isMobile ? "10px 16px" : "12px 32px",
+      }}
+    >
+      <div className="mx-auto flex max-w-6xl items-center" style={{ gap: "12px" }}>
+        <p className="text-gray-500" style={{ flex: 1, fontSize: "13px", lineHeight: 1.35 }}>
+          Promjene se čuvaju tek kada kliknete „Sačuvaj“.
+        </p>
+
+        <button
+          type="button"
+          onClick={handleSalonInfoUpdate}
+          className="rounded-xl font-bold text-white transition hover:opacity-90"
+          style={{ height: "48px", padding: "0 22px", fontSize: "15px", backgroundColor: "#611a1a", whiteSpace: "nowrap" }}
+        >
+          Sačuvaj promjene
+        </button>
+      </div>
     </div>
   </div>
 )}
