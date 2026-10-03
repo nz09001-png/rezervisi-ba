@@ -178,7 +178,7 @@ useEffect(() => {
     salon || ""
   )}&salonSlug=${encodeURIComponent(
     salonSlug || ""
-  )}&serviceId=${serviceId}`}
+  )}&serviceId=${serviceId}&barberId=${encodeURIComponent(barberId || "")}`}
   style={{
     color: "#611a1a",
     textDecoration: "none",
