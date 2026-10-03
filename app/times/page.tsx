@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
@@ -39,6 +39,21 @@ const [salonId, setSalonId] = useState<number | null>(null);
 const [weekOffset, setWeekOffset] = useState(0);
 const [eligibleBarberIds, setEligibleBarberIds] = useState<number[]>([]);
 const [isMobile, setIsMobile] = useState(false);
+// För rutan "Nema slobodnih termina ove sedmice". Reglerna för lediga tider
+// ändras inte – sidan räknar bara hur många tidsknappar som syns i kalendern.
+const calendarRef = useRef<HTMLDivElement>(null);
+const [timesLoaded, setTimesLoaded] = useState(false);
+const [barbersLoaded, setBarbersLoaded] = useState(false);
+const [isWeekEmpty, setIsWeekEmpty] = useState(false);
+
+useEffect(() => {
+  const visibleSlots =
+    calendarRef.current?.querySelectorAll("button").length ?? 0;
+
+  setIsWeekEmpty(
+    timesLoaded && barbersLoaded && !!service && visibleSlots === 0
+  );
+});
 
 
 
@@ -271,6 +286,7 @@ useEffect(() => {
     }
 
     setBarbers(data || []);
+    setBarbersLoaded(true);
   }
 
   fetchBarbers();
@@ -299,6 +315,7 @@ useEffect(() => {
 useEffect(() => {
   async function fetchAvailableTimes() {
     if (!salonSlug) return;
+    setTimesLoaded(false);
 
     const { data: salonData, error: salonError } = await supabase
   .from("salons")
@@ -374,6 +391,7 @@ const { data, error } = await query
 }
 
 setAvailableTimes(data || []);
+setTimesLoaded(true);
   }
 
   fetchAvailableTimes();
@@ -469,6 +487,57 @@ const weekTitle =
     : `${startDate.label} ${startMonth} – ${endDate.label} ${endMonth}`;
     const todayOnly = new Date();
 todayOnly.setHours(0, 0, 0, 0);
+
+// Visas när veckan inte har en enda ledig tid.
+const renderWeekEmptyBox = () => (
+  <div
+    style={{
+      border: "1px solid rgba(97, 26, 26, 0.15)",
+      backgroundColor: isMobile ? "#fcf9f9" : "#ffffff",
+      boxShadow: isMobile ? undefined : "0 4px 14px rgba(0, 0, 0, 0.06)",
+      borderRadius: "18px",
+      padding: isMobile ? "18px" : "24px 32px",
+      textAlign: "center",
+    }}
+  >
+    <p
+      style={{
+        margin: 0,
+        marginBottom: "4px",
+        color: "#111827",
+        fontWeight: 700,
+        fontSize: isMobile ? "16px" : "18px",
+      }}
+    >
+      Nema slobodnih termina ove sedmice
+    </p>
+    <p
+      style={{
+        margin: 0,
+        marginBottom: "14px",
+        color: "#6b7280",
+        fontSize: isMobile ? "14px" : "15px",
+      }}
+    >
+      Pogledajte sljedeću sedmicu.
+    </p>
+    <button
+      type="button"
+      onClick={() => setWeekOffset((prev) => prev + 1)}
+      className={geist.className}
+      style={{
+        backgroundColor: "#611a1a",
+        color: "#ffffff",
+        padding: "10px 22px",
+        borderRadius: "12px",
+        fontWeight: 700,
+      }}
+    >
+      Sljedeća sedmica →
+    </button>
+  </div>
+);
+
 return (
   <main
     className={`${sourceSans.className} min-h-screen bg-white px-3 py-6 md:px-8`}
@@ -782,8 +851,10 @@ return (
 
 
 
-    
+
+<div style={{ position: "relative" }}>
 <div
+  ref={calendarRef}
   className="rounded-3xl"
   style={{
     display: "grid",
@@ -1124,6 +1195,31 @@ className={
           );
 })}
 </div>
+
+{/* Desktop: rutan mitt i den tomma kalendern (under dagarnas rubriker). */}
+{!isMobile && isWeekEmpty && (
+  <div
+    style={{
+      position: "absolute",
+      top: "110px",
+      left: 0,
+      right: 0,
+      bottom: 0,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      pointerEvents: "none",
+    }}
+  >
+    <div style={{ pointerEvents: "auto" }}>{renderWeekEmptyBox()}</div>
+  </div>
+)}
+</div>
+
+{/* Mobil: rutan direkt under kalendern. */}
+{isMobile && isWeekEmpty && (
+  <div style={{ marginTop: "16px" }}>{renderWeekEmptyBox()}</div>
+)}
 
 
 <div

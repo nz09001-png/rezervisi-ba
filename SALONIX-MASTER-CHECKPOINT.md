@@ -307,10 +307,12 @@ KLART i punkt 8 (3 oktober 2026):
   "Da, otkaži" / "Ne". Fel i vinröd ruta: "Rezervacija nije pronađena"
   (ingen knapp) eller "Došlo je do greške" (knappen står kvar).
   Kvar med alert(): bara admin (ca 74 st).
+- /times: vecka utan lediga tider visar "Nema slobodnih termina ove sedmice"
+  + "Sljedeća sedmica →" (mobil: under kalendern, desktop: mitt i den).
+  Räknar bara synliga tidsknappar – tidsreglerna är orörda.
 
 KVAR i punkt 8 (i den här ordningen):
-1. Resten av listan: tom vecka utan text,
-   salongssidan (klickbar telefon, öppettider, galleripilar, "salon"),
+1. Resten av listan: salongssidan (klickbar telefon, öppettider, galleripilar, "salon"),
    ingen väg tillbaka till startsidan, enkelt mejl, admininloggningens
    utseende, admin-stavfel ("Osooblje", "Osobolje", "Edit", "Ime Osoblja").
 
