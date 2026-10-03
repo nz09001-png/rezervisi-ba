@@ -346,14 +346,25 @@ setSelectedServiceBarberIds(
   }
 }
 
-function toggleSetting(setting: string) {
-  setSelectedSettings((prev) =>
-    prev.includes(setting)
-      ? prev.filter((item) => item !== setting)
-      : [...prev, setting]
-  );
+// Postavke-sidan: ett avsnitt i taget. Tom lista = rutorna visas.
+function openSetting(setting: string) {
+  setSelectedSettings([setting]);
+  document.getElementById("postavke-stranica")?.scrollTo(0, 0);
+}
 
+function backToSettings() {
+  setSelectedSettings([]);
+  document.getElementById("postavke-stranica")?.scrollTo(0, 0);
+}
+
+function openSettingsPage() {
+  setSelectedSettings([]);
+  setShowSettingsMenu(true);
+}
+
+function closeSettingsPage() {
   setShowSettingsMenu(false);
+  setSelectedSettings([]);
 }
 
   async function fetchBookings() {
@@ -2309,113 +2320,15 @@ if (!isLoggedIn) {
   
 
   <div className="flex items-center gap-3">
-  <div style={{ position: "relative", display: "inline-block" }}>
   <button
-  onClick={() => setShowSettingsMenu(!showSettingsMenu)}
+  onClick={openSettingsPage}
   className="h-12 rounded-xl px-5 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
   style={{
     backgroundColor: "#611a1a",
   }}
 >
    Postavke
-  {selectedSettings.length > 0 && ` (${selectedSettings.length})`}
 </button>
-
-  {showSettingsMenu && (
-  <div
-  className="z-50 rounded-2xl bg-white p-2 shadow"
-  style={{
-    position: "absolute",
-    top: "100%",
-    left: 0,
-    marginTop: "8px",
-    width: "210px",
-  }}
->
-    <button
-      onClick={() => toggleSetting("hero")}
-      className="flex w-full items-center rounded-lg px-3 py-1.5 text-left text-sm font-medium hover:bg-gray-100"
-style={{
-  padding: "8px 12px",
-}}
-    >
-    
-  {selectedSettings.includes("hero") ? "✓  " : ""}Naslovna slika
-    </button>
-
-    <button
-      onClick={() => toggleSetting("gallery")}
-     className="flex w-full items-center rounded-lg px-3 py-1.5 text-left text-sm font-medium hover:bg-gray-100"
-style={{
-  padding: "8px 12px",
-}}
-    >
-      {selectedSettings.includes("gallery") ? "✓  " : ""}Galerija
-    </button>
-
-    <button
-      onClick={() => toggleSetting("info")}
-      className="flex w-full items-center rounded-lg px-3 py-1.5 text-left text-sm font-medium hover:bg-gray-100"
-style={{
-  padding: "8px 12px",
-}}
-    >
-      {selectedSettings.includes("info") ? "✓  " : ""}Informacije o salonu
-    </button>
-
-        <button
-      onClick={() => toggleSetting("serviceCategories")}
-      className="flex w-full items-center rounded-lg px-3 py-1.5 text-left text-sm font-medium hover:bg-gray-100"
-      style={{
-        padding: "8px 12px",
-      }}
-    >
-      {selectedSettings.includes("serviceCategories") ? "✓  " : ""}
-      Kategorije usluga
-    </button>
-
-    <button
-      onClick={() => toggleSetting("services")}
-      className="flex w-full items-center rounded-lg px-3 py-1.5 text-left text-sm font-medium hover:bg-gray-100"
-style={{
-  padding: "8px 12px",
-}}
-    >
-      {selectedSettings.includes("services") ? "✓  " : ""}Usluge
-    </button>
-
-    <button
-      onClick={() => toggleSetting("times")}
-      className="flex w-full items-center rounded-lg px-3 py-1.5 text-left text-sm font-medium hover:bg-gray-100"
-style={{
-  padding: "8px 12px",
-}}
-    >
-      {selectedSettings.includes("times") ? "✓  " : ""}Termini
-    </button>
-
-    <button
-      onClick={() => toggleSetting("barbers")}
-      className="flex w-full items-center rounded-lg px-3 py-1.5 text-left text-sm font-medium hover:bg-gray-100"
-style={{
-  padding: "8px 12px",
-}}
-    >
-      {selectedSettings.includes("barbers") ? "✓  " : ""}Osoblje
-    </button>
-
-    <button
-      onClick={() => toggleSetting("closed")}
-      className="flex w-full items-center rounded-lg px-3 py-1.5 text-left text-sm font-medium hover:bg-gray-100"
-style={{
-  padding: "8px 12px",
-}}
-    >
-      {selectedSettings.includes("closed") ? "✓  " : ""}Zatvoreni dani
-    </button>
-  </div>
-)}
-</div>
 
   <div
   ref={notificationsRef}
@@ -2757,111 +2670,17 @@ overflowX: "hidden",
 )}
 </div>
 
-<div
+<button
+  onClick={openSettingsPage}
+  className="w-full rounded-xl px-2 text-sm font-medium text-white shadow-sm"
   style={{
     order: 1,
-    position: "relative",
-    width: "100%",
+    height: "40px",
+    backgroundColor: "#611a1a",
   }}
 >
-  <button
-    onClick={() => setShowSettingsMenu(!showSettingsMenu)}
-    className="w-full rounded-xl px-2 text-sm font-medium text-white shadow-sm"
-    style={{
-      height: "40px",
-      backgroundColor: "#611a1a",
-    }}
-  >
-    Postavke
-    {selectedSettings.length > 0 && ` (${selectedSettings.length})`}
-  </button>
-
-  {showSettingsMenu && (
-    <div
-      className="z-50 rounded-2xl bg-white p-2 shadow"
-      style={{
-        position: "absolute",
-        top: "100%",
-        right: 0,
-        marginTop: "8px",
-        width: "210px",
-        border: "1px solid rgba(97, 26, 26, 0.20)",
-      }}
-    >
-      <button
-        onClick={() => toggleSetting("hero")}
-        className="flex w-full items-center rounded-lg text-left text-sm font-medium hover:bg-gray-100"
-        style={{ padding: "8px 12px" }}
-      >
-        {selectedSettings.includes("hero") ? "✓  " : ""}
-        Naslovna slika
-      </button>
-
-      <button
-        onClick={() => toggleSetting("gallery")}
-        className="flex w-full items-center rounded-lg text-left text-sm font-medium hover:bg-gray-100"
-        style={{ padding: "8px 12px" }}
-      >
-        {selectedSettings.includes("gallery") ? "✓  " : ""}
-        Galerija
-      </button>
-
-      <button
-        onClick={() => toggleSetting("info")}
-        className="flex w-full items-center rounded-lg text-left text-sm font-medium hover:bg-gray-100"
-        style={{ padding: "8px 12px" }}
-      >
-        {selectedSettings.includes("info") ? "✓  " : ""}
-        Informacije o salonu
-      </button>
-
-      <button
-        onClick={() => toggleSetting("serviceCategories")}
-        className="flex w-full items-center rounded-lg text-left text-sm font-medium hover:bg-gray-100"
-        style={{ padding: "8px 12px" }}
-      >
-        {selectedSettings.includes("serviceCategories") ? "✓  " : ""}
-        Kategorije usluga
-      </button>
-
-      <button
-        onClick={() => toggleSetting("services")}
-        className="flex w-full items-center rounded-lg text-left text-sm font-medium hover:bg-gray-100"
-        style={{ padding: "8px 12px" }}
-      >
-        {selectedSettings.includes("services") ? "✓  " : ""}
-        Usluge
-      </button>
-
-      <button
-        onClick={() => toggleSetting("times")}
-        className="flex w-full items-center rounded-lg text-left text-sm font-medium hover:bg-gray-100"
-        style={{ padding: "8px 12px" }}
-      >
-        {selectedSettings.includes("times") ? "✓  " : ""}
-        Termini
-      </button>
-
-      <button
-        onClick={() => toggleSetting("barbers")}
-        className="flex w-full items-center rounded-lg text-left text-sm font-medium hover:bg-gray-100"
-        style={{ padding: "8px 12px" }}
-      >
-        {selectedSettings.includes("barbers") ? "✓  " : ""}
-        Osoblje
-      </button>
-
-      <button
-        onClick={() => toggleSetting("closed")}
-        className="flex w-full items-center rounded-lg text-left text-sm font-medium hover:bg-gray-100"
-        style={{ padding: "8px 12px" }}
-      >
-        {selectedSettings.includes("closed") ? "✓  " : ""}
-        Zatvoreni dani
-      </button>
-    </div>
-  )}
-</div>
+  Postavke
+</button>
       </div>
     </div>
 
@@ -3182,8 +3001,141 @@ height: isMobile ? "90px" : "88px",
 )}
 </div>
 
-{selectedSettings.length > 0 && (
+{showSettingsMenu && (
+  <div
+    id="postavke-stranica"
+    style={{
+      position: "fixed",
+      inset: 0,
+      zIndex: 40,
+      backgroundColor: "#ffffff",
+      overflowY: "auto",
+    }}
+  >
+  <div
+    className="mx-auto max-w-6xl"
+    style={{
+      padding: isMobile ? "24px 16px" : "32px",
+    }}
+  >
+  {selectedSettings.length === 0 ? (
+    <>
+      <button
+        onClick={closeSettingsPage}
+        className="rounded-xl border px-5 text-sm font-medium shadow-sm transition hover:opacity-90"
+        style={{
+          height: isMobile ? "40px" : "48px",
+          backgroundColor: "#ffffff",
+          color: "#611a1a",
+          borderColor: "#611a1a",
+        }}
+      >
+        ← Nazad na kalendar
+      </button>
+
+      <h1
+        className="font-semibold"
+        style={{
+          marginTop: isMobile ? "20px" : "28px",
+          fontSize: isMobile ? "24px" : "30px",
+          color: "#111827",
+        }}
+      >
+        Postavke
+      </h1>
+
+      <p
+        style={{
+          marginTop: "4px",
+          color: "#6b7280",
+          fontSize: "15px",
+        }}
+      >
+        Šta želite promijeniti?
+      </p>
+
+      <div
+        style={{
+          marginTop: isMobile ? "16px" : "24px",
+          display: "grid",
+          gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+          gap: isMobile ? "12px" : "16px",
+        }}
+      >
+        {[
+          { key: "times", icon: "🗓️", title: "Slobodni termini", text: "Kada klijenti mogu rezervisati" },
+          { key: "closed", icon: "🚫", title: "Zatvoreni dani", text: "Godišnji odmor, praznici, bolovanje" },
+          { key: "services", icon: "✂️", title: "Usluge", text: "Usluge, cijene i trajanje" },
+          { key: "serviceCategories", icon: "📂", title: "Kategorije usluga", text: "Grupe usluga, npr. Šišanje, Brada" },
+          { key: "barbers", icon: "👥", title: "Osoblje", text: "Ko radi u salonu" },
+          { key: "info", icon: "ℹ️", title: "Informacije o salonu", text: "Adresa, telefon, radno vrijeme, opis" },
+          { key: "hero", icon: "🖼️", title: "Naslovna slika", text: "Velika slika na vrhu stranice salona" },
+          { key: "gallery", icon: "📷", title: "Galerija", text: "Slike salona" },
+        ].map((item) => (
+          <button
+            key={item.key}
+            onClick={() => openSetting(item.key)}
+            className="flex items-center rounded-2xl border bg-white text-left shadow-sm transition hover:bg-gray-50"
+            style={{
+              gap: "16px",
+              padding: isMobile ? "16px" : "20px 24px",
+              minHeight: isMobile ? "76px" : "88px",
+              borderColor: "#ead1d1",
+            }}
+          >
+            <span
+              style={{
+                fontSize: isMobile ? "26px" : "30px",
+                lineHeight: 1,
+                flexShrink: 0,
+              }}
+            >
+              {item.icon}
+            </span>
+
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span
+                className="block font-bold"
+                style={{
+                  fontSize: isMobile ? "16px" : "17px",
+                  color: "#611a1a",
+                }}
+              >
+                {item.title}
+              </span>
+
+              <span
+                className="block"
+                style={{
+                  marginTop: "3px",
+                  fontSize: "14px",
+                  color: "#6b7280",
+                }}
+              >
+                {item.text}
+              </span>
+            </span>
+
+            <span style={{ color: "#611a1a", fontSize: "20px" }}>›</span>
+          </button>
+        ))}
+      </div>
+    </>
+  ) : (
   <>
+    <button
+      onClick={backToSettings}
+      className="rounded-xl border px-5 text-sm font-medium shadow-sm transition hover:opacity-90"
+      style={{
+        height: isMobile ? "40px" : "48px",
+        marginBottom: isMobile ? "16px" : "24px",
+        backgroundColor: "#ffffff",
+        color: "#611a1a",
+        borderColor: "#611a1a",
+      }}
+    >
+      ← Nazad na postavke
+    </button>
   
     {selectedSettings.includes("hero") && (
   <div className="mb-6 rounded-3xl bg-white p-6 shadow">
@@ -5415,6 +5367,9 @@ formatWeekDay={(dayName) => {
 )}
 
   </>
+  )}
+  </div>
+  </div>
 )}
 
 
