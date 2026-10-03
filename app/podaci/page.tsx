@@ -64,6 +64,13 @@ const [phone, setPhone] = useState("");
 const [email, setEmail] = useState("");
 const [napomena, setNapomena] = useState("");
 const [isMobile, setIsMobile] = useState(false);
+// Fel som visas i rött under respektive fält (i stället för grå alert-rutor).
+const [errors, setErrors] = useState<{
+  ime?: string;
+  prezime?: string;
+  phone?: string;
+  email?: string;
+}>({});
 
 useEffect(() => {
   const checkMobile = () => {
@@ -77,32 +84,63 @@ useEffect(() => {
     window.removeEventListener("resize", checkMobile);
   };
 }, []);
+
+// Samma fältstil som tidigare, men röd ram när fältet har ett fel.
+const fieldClass = (hasError: boolean) =>
+  `w-full rounded-xl border ${
+    isMobile ? "px-3 py-2" : "p-3"
+  } outline-none transition focus:ring-2 ${
+    hasError
+      ? "border-[#ef4444] ring-1 ring-[#ef4444] focus:border-[#ef4444] focus:ring-[#ef4444]/20"
+      : "border-[#611a1a] focus:border-[#611a1a] focus:ring-[#611a1a]/20"
+  }`;
+
+const errorText = (message?: string) =>
+  message ? (
+    <p
+      style={{
+        color: "#ef4444",
+        fontSize: "13px",
+        fontWeight: 600,
+        marginTop: "6px",
+      }}
+    >
+      {message}
+    </p>
+  ) : null;
+
 const handleNext = () => {
-  if (!ime.trim() || !prezime.trim() || !phone.trim()) {
-    alert("Molimo unesite ime, prezime i broj telefona.");
-    return;
-  }
+  const newErrors: typeof errors = {};
+
+  if (!ime.trim()) newErrors.ime = "Molimo unesite ime.";
+  if (!prezime.trim()) newErrors.prezime = "Molimo unesite prezime.";
 
   const country = phoneCountries[phoneCode];
 
-const parsedPhone = country
+const parsedPhone = country && phone.trim()
   ? parsePhoneNumberFromString(phone, country)
   : undefined;
 
-if (!parsedPhone || !parsedPhone.isValid()) {
-  alert("Molimo unesite ispravan broj telefona.");
-  return;
+if (!phone.trim()) {
+  newErrors.phone = "Molimo unesite broj telefona.";
+} else if (!parsedPhone || !parsedPhone.isValid()) {
+  newErrors.phone = "Molimo unesite ispravan broj telefona.";
 }
-
-const normalizedPhone = parsedPhone.number;
 
   if (
   email.trim() &&
   !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
 ) {
-  alert("Molimo unesite ispravnu email adresu.");
-  return;
+  newErrors.email = "Molimo unesite ispravnu email adresu.";
 }
+
+  setErrors(newErrors);
+
+  if (Object.keys(newErrors).length > 0 || !parsedPhone) {
+    return;
+  }
+
+const normalizedPhone = parsedPhone.number;
 
   const params = new URLSearchParams({
   salon: salon || "",
@@ -550,14 +588,14 @@ useEffect(() => {
     <input
   type="text"
   value={ime}
-  onChange={(e) => setIme(e.target.value)}
+  onChange={(e) => {
+    setIme(e.target.value);
+    setErrors((prev) => ({ ...prev, ime: undefined }));
+  }}
   placeholder="Unesite ime"
-className={
-  isMobile
-    ? "w-full rounded-xl border border-[#611a1a] px-3 py-2 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
-    : "w-full rounded-xl border border-[#611a1a] p-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
-}
+className={fieldClass(!!errors.ime)}
 />
+    {errorText(errors.ime)}
   </div>
 
   <div>
@@ -575,14 +613,14 @@ className={
     <input
   type="text"
   value={prezime}
-  onChange={(e) => setPrezime(e.target.value)}
+  onChange={(e) => {
+    setPrezime(e.target.value);
+    setErrors((prev) => ({ ...prev, prezime: undefined }));
+  }}
   placeholder="Unesite prezime"
-className={
-  isMobile
-    ? "w-full rounded-xl border border-[#611a1a] px-3 py-2 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
-    : "w-full rounded-xl border border-[#611a1a] p-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
-}
+className={fieldClass(!!errors.prezime)}
 />
+    {errorText(errors.prezime)}
   </div>
 
 </div>
@@ -615,7 +653,10 @@ className={
 >
   <select
     value={phoneCode}
-    onChange={(e) => setPhoneCode(e.target.value)}
+    onChange={(e) => {
+      setPhoneCode(e.target.value);
+      setErrors((prev) => ({ ...prev, phone: undefined }));
+    }}
     className={
       isMobile
         ? "w-28 rounded-xl border border-[#611a1a] px-3 py-2 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
@@ -661,15 +702,15 @@ className={
     <input
   type="tel"
   value={phone}
-  onChange={(e) => setPhone(e.target.value)}
+  onChange={(e) => {
+    setPhone(e.target.value);
+    setErrors((prev) => ({ ...prev, phone: undefined }));
+  }}
   placeholder={phonePlaceholders[phoneCode] || "Unesite broj telefona"}
-  className={
-  isMobile
-    ? "w-full rounded-xl border border-[#611a1a] px-3 py-2 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
-    : "w-full rounded-xl border border-[#611a1a] p-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
-}
+  className={fieldClass(!!errors.phone)}
 />
   </div>
+  {errorText(errors.phone)}
   <p
   style={{
     fontSize: "13px",
@@ -696,14 +737,14 @@ className={
   <input
   type="email"
   value={email}
-  onChange={(e) => setEmail(e.target.value)}
+  onChange={(e) => {
+    setEmail(e.target.value);
+    setErrors((prev) => ({ ...prev, email: undefined }));
+  }}
   placeholder={isMobile ? "Unesite email adresu" : "Unesite email adresu ako želite primiti potvrdu i putem emaila."}
- className={
-  isMobile
-    ? "w-full rounded-xl border border-[#611a1a] px-3 py-2 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
-    : "w-full rounded-xl border border-[#611a1a] p-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
-}
+ className={fieldClass(!!errors.email)}
 />
+  {errorText(errors.email)}
 </div>
 
 <div className={isMobile ? "mb-2" : "mb-6"}>

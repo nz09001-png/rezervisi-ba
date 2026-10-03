@@ -295,10 +295,14 @@ KLART i punkt 8 (3 oktober 2026):
 - /uspjesno utan e-post: "Za otkazivanje termina kontaktirajte salon."
   (ägaren vill INTE visa salongens telefonnummer där). Avbokningslänk i
   sms kan komma efter punkt 12.
+- Beslut: /cancel behöver inte visa bokningen – uppgifterna står i mejlet
+  där avbokningslänken finns.
+- /podaci: inga grå alert-rutor. Fel visas som röd ram (#ef4444) + röd text
+  under fältet (ägarens val "C"). Samma kontroller som förut.
+  Kvar med alert(): /potvrda (7 st), /cancel (4 st), admin (ca 74 st).
 
 KVAR i punkt 8 (i den här ordningen):
-1. Resten av listan: cancel-sidan
-   visar inte bokningen, alert()-rutor, tom vecka utan text,
+1. Resten av listan: alert()-rutor på /potvrda och /cancel, tom vecka utan text,
    salongssidan (klickbar telefon, öppettider, galleripilar, "salon"),
    ingen väg tillbaka till startsidan, enkelt mejl, admininloggningens
    utseende, admin-stavfel ("Osooblje", "Osobolje", "Edit", "Ime Osoblja").
