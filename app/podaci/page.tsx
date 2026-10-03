@@ -677,7 +677,7 @@ className={
     marginTop: "8px",
   }}
 >
-  Unesite broj telefona kako biste primili potvrdu rezervacije i podsjetnike.
+  Salon će vas kontaktirati na ovaj broj ako bude potrebno.
 </p>
 </div>
 

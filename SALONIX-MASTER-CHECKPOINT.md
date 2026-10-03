@@ -237,6 +237,16 @@ Punkt 12 (lansering):
   Unsplash (fria).
 - "Najbliže meni" (plats) fungerar bara på https (salonix.ba) eller
   localhost – inte på mobil via wifi under utveckling.
+- Bokningsmejl: koppla salonix.ba till Resend och byt avsändare från
+  onboarding@resend.dev. I testläge når mejlen bara Resend-kontots egen adress.
+- Bekräftelse-sms från Salonix (Salonix skickar, inte salongerna):
+  kräver företag, sms-tjänst (t.ex. Infobip/Twilio) och avsändar-ID "Salonix".
+  Byggs efter deploy. Ändra då texten under Telefon på /podaci till t.ex.
+  "Na ovaj broj ćete dobiti SMS potvrdu rezervacije."
+  (Påminnelser före bokningen kräver dessutom ett schemalagt jobb.)
+Punkt 9 (QA):
+- /uspjesno visar "Potvrda rezervacije je poslana na email." även om
+  mejlet misslyckades – kontrollera svaret från /api/send-email.
 - Efter git pull på en ny dator: kör npm install (Leaflet lades till).
 - .env.local sparas inte i Git – måste kopieras manuellt.
 
@@ -260,6 +270,37 @@ Punkt 12 (lansering):
 2. Gör en lista över det som inte hänger ihop (typsnitt, färger,
    knappar, texter) och det som kan förvirra kunden.
 3. Ägaren väljer vad som ska fixas – frysta sidor ändras bara med ja.
+
+Arbetssätt: läs SALONIX-KARTA.md först. Visa buggen (mobil + desktop)
+före ändringen, ändra efter ja, visa resultatet, ge Git-kommando och
+lista de kommande stegen.
+
+KLART i punkt 8 (3 oktober 2026):
+- Salongssidan mobil: Rezerviši syns även när personal är dold
+  (till höger i kortet, går ner en rad vid lång text).
+- Mörkt läge borttaget i globals.css (alltid ljus design).
+- "← Nazad" på /podaci kommer ihåg vald personal (barberId).
+- Svensk text → bosniska (laddning, kalenderfil i mejlet, admin-felruta).
+- Fel salongsadress: sidan "Salon nije pronađen" + "Nazad na početnu".
+- Telefontexten på /podaci lovar inte längre påminnelser.
+- Valuta: KM överallt.
+- Datum: 10.10.2026 (utan punkt) överallt, även i mejlet.
+
+KVAR i punkt 8 (i den här ordningen):
+1. Ni-form överallt ("Odaberite termin", "Unesite podatke").
+2. Rubrikfärger (Pregled rezervacije svart på mobil, cancel-sidans rubriker).
+3. Avbokningsknappen: större rundade hörn som övriga knappar.
+4. Resten av listan: kunder utan e-post kan inte avboka, cancel-sidan
+   visar inte bokningen, alert()-rutor, tom vecka utan text,
+   salongssidan (klickbar telefon, öppettider, galleripilar, "salon"),
+   ingen väg tillbaka till startsidan, enkelt mejl, admininloggningens
+   utseende, admin-stavfel ("Osooblje", "Osobolje", "Edit", "Ime Osoblja").
+
+Ägaren gör själv i admin: tjänster utan kategori hos Gentlemen Tuzla
+och Mostar Fade syns inte förrän de får en kategori.
+
+Säkerhet (punkt 10): gamla sidan /admin (app/admin/page.tsx) är aktiv
+med lösenordet admin123 och visar alla salongers bokningar – stäng den.
 
 ============================================================
 SLUT PÅ MASTER CHECKPOINT – 3 OKTOBER 2026
