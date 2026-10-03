@@ -346,7 +346,14 @@ Klart i admin:
 - Statistiken räknar rätt: "Danas" i lokal tid (även "Današnje
   rezervacije"), "Ova sedmica" = måndag–söndag (även på söndagar),
   "Ovaj mjesec" = hela månaden. Ändringen rör bara statistiken, inte kalendern.
-Ordning för resten av admin (ägarens val): bokningsrutan → Salonix-typsnitt
+- Bokningsrutan: uppgifter i två kolumner ("Trajanje: 60 min"), telefon
+  (tel:) och e-post (mailto:) klickbara, knappen heter "Otkaži rezervaciju"
+  och frågar i rutan ("Da, otkaži" / "Ne") i stället för grå confirm, fel
+  visas i rutan. Stängs med ×, klick utanför eller Esc.
+OBS under utveckling: när nya funktioner (hooks) läggs till i admin laddas
+admin om och ägaren loggas ut i panelen – be ägaren logga in igen.
+Ordning för resten av admin (ägarens val): avbokningsmejl till kunden (F) →
+Salonix-typsnitt
 (kalendern låst vid Arial) → Obavijesti → Postavke → kalendern sist.
 
 KVAR i punkt 8 (i den här ordningen):

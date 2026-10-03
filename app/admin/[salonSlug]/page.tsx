@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Cropper from "react-easy-crop";
@@ -175,6 +175,27 @@ const [closedReason, setClosedReason] = useState("");
 const [closedEndDate, setClosedEndDate] = useState("");
 const [closedBarberId, setClosedBarberId] = useState<number | null>(null);
 const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
+const [confirmCancelBooking, setConfirmCancelBooking] = useState(false);
+const [isCancellingBooking, setIsCancellingBooking] = useState(false);
+const [bookingCancelError, setBookingCancelError] = useState<string | null>(null);
+
+// Ny bokning öppnas eller rutan stängs: börja om utan fråga eller fel.
+useEffect(() => {
+  setConfirmCancelBooking(false);
+  setBookingCancelError(null);
+}, [selectedBooking]);
+
+// Esc stänger bokningsrutan (desktop).
+useEffect(() => {
+  if (!selectedBooking) return;
+
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "Escape") setSelectedBooking(null);
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+  return () => window.removeEventListener("keydown", handleKeyDown);
+}, [selectedBooking]);
 const [calendarBarberFilter, setCalendarBarberFilter] = useState<number | "all">("all");
 const isSingleBarberFiltered = calendarBarberFilter !== "all";
 const [showBarberFilterMenu, setShowBarberFilterMenu] = useState(false);
@@ -1255,20 +1276,21 @@ async function handleDeleteService(id: number) {
   fetchServices();
 }
 
+ // Avbokning från bokningsrutan. Frågan "Da li ste sigurni" visas i rutan
+ // (confirmCancelBooking), och fel visas i rutan i stället för en grå alert.
  async function handleDelete(id: number) {
-  const confirmDelete = confirm(
-    "Da li ste sigurni da želite otkazati rezervaciju?"
-  );
-
-  if (!confirmDelete) return;
+  setIsCancellingBooking(true);
+  setBookingCancelError(null);
 
   const { error } = await supabase
     .from("bookings")
     .delete()
     .eq("id", id);
 
+  setIsCancellingBooking(false);
+
   if (error) {
-    alert("Nije moguće obrisati rezervaciju.");
+    setBookingCancelError("Nije moguće otkazati rezervaciju. Pokušajte ponovo.");
     return;
   }
 
@@ -6493,6 +6515,8 @@ hasParallelBookingInside && !isLaterOverlappingMultiStepBooking ? (
 
 {selectedBooking && (
   <div
+    // Klick på den mörka bakgrunden stänger rutan.
+    onClick={() => setSelectedBooking(null)}
     style={{
       position: "fixed",
       inset: 0,
@@ -6504,6 +6528,7 @@ hasParallelBookingInside && !isLaterOverlappingMultiStepBooking ? (
     }}
   >
     <div
+      onClick={(event) => event.stopPropagation()}
       style={{
         width: "420px",
         maxWidth: "90%",
@@ -6535,80 +6560,173 @@ hasParallelBookingInside && !isLaterOverlappingMultiStepBooking ? (
           ×
         </button>
       </div>
+      {/* Uppgifterna i två kolumner: etikett till vänster, värde till höger. */}
       <div
   style={{
     marginTop: "20px",
     display: "grid",
-    gap: "10px",
+    gridTemplateColumns: "100px 1fr",
+    columnGap: "12px",
+    rowGap: "10px",
     fontSize: "15px",
   }}
 >
-  <div>
-  <strong>Usluga:</strong>{" "}
-  {selectedBooking.service || "Nije odabrano"}
-  {calendarServiceSteps.some(
-    (step) => step.service_id === selectedBooking.service_id
-  ) && " (usluga s više koraka)"}
+  {(
+    [
+      [
+        "Usluga",
+        `${selectedBooking.service || "Nije odabrano"}${
+          calendarServiceSteps.some(
+            (step) => step.service_id === selectedBooking.service_id
+          )
+            ? " (usluga s više koraka)"
+            : ""
+        }`,
+      ],
+      ["Trajanje", `${selectedBooking.duration_minutes || 30} min`],
+      ["Osoblje", selectedBooking.barber_name || "Bez preferencije"],
+      [
+        "Datum",
+        selectedBooking.booking_date
+          ? selectedBooking.booking_date.split("-").reverse().join(".")
+          : "",
+      ],
+      ["Vrijeme", selectedBooking.booking_time?.slice(0, 5)],
+    ] as [string, string][]
+  ).map(([label, value]) => (
+    <Fragment key={label}>
+      <span style={{ color: "#6b7280" }}>{label}</span>
+      <span style={{ color: "#111827", fontWeight: 600 }}>{value}</span>
+    </Fragment>
+  ))}
+
+  <span style={{ color: "#6b7280" }}>Telefon</span>
+  <span style={{ fontWeight: 600 }}>
+    {selectedBooking.phone ? (
+      // Ringlänk: telefonen frågar själv innan samtalet startar.
+      <a
+        href={`tel:${String(selectedBooking.phone).replace(/[^\d+]/g, "")}`}
+        style={{ color: "#611a1a", textDecoration: "underline" }}
+      >
+        {selectedBooking.phone}
+      </a>
+    ) : (
+      <span style={{ color: "#9ca3af", fontWeight: 400 }}>Nije uneseno</span>
+    )}
+  </span>
+
+  <span style={{ color: "#6b7280" }}>Email</span>
+  <span style={{ fontWeight: 600, wordBreak: "break-all" }}>
+    {selectedBooking.email ? (
+      <a
+        href={`mailto:${selectedBooking.email}`}
+        style={{ color: "#611a1a", textDecoration: "underline" }}
+      >
+        {selectedBooking.email}
+      </a>
+    ) : (
+      <span style={{ color: "#9ca3af", fontWeight: 400 }}>Nije uneseno</span>
+    )}
+  </span>
+
+  <span style={{ color: "#6b7280" }}>Napomena</span>
+  <span
+    style={{
+      color: selectedBooking.note ? "#111827" : "#9ca3af",
+      fontWeight: selectedBooking.note ? 600 : 400,
+    }}
+  >
+    {selectedBooking.note || "Nije uneseno"}
+  </span>
 </div>
 
-<div>
-  <strong>Trajanje usluge:</strong>{" "}
-  {selectedBooking.duration_minutes || 30} minuta
-</div>
+{bookingCancelError && (
+  <p
+    style={{
+      marginTop: "18px",
+      color: "#ef4444",
+      fontSize: "14px",
+      fontWeight: 600,
+    }}
+  >
+    {bookingCancelError}
+  </p>
+)}
 
-<div>
-  <strong>Osoblje:</strong>{" "}
-  {selectedBooking.barber_name || "Bez preferencije"}
-</div>
-  <div>
-  <strong>Datum:</strong>{" "}
-  {selectedBooking.booking_date
-    ? `${selectedBooking.booking_date.split("-")[2]}.${
-        selectedBooking.booking_date.split("-")[1]
-      }.${selectedBooking.booking_date.split("-")[0]}`
-    : ""}
-</div>
-
-  <div>
-    <strong>Vrijeme:</strong>{" "}
-    {selectedBooking.booking_time}
-  </div>
-  <div>
-  <strong>Telefon:</strong>{" "}
-  {selectedBooking.phone || "Nije uneseno"}
-</div>
-<div>
-  <strong>Email:</strong>{" "}
-  {selectedBooking.email || "Nije uneseno"}
-</div>
-<div>
-  <strong>Napomena:</strong>{" "}
-  {selectedBooking.note || "Nije uneseno"}
-</div>
+{/* Avbokning: först knappen, sedan frågan "Da, otkaži" / "Ne" i rutan. */}
 <div
   style={{
     marginTop: "24px",
     textAlign: "right",
   }}
 >
-  <button
-    onClick={async () => {
-      await handleDelete(selectedBooking.id);
-    }}
-    style={{
-      backgroundColor: "#ef4444",
-      color: "white",
-      border: "none",
-      borderRadius: "12px",
-      padding: "10px 16px",
-      fontSize: "14px",
-      fontWeight: 600,
-      cursor: "pointer",
-    }}
-  >
-    Otkaži klijenta
-  </button>
-</div>
+  {confirmCancelBooking ? (
+    <div>
+      <p
+        style={{
+          marginBottom: "12px",
+          fontSize: "14px",
+          color: "#111827",
+          textAlign: "right",
+        }}
+      >
+        Da li ste sigurni da želite otkazati ovu rezervaciju?
+      </p>
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+        <button
+          onClick={() => setConfirmCancelBooking(false)}
+          disabled={isCancellingBooking}
+          style={{
+            backgroundColor: "#ffffff",
+            color: "#111827",
+            border: "1px solid #d1d5db",
+            borderRadius: "12px",
+            padding: "10px 16px",
+            fontSize: "14px",
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          Ne
+        </button>
+        <button
+          onClick={async () => {
+            await handleDelete(selectedBooking.id);
+          }}
+          disabled={isCancellingBooking}
+          style={{
+            backgroundColor: "#ef4444",
+            color: "white",
+            border: "none",
+            borderRadius: "12px",
+            padding: "10px 16px",
+            fontSize: "14px",
+            fontWeight: 600,
+            cursor: "pointer",
+            opacity: isCancellingBooking ? 0.6 : 1,
+          }}
+        >
+          {isCancellingBooking ? "Otkazujem..." : "Da, otkaži"}
+        </button>
+      </div>
+    </div>
+  ) : (
+    <button
+      onClick={() => setConfirmCancelBooking(true)}
+      style={{
+        backgroundColor: "#ef4444",
+        color: "white",
+        border: "none",
+        borderRadius: "12px",
+        padding: "10px 16px",
+        fontSize: "14px",
+        fontWeight: 600,
+        cursor: "pointer",
+      }}
+    >
+      Otkaži rezervaciju
+    </button>
+  )}
 </div>
     </div>
   </div>
