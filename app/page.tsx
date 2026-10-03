@@ -555,8 +555,9 @@ export default function Home() {
             zIndex: 50,
             display: "flex",
             alignItems: "center",
-            gap: 12,
-            padding: "10px 16px",
+            gap: isDesktop ? 20 : 12,
+            // Desktop: samma bredd som innehållet på sidan.
+            padding: isDesktop ? `12px ${desktopGutter}px` : "10px 16px",
             background: "#ffffff",
             boxShadow: "0 2px 10px rgba(0, 0, 0, 0.08)",
           }}
@@ -566,7 +567,8 @@ export default function Home() {
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             aria-label="Salonix"
             style={{
-              width: 30,
+              // Desktop visar hela loggan med namnet, mobil bara ikonen.
+              width: isDesktop ? "auto" : 30,
               height: 30,
               flexShrink: 0,
               overflow: "hidden",
@@ -589,20 +591,27 @@ export default function Home() {
             aria-label="Kategorije"
             style={{
               display: "flex",
+              alignItems: "center",
+              gap: 8,
               flexShrink: 0,
               border: "none",
               padding: 4,
               background: "transparent",
               color: "#1f1f1f",
+              fontSize: 15,
+              fontWeight: 600,
               cursor: "pointer",
             }}
           >
             <FiMenu size={24} />
+            {isDesktop && "Kategorije"}
           </button>
 
           <label
             style={{
               flex: 1,
+              maxWidth: isDesktop ? 560 : undefined,
+              marginLeft: isDesktop ? "auto" : undefined,
               display: "flex",
               alignItems: "center",
               gap: 8,
@@ -1192,6 +1201,14 @@ export default function Home() {
 
       {showMap && !loading && mapSalons.length > 0 && <SalonMap salons={mapSalons} />}
 
+      {/* Desktop: salongerna i ett rutnät med 3 per rad. Mobil: en lista som förut. */}
+      <div
+        style={
+          isDesktop
+            ? { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }
+            : undefined
+        }
+      >
       {!showMap && filteredSalons.map((salon) => {
         // Visa "Studio, Tuzla" men inte "Mercator centar, Tuzla, Tuzla".
         const location =
@@ -1211,7 +1228,7 @@ export default function Home() {
           href={`/${salon.slug}`}
           style={{
             display: "block",
-            marginBottom: 16,
+            marginBottom: isDesktop ? 0 : 16,
             borderRadius: 16,
             overflow: "hidden",
             border: "1px solid #ececec",
@@ -1224,7 +1241,7 @@ export default function Home() {
           <div
             style={{
               position: "relative",
-              height: 150,
+              height: isDesktop ? 190 : 150,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -1354,6 +1371,7 @@ export default function Home() {
         </Link>
         );
       })}
+      </div>
 
       <footer
         className={sourceSans.className}
@@ -1366,24 +1384,41 @@ export default function Home() {
           borderTop: "1px solid #f0e6e6",
         }}
       >
-        <img
-          src="/salonix-horisontell-maroon.png"
-          alt="Salonix"
-          style={{ height: 28, width: "auto", display: "block" }}
-        />
-        <p
-          style={{
-            fontSize: 14,
-            lineHeight: 1.5,
-            color: "#6b7280",
-            margin: "12px 0 0",
-          }}
+        {/* Desktop: logga och text till vänster, © till höger på samma rad. */}
+        <div
+          style={
+            isDesktop
+              ? { display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 24 }
+              : undefined
+          }
         >
-          Pronađite salon i rezervišite termin online – brzo i jednostavno.
-        </p>
-        <p style={{ fontSize: 13, color: "#9ca3af", margin: "20px 0 0" }}>
-          © {new Date().getFullYear()} Salonix · salonix.ba
-        </p>
+          <div>
+            <img
+              src="/salonix-horisontell-maroon.png"
+              alt="Salonix"
+              style={{ height: 28, width: "auto", display: "block" }}
+            />
+            <p
+              style={{
+                fontSize: 14,
+                lineHeight: 1.5,
+                color: "#6b7280",
+                margin: "12px 0 0",
+              }}
+            >
+              Pronađite salon i rezervišite termin online – brzo i jednostavno.
+            </p>
+          </div>
+          <p
+            style={{
+              fontSize: 13,
+              color: "#9ca3af",
+              margin: isDesktop ? 0 : "20px 0 0",
+            }}
+          >
+            © {new Date().getFullYear()} Salonix · salonix.ba
+          </p>
+        </div>
       </footer>
     </main>
   );
