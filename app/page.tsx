@@ -24,7 +24,7 @@ import { TbScissors, TbMassage, TbFlower, TbHandStop, TbRazor, TbSun } from "rea
 import { GiEyelashes, GiLeg } from "react-icons/gi";
 import { supabase } from "@/lib/supabase";
 
-import { DM_Serif_Display, Source_Sans_3 } from "next/font/google";
+import { DM_Serif_Display, Montserrat, Source_Sans_3 } from "next/font/google";
 
 const dmSerif = DM_Serif_Display({
   weight: "400",
@@ -34,6 +34,21 @@ const dmSerif = DM_Serif_Display({
 const sourceSans = Source_Sans_3({
   subsets: ["latin"],
 });
+
+// Samma stil som sloganen "BRŽE | LAKŠE | ONLINE" i loggan.
+// Används för sektionsrubrikerna "Kategorije" och "Saloni".
+const montserrat = Montserrat({
+  weight: "600",
+  subsets: ["latin", "latin-ext"],
+});
+
+const SECTION_HEADING_STYLE = {
+  fontSize: 17,
+  fontWeight: 600,
+  letterSpacing: 3,
+  textTransform: "uppercase" as const,
+  color: "#611a1a",
+};
 
 // Namnen måste vara exakt samma som i kolumnen salons.categories i Supabase.
 // Bilderna ligger i public/categories/. Ikonen används i ☰-panelen
@@ -71,6 +86,8 @@ const SalonMap = dynamic(() => import("@/components/SalonMap"), {
 
 // Från den här skärmbredden visas desktopvyn.
 const DESKTOP_MIN_WIDTH = 1024;
+// Från den här bredden (och under desktop) räknas skärmen som surfplatta.
+const TABLET_MIN_WIDTH = 600;
 // Innehållets största bredd på desktop.
 const DESKTOP_MAX_CONTENT = 1200;
 
@@ -222,11 +239,16 @@ export default function Home() {
 
   // Desktop = bred skärm. Mobilvyn är standard och ändras inte av desktopkoden.
   const [isDesktop, setIsDesktop] = useState(false);
+  // Surfplatta (t.ex. iPad på höjden): mobilvyn, men salongerna 2 per rad.
+  const [isTablet, setIsTablet] = useState(false);
   // Luft på sidorna på desktop (px): minst 40, och innehållet blir högst 1200 brett.
   const [desktopGutter, setDesktopGutter] = useState(40);
   useEffect(() => {
     const update = () => {
       setIsDesktop(window.innerWidth >= DESKTOP_MIN_WIDTH);
+      setIsTablet(
+        window.innerWidth >= TABLET_MIN_WIDTH && window.innerWidth < DESKTOP_MIN_WIDTH
+      );
       // clientWidth räknar inte med rullningslisten, så inget sticker ut i sidled.
       setDesktopGutter(
         Math.max(40, (document.documentElement.clientWidth - DESKTOP_MAX_CONTENT) / 2)
@@ -505,9 +527,9 @@ export default function Home() {
               style={{
                 display: "flex",
                 alignItems: "center",
-                gap: 14,
+                gap: 12,
                 width: "100%",
-                padding: "14px 20px",
+                padding: "13px 20px",
                 border: "none",
                 borderBottom: "1px solid #f3f4f6",
                 background: isSelected ? "#fbf5f5" : "#ffffff",
@@ -515,21 +537,8 @@ export default function Home() {
                 cursor: "pointer",
               }}
             >
-              <span
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: 38,
-                  height: 38,
-                  flexShrink: 0,
-                  borderRadius: 999,
-                  background: isSelected ? "#611a1a" : "#f8eeee",
-                  color: isSelected ? "#ffffff" : "#611a1a",
-                }}
-              >
-                <Icon size={20} />
-              </span>
+              {/* Liten ikon utan cirkel, så att panelen känns som en lätt meny. */}
+              <Icon size={18} color="#611a1a" style={{ flexShrink: 0 }} />
               <span
                 style={{
                   fontSize: 16,
@@ -883,8 +892,13 @@ export default function Home() {
       )}
 
       <h2
-        className={dmSerif.className}
-        style={{ fontSize: 22, color: "#1f1f1f", marginBottom: 12 }}
+        className={montserrat.className}
+        style={{
+          ...SECTION_HEADING_STYLE,
+          // Lite större på datorn, där allt annat också är större.
+          fontSize: isDesktop ? 21 : SECTION_HEADING_STYLE.fontSize,
+          marginBottom: isDesktop ? 20 : 14,
+        }}
       >
         Kategorije
       </h2>
@@ -975,10 +989,10 @@ export default function Home() {
       >
       <h2
         ref={salonsHeadingRef}
-        className={dmSerif.className}
+        className={montserrat.className}
         style={{
-          fontSize: 22,
-          color: "#1f1f1f",
+          ...SECTION_HEADING_STYLE,
+          fontSize: isDesktop ? 21 : SECTION_HEADING_STYLE.fontSize,
           margin: 0,
           // Plats för den vita listen högst upp.
           scrollMarginTop: 76,
@@ -989,7 +1003,7 @@ export default function Home() {
         {!loading && selectedCity && (
           <span
             className={sourceSans.className}
-            style={{ fontSize: 15, color: "#9ca3af" }}
+            style={{ fontSize: 15, color: "#9ca3af", letterSpacing: 0 }}
           >
             ({filteredSalons.length})
           </span>
@@ -1201,12 +1215,14 @@ export default function Home() {
 
       {showMap && !loading && mapSalons.length > 0 && <SalonMap salons={mapSalons} />}
 
-      {/* Desktop: salongerna i ett rutnät med 3 per rad. Mobil: en lista som förut. */}
+      {/* Desktop: 3 per rad. Surfplatta: 2 per rad. Mobil: en lista som förut. */}
       <div
         style={
           isDesktop
             ? { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }
-            : undefined
+            : isTablet
+              ? { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }
+              : undefined
         }
       >
       {!showMap && filteredSalons.map((salon) => {
@@ -1228,7 +1244,7 @@ export default function Home() {
           href={`/${salon.slug}`}
           style={{
             display: "block",
-            marginBottom: isDesktop ? 0 : 16,
+            marginBottom: isDesktop || isTablet ? 0 : 16,
             borderRadius: 16,
             overflow: "hidden",
             border: "1px solid #ececec",
@@ -1305,8 +1321,8 @@ export default function Home() {
           >
             <div style={{ minWidth: 0 }}>
               <div
-                className={dmSerif.className}
-                style={{ fontSize: 22, color: "#1f1f1f", lineHeight: 1.2 }}
+                className={montserrat.className}
+                style={{ fontSize: 18, fontWeight: 600, color: "#1f1f1f", lineHeight: 1.25 }}
               >
                 {salon.salon_name}
               </div>
