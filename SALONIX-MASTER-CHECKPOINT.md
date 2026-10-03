@@ -310,9 +310,11 @@ KLART i punkt 8 (3 oktober 2026):
 - /times: vecka utan lediga tider visar "Nema slobodnih termina ove sedmice"
   + "Sljedeća sedmica →" (mobil: under kalendern, desktop: mitt i den).
   Räknar bara synliga tidsknappar – tidsreglerna är orörda.
+- Salongssidan: telefonnumret är en ringlänk (tel:), samma utseende.
+  Ingen egen bekräftelseruta – telefonen frågar själv (ägarens val).
 
 KVAR i punkt 8 (i den här ordningen):
-1. Resten av listan: salongssidan (klickbar telefon, öppettider, galleripilar, "salon"),
+1. Resten av listan: salongssidan (öppettider, galleripilar, "salon"),
    ingen väg tillbaka till startsidan, enkelt mejl, admininloggningens
    utseende, admin-stavfel ("Osooblje", "Osobolje", "Edit", "Ime Osoblja").
 

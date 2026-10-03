@@ -699,7 +699,19 @@ return (
             lineHeight: "1.5",
           }}
         >
-          {salon.phone}
+          {salon.phone ? (
+            // Ringlänk: telefonen frågar själv "Ring/Avbryt" innan samtalet startar.
+            <a
+              href={`tel:${salon.phone.replace(/[^\d+]/g, "")}`}
+              style={{
+                color: "inherit",
+                textDecoration: "none",
+                cursor: "pointer",
+              }}
+            >
+              {salon.phone}
+            </a>
+          ) : null}
         </p>
       </div>
 
