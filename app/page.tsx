@@ -20,8 +20,8 @@ import {
   FiThumbsUp,
   FiStar,
 } from "react-icons/fi";
-import { TbScissors, TbMassage, TbFlower, TbHandStop } from "react-icons/tb";
-import { GiEyelashes, GiLipstick } from "react-icons/gi";
+import { TbScissors, TbMassage, TbFlower, TbHandStop, TbRazor, TbSun } from "react-icons/tb";
+import { GiEyelashes, GiLeg } from "react-icons/gi";
 import { supabase } from "@/lib/supabase";
 
 import { DM_Serif_Display, Source_Sans_3 } from "next/font/google";
@@ -36,13 +36,21 @@ const sourceSans = Source_Sans_3({
 });
 
 // Namnen måste vara exakt samma som i kolumnen salons.categories i Supabase.
-const CATEGORIES: { name: string; icon: IconType }[] = [
-  { name: "Frizura", icon: TbScissors },
-  { name: "Masaža", icon: TbMassage },
-  { name: "Nokti", icon: TbHandStop },
-  { name: "Trepavice i obrve", icon: GiEyelashes },
-  { name: "Njega lica", icon: TbFlower },
-  { name: "Ljepota", icon: GiLipstick },
+// Bilderna ligger i public/categories/. Ikonen används i ☰-panelen
+// och på kort som ännu saknar bild.
+const CATEGORIES: { name: string; icon: IconType; image?: string }[] = [
+  { name: "Frizura", icon: TbScissors, image: "/categories/frizura.jpg" },
+  { name: "Barber", icon: TbRazor, image: "/categories/barber.jpg" },
+  { name: "Nokti", icon: TbHandStop, image: "/categories/nokti.jpg" },
+  {
+    name: "Trepavice i obrve",
+    icon: GiEyelashes,
+    image: "/categories/trepavice-i-obrve.jpg",
+  },
+  { name: "Depilacija", icon: GiLeg, image: "/categories/depilacija.jpg" },
+  { name: "Masaža", icon: TbMassage, image: "/categories/masaza.jpg" },
+  { name: "Njega lica", icon: TbFlower, image: "/categories/njega-lica.jpg" },
+  { name: "Solarijum", icon: TbSun, image: "/categories/solarijum.jpg" },
 ];
 
 // Kartan laddas först när kunden trycker på "Karta", och bara i webbläsaren
@@ -712,11 +720,12 @@ export default function Home() {
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
-          gap: 10,
-          marginBottom: 28,
+          gap: 12,
+          // Extra luft så att kunden först väljer kategori innan salongerna börjar.
+          marginBottom: 48,
         }}
       >
-        {CATEGORIES.map(({ name, icon: Icon }) => {
+        {CATEGORIES.map(({ name, icon: Icon, image }) => {
           const isSelected = selectedCategory === name;
           return (
             <button
@@ -725,34 +734,56 @@ export default function Home() {
               onClick={() => chooseCategory(isSelected ? null : name)}
               className={sourceSans.className}
               style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-                padding: "16px 8px",
+                position: "relative",
+                height: 150,
+                padding: 0,
+                overflow: "hidden",
                 borderRadius: 14,
-                border: isSelected ? "1.5px solid #611a1a" : "1px solid #eeeeee",
-                background: isSelected ? "#fbf5f5" : "#ffffff",
-                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)",
+                border: "none",
+                // Vald kategori får en vinröd ram runt bilden.
+                outline: isSelected ? "3px solid #611a1a" : "none",
+                outlineOffset: 2,
+                backgroundColor: "#f5eded",
+                backgroundImage: image ? `url(${image})` : "none",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)",
                 cursor: "pointer",
               }}
             >
+              {/* Kategorier utan bild visar sin ikon tills det finns en bild. */}
+              {!image && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: 16,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    color: "#611a1a",
+                  }}
+                >
+                  <Icon size={34} />
+                </span>
+              )}
+
+              {/* Mörk skugga nertill så att den vita texten går att läsa på bilden. */}
               <span
                 style={{
+                  position: "absolute",
+                  inset: 0,
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: 46,
-                  height: 46,
-                  borderRadius: 999,
-                  background: isSelected ? "#611a1a" : "#f8eeee",
-                  color: isSelected ? "#ffffff" : "#611a1a",
+                  alignItems: "flex-end",
+                  padding: "10px 12px",
+                  background: image
+                    ? "linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.15) 55%, rgba(0,0,0,0) 100%)"
+                    : "none",
+                  color: image ? "#ffffff" : "#611a1a",
+                  fontSize: 16,
+                  fontWeight: 700,
+                  textAlign: "left",
+                  lineHeight: 1.2,
                 }}
               >
-                <Icon size={24} />
-              </span>
-              <span style={{ fontSize: 15, fontWeight: 600, color: "#1f1f1f" }}>
                 {name}
               </span>
             </button>
