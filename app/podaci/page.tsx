@@ -517,7 +517,7 @@ useEffect(() => {
     marginBottom: isMobile ? undefined : "8px",
   }}
 >
-  Unesi podatke
+  Unesite podatke
 </h1>
 
         <div

@@ -285,12 +285,14 @@ KLART i punkt 8 (3 oktober 2026):
 - Telefontexten på /podaci lovar inte längre påminnelser.
 - Valuta: KM överallt.
 - Datum: 10.10.2026 (utan punkt) överallt, även i mejlet.
+- Ni-form i rubriker och instruktioner ("Odaberite termin", "Unesite podatke",
+  admin "Izaberite..."). Korta knappar (Rezerviši, Sačuvaj, Dodaj, Obriši)
+  behåller du-form med flit.
 
 KVAR i punkt 8 (i den här ordningen):
-1. Ni-form överallt ("Odaberite termin", "Unesite podatke").
-2. Rubrikfärger (Pregled rezervacije svart på mobil, cancel-sidans rubriker).
-3. Avbokningsknappen: större rundade hörn som övriga knappar.
-4. Resten av listan: kunder utan e-post kan inte avboka, cancel-sidan
+1. Rubrikfärger (Pregled rezervacije svart på mobil, cancel-sidans rubriker).
+2. Avbokningsknappen: större rundade hörn som övriga knappar.
+3. Resten av listan: kunder utan e-post kan inte avboka, cancel-sidan
    visar inte bokningen, alert()-rutor, tom vecka utan text,
    salongssidan (klickbar telefon, öppettider, galleripilar, "salon"),
    ingen väg tillbaka till startsidan, enkelt mejl, admininloggningens

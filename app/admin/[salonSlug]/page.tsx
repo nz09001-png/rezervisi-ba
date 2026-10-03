@@ -3076,7 +3076,7 @@ height: isMobile ? "90px" : "88px",
     color: "#611a1a",
   }}
 >
-  Izaberi naslovnu sliku
+  Izaberite naslovnu sliku
 </label>
 {selectedFile && (
   <div className="mt-4">
@@ -3095,7 +3095,7 @@ height: isMobile ? "90px" : "88px",
 {imagePreview && (
   <div className="mt-6">
     <p className="font-medium text-gray-700">
-      Prilagodi sliku
+      Prilagodite sliku
     </p>
 
     <p className="mb-3 mt-1 text-sm text-gray-500">
@@ -3226,7 +3226,7 @@ height: isMobile ? "90px" : "88px",
     color: "#611a1a",
   }}
 >
-  Izaberi sliku za galeriju
+  Izaberite sliku za galeriju
 </label>
 
 {galleryFile && (
@@ -3905,7 +3905,7 @@ style={{
     className="mb-3 w-full rounded-xl border border-gray-300 px-4 py-3 shadow-sm transition focus:border-[#611a1a] focus:outline-none focus:ring-2 focus:ring-[#611a1a]/20"
     style={{ maxWidth: "220px" }}
   >
-    <option value="">Izaberi kategoriju</option>
+    <option value="">Izaberite kategoriju</option>
 
     {serviceCategories.map((category) => (
       <option key={category.id} value={category.id}>
@@ -4003,7 +4003,7 @@ style={{
 
 <div className="mb-4">
   <p className="mb-1 font-medium">
-  Izaberi osoblje za ovu uslugu
+  Izaberite osoblje za ovu uslugu
 </p>
 
 <div className="space-y-1">

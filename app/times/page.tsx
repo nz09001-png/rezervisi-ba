@@ -686,7 +686,7 @@ return (
     whiteSpace: isMobile ? "nowrap" : undefined,
   }}
 >
-  Odaberi termin
+  Odaberite termin
 </h1>
 
 <div
