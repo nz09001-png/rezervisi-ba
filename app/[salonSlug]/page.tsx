@@ -48,6 +48,8 @@ const [loadingTimes, setLoadingTimes] = useState(false);
 const [barbers, setBarbers] = useState<any[]>([]);
 const [closedDays, setClosedDays] = useState<any[]>([])
 const [isMobile, setIsMobile] = useState(false);
+// Sant när salongen inte finns (fel adress), så att sidan inte laddar för evigt.
+const [notFound, setNotFound] = useState(false);
 const [selectedBarberByService, setSelectedBarberByService] = useState<
   Record<number, number | null>
 >({});
@@ -82,6 +84,7 @@ useEffect(() => {
 
     if (error) {
       console.error(error);
+      setNotFound(true);
       return;
     }
 
@@ -282,8 +285,90 @@ useEffect(() => {
   };
 }, [selectedImageIndex]);
 
+if (notFound) {
+  return (
+    <main
+      className="min-h-screen"
+      style={{
+        backgroundColor: "#f7f3ee",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px 16px",
+      }}
+    >
+      <div
+        className="rounded-3xl bg-white shadow-2xl"
+        style={{
+          width: "100%",
+          maxWidth: "420px",
+          padding: "32px 24px",
+          textAlign: "center",
+        }}
+      >
+        <img
+          src="/salonix-horisontell-maroon.png"
+          alt="Salonix"
+          style={{ height: "34px", width: "auto", margin: "0 auto 24px" }}
+        />
+
+        <h1
+          className={dmSerif.className}
+          style={{ color: "#611a1a", fontSize: "28px", marginBottom: "10px" }}
+        >
+          Salon nije pronađen
+        </h1>
+
+        <p
+          className={sourceSans.className}
+          style={{
+            color: "#6b7280",
+            fontSize: "16px",
+            lineHeight: "1.5",
+            marginBottom: "24px",
+          }}
+        >
+          Provjerite adresu ili pronađite salon na Salonixu.
+        </p>
+
+        <Link
+          href="/"
+          className={geist.className}
+          style={{
+            display: "inline-block",
+            backgroundColor: "#611a1a",
+            padding: "11px 22px",
+            borderRadius: "12px",
+            color: "#ffffff",
+            fontWeight: "700",
+            fontSize: "15px",
+            textDecoration: "none",
+            boxShadow: "0 4px 10px rgba(97, 26, 26, 0.18)",
+          }}
+        >
+          Nazad na početnu
+        </Link>
+      </div>
+    </main>
+  );
+}
+
 if (!salon) {
-  return <h1>Učitava se...</h1>;
+  return (
+    <main
+      className={`min-h-screen ${sourceSans.className}`}
+      style={{
+        backgroundColor: "#f7f3ee",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "#6b7280",
+        fontSize: "16px",
+      }}
+    >
+      Učitava se...
+    </main>
+  );
 }
 const selectedClosedDay = closedDays.find(
   (day) => day.date === selectedDate
