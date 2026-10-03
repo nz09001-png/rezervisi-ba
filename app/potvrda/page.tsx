@@ -552,7 +552,8 @@ const { error: notificationError } = await supabase
     salon_id: salonId,
     type: "booking_created",
     title: "Nova rezervacija",
-    message: `${ime} ${prezime} je rezervisao/la termin ${formattedDate} u ${time} kod ${finalBarberName}`,
+    // Rad 1: kundens namn. Rad 2: datum, tid och personal (admin visar raderna snyggt).
+    message: `${ime} ${prezime}\n${formattedDate} u ${time} · ${finalBarberName || "Bez preferencije"}`,
     event_date: date,
     event_time: time,
     is_read: false,

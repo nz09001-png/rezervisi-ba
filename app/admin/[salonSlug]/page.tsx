@@ -731,16 +731,11 @@ async function fetchGalleryImages() {
 async function fetchNotifications() {
   if (!salon?.id) return;
 
-  console.log("HÄMTAR NOTISER FÖR SALON ID:", salon.id);
-
   const { data, error } = await supabase
     .from("admin_notifications")
     .select("*")
     .eq("salon_id", salon.id)
     .order("created_at", { ascending: false });
-
-  console.log("NOTISER DATA:", data);
-  console.log("NOTISER ERROR:", error);
 
   if (error) {
     console.error(error);
@@ -781,6 +776,60 @@ async function markNotificationAsRead(id: number) {
   }
 
   fetchNotifications();
+}
+
+// "Označi sve kao pročitano": alla olästa notiser för salongen på en gång.
+async function markAllNotificationsAsRead() {
+  if (!salon?.id) return;
+
+  const { error } = await supabase
+    .from("admin_notifications")
+    .update({ is_read: true })
+    .eq("salon_id", salon.id)
+    .eq("is_read", false);
+
+  if (error) {
+    console.error(error);
+    alert("Nije moguće označiti obavijesti kao pročitane.");
+    return;
+  }
+
+  fetchNotifications();
+}
+
+// När notisen kom: "upravo", "prije 5 min", "prije 2 h" eller "03.10. u 14:32".
+function formatNotificationTime(createdAt?: string) {
+  if (!createdAt) return "";
+
+  const created = new Date(createdAt);
+  const minutes = Math.floor((Date.now() - created.getTime()) / 60000);
+
+  if (minutes < 1) return "upravo";
+  if (minutes < 60) return `prije ${minutes} min`;
+  if (minutes < 24 * 60) return `prije ${Math.floor(minutes / 60)} h`;
+
+  const day = String(created.getDate()).padStart(2, "0");
+  const month = String(created.getMonth() + 1).padStart(2, "0");
+  const hours = String(created.getHours()).padStart(2, "0");
+  const mins = String(created.getMinutes()).padStart(2, "0");
+  return `${day}.${month}. u ${hours}:${mins}`;
+}
+
+// Nya notiser har två rader (namn \n datum · personal): namnet visas fetstilt.
+// Gamla notiser är en hel mening och visas som förut.
+function renderNotificationMessage(message?: string) {
+  const [firstLine, ...rest] = String(message || "").split("\n");
+
+  if (rest.length === 0) return firstLine;
+
+  return (
+    <>
+      <span style={{ display: "block", fontWeight: 600, color: "#111827" }}>
+        {firstLine}
+      </span>
+      <span style={{ display: "block" }}>{rest.join(" ")}</span>
+    </>
+  );
 }
 
 async function handleAddTime() {
@@ -1652,6 +1701,19 @@ useEffect(() => {
   }
 }, [isLoggedIn, salon]);
 
+// Hämta nya notiser och bokningar automatiskt varje minut, så att admin inte
+// behöver laddas om (en omladdning loggar ut). Bara data – kalenderns kod är orörd.
+useEffect(() => {
+  if (!isLoggedIn || !salon?.id) return;
+
+  const interval = setInterval(() => {
+    fetchNotifications();
+    fetchBookings();
+  }, 60 * 1000);
+
+  return () => clearInterval(interval);
+}, [isLoggedIn, salon]);
+
 useEffect(() => {
   if (!selectedDate || !salon?.id) return;
 
@@ -2405,6 +2467,16 @@ style={{
   )}
 </h2>
 
+  {notifications.some((notification) => !notification.is_read) && (
+    <button
+      onClick={markAllNotificationsAsRead}
+      className="-mt-2 mb-4 text-sm font-semibold underline"
+      style={{ color: "#611a1a" }}
+    >
+      Označi sve kao pročitano
+    </button>
+  )}
+
   {notifications.length === 0 ? (
   <p className="text-sm text-gray-500">
     Nema obavijesti.
@@ -2424,6 +2496,7 @@ style={{
   : "#fdf8f8",
   }}
 >
+   <div className="flex items-baseline justify-between gap-3">
    <p
   className="font-semibold"
   style={{
@@ -2432,9 +2505,13 @@ style={{
 >
   {notification.title}
 </p>
+    <span className="shrink-0 text-xs text-gray-400">
+      {formatNotificationTime(notification.created_at)}
+    </span>
+   </div>
 
     <p className="mt-1 text-sm leading-5 text-gray-600">
-  {notification.message}
+  {renderNotificationMessage(notification.message)}
 </p>
 
     {!notification.is_read && (
@@ -2605,6 +2682,16 @@ overflowX: "hidden",
       )}
     </h2>
 
+    {notifications.some((notification) => !notification.is_read) && (
+      <button
+        onClick={markAllNotificationsAsRead}
+        className="-mt-2 mb-3 text-sm font-semibold underline"
+        style={{ color: "#611a1a" }}
+      >
+        Označi sve kao pročitano
+      </button>
+    )}
+
     {notifications.length === 0 ? (
       <p className="text-sm text-gray-500">
         Nema obavijesti.
@@ -2625,6 +2712,7 @@ overflowX: "hidden",
           : "#fdf8f8",
       }}
     >
+      <div className="flex items-baseline justify-between gap-2">
       <p
         className="text-sm font-semibold"
         style={{
@@ -2633,6 +2721,10 @@ overflowX: "hidden",
       >
         {notification.title}
       </p>
+        <span className="shrink-0 text-xs text-gray-400">
+          {formatNotificationTime(notification.created_at)}
+        </span>
+      </div>
 
       <p
         className="text-sm text-gray-600"
@@ -2641,7 +2733,7 @@ overflowX: "hidden",
           lineHeight: "18px",
         }}
       >
-        {notification.message}
+        {renderNotificationMessage(notification.message)}
       </p>
 
       {!notification.is_read && (

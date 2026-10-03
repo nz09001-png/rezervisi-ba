@@ -356,8 +356,16 @@ Klart i admin:
   bort; misslyckat mejl påverkar inte avbokningen. Bokningsmejlet orört.
 OBS under utveckling: när nya funktioner (hooks) läggs till i admin laddas
 admin om och ägaren loggas ut i panelen – be ägaren logga in igen.
-Ordning för resten av admin (ägarens val): Salonix-typsnitt
-(kalendern låst vid Arial) → Obavijesti → Postavke → kalendern sist.
+- Obavijesti: "Označi sve kao pročitano", tid för notisen ("prije 9 min",
+  "03.10. u 14:32"), nya notiser sparas som två rader (namn \n datum u tid
+  · personal) från /potvrda och /cancel – admin visar namnet fetstilt.
+  Gamla notiser visas som förut.
+- Admin hämtar notiser och bokningar automatiskt varje minut (kalenderns
+  data uppdateras, kalenderns kod orörd). Felsöknings-console.log borttagna.
+Beslut: admin behåller sitt typsnitt (Arial) – bara personalen ser admin,
+tydlighet går före utseende.
+Ordning för resten av admin (ägarens val): Postavke → kalendern sist
+(där även: klick på notis → rätt vecka i kalendern).
 
 KVAR i punkt 8 (i den här ordningen):
 1. Resten av listan: admin-stavfel ("Osooblje", "Osobolje", "Edit", "Ime Osoblja").

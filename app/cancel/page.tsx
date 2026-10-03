@@ -109,7 +109,8 @@ if (bookingError || !bookingData) {
   salon_id: salonData.id,
   type: "booking_cancelled",
   title: "Otkazana rezervacija",
-  message: `${bookingData.customer_name} je otkazao/la termin ${formattedBookingDate} u ${bookingData.booking_time} kod ${bookingData.barber_name}`,
+  // Rad 1: kundens namn. Rad 2: datum, tid och personal (admin visar raderna snyggt).
+  message: `${bookingData.customer_name}\n${formattedBookingDate} u ${String(bookingData.booking_time).slice(0, 5)} · ${bookingData.barber_name || "Bez preferencije"}`,
   event_date: bookingData.booking_date,
   event_time: bookingData.booking_time,
   is_read: false,
