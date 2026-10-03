@@ -24,7 +24,7 @@ const router = useRouter();
   const serviceId = searchParams.get("serviceId");
 const date = searchParams.get("date");
 const formattedDate = date
-  ? `${date.split("-")[2]}.${date.split("-")[1]}.${date.split("-")[0]}.`
+  ? `${date.split("-")[2]}.${date.split("-")[1]}.${date.split("-")[0]}`
   : "";
 const time = searchParams.get("time");
 const barberId = searchParams.get("barberId");

@@ -84,7 +84,7 @@ const cancelUrl = `${baseUrl}/cancel?id=${bookingId}&token=${cancelToken}`;
         <h2>Rezervacija uspješna</h2>
         <p><strong>Salon:</strong> ${salon}</p>
         <p><strong>Usluga:</strong> ${service}</p>
-        <p><strong>Datum:</strong> ${date}</p>
+        <p><strong>Datum:</strong> ${date.split("-").reverse().join(".")}</p>
         <p><strong>Vrijeme:</strong> ${time}</p>
 
         <p>Otvorite priloženu kalendarsku datoteku kako biste dodali rezervaciju u svoj kalendar.</p>

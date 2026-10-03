@@ -62,7 +62,7 @@ const showDuration = searchParams.get("showDuration") === "true";
 const prezime = searchParams.get("prezime");
 
 const formattedDate = date
-  ? `${date.split("-")[2]}.${date.split("-")[1]}.${date.split("-")[0]}.`
+  ? `${date.split("-")[2]}.${date.split("-")[1]}.${date.split("-")[0]}`
   : "";
 
   return (

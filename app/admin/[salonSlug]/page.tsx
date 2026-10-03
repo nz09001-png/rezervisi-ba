@@ -6538,7 +6538,7 @@ hasParallelBookingInside && !isLaterOverlappingMultiStepBooking ? (
   {selectedBooking.booking_date
     ? `${selectedBooking.booking_date.split("-")[2]}.${
         selectedBooking.booking_date.split("-")[1]
-      }.${selectedBooking.booking_date.split("-")[0]}.`
+      }.${selectedBooking.booking_date.split("-")[0]}`
     : ""}
 </div>
 
