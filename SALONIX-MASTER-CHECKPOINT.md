@@ -350,10 +350,13 @@ Klart i admin:
   (tel:) och e-post (mailto:) klickbara, knappen heter "Otkaži rezervaciju"
   och frågar i rutan ("Da, otkaži" / "Ne") i stället för grå confirm, fel
   visas i rutan. Stängs med ×, klick utanför eller Esc.
+- Avbokning i admin skickar mejl till kunden (om e-post finns) via NY fil
+  app/api/send-cancel-email/route.ts: "Rezervacija otkazana" i samma stil
+  som bokningsmejlet (alltid ljust). Skickas efter att bokningen tagits
+  bort; misslyckat mejl påverkar inte avbokningen. Bokningsmejlet orört.
 OBS under utveckling: när nya funktioner (hooks) läggs till i admin laddas
 admin om och ägaren loggas ut i panelen – be ägaren logga in igen.
-Ordning för resten av admin (ägarens val): avbokningsmejl till kunden (F) →
-Salonix-typsnitt
+Ordning för resten av admin (ägarens val): Salonix-typsnitt
 (kalendern låst vid Arial) → Obavijesti → Postavke → kalendern sist.
 
 KVAR i punkt 8 (i den här ordningen):

@@ -1294,6 +1294,27 @@ async function handleDeleteService(id: number) {
     return;
   }
 
+  // Meddela kunden via e-post (om e-post finns). Bokningen är redan avbokad,
+  // så ett misslyckat mejl visar inget fel för salongen.
+  const cancelledBooking = bookings.find((booking) => booking.id === id);
+
+  if (cancelledBooking?.email) {
+    fetch("/api/send-cancel-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: cancelledBooking.email,
+        customerName: cancelledBooking.customer_name,
+        salon: cancelledBooking.salon,
+        service: cancelledBooking.service,
+        date: cancelledBooking.booking_date,
+        time: cancelledBooking.booking_time,
+      }),
+    }).catch((mailError) =>
+      console.error("Greška pri slanju emaila o otkazivanju:", mailError)
+    );
+  }
+
   fetchBookings();
   setSelectedBooking(null);
 }
