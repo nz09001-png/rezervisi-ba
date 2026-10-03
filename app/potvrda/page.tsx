@@ -629,7 +629,7 @@ router.replace(
 >
 <div>
   {!isMobile && (
-    <h1 className="text-3xl font-bold text-[#611a1a]">
+    <h1 className="text-3xl font-bold text-[#111827]">
       Pregled rezervacije
     </h1>
   )}

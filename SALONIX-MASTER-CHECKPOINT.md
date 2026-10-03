@@ -288,11 +288,13 @@ KLART i punkt 8 (3 oktober 2026):
 - Ni-form i rubriker och instruktioner ("Odaberite termin", "Unesite podatke",
   admin "Izaberite..."). Korta knappar (Rezerviši, Sačuvaj, Dodaj, Obriši)
   behåller du-form med flit.
+- Rubrikfärger: sidrubriker svarta (#111827), även "Pregled rezervacije"
+  på desktop. "Rezervacija potvrđena" vinröd. Cancel-sidans kortrubriker
+  får vara kvar svarta (ägarens val).
 
 KVAR i punkt 8 (i den här ordningen):
-1. Rubrikfärger (Pregled rezervacije svart på mobil, cancel-sidans rubriker).
-2. Avbokningsknappen: större rundade hörn som övriga knappar.
-3. Resten av listan: kunder utan e-post kan inte avboka, cancel-sidan
+1. Avbokningsknappen: större rundade hörn som övriga knappar.
+2. Resten av listan: kunder utan e-post kan inte avboka, cancel-sidan
    visar inte bokningen, alert()-rutor, tom vecka utan text,
    salongssidan (klickbar telefon, öppettider, galleripilar, "salon"),
    ingen väg tillbaka till startsidan, enkelt mejl, admininloggningens
