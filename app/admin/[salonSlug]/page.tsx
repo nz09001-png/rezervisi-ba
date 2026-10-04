@@ -239,6 +239,37 @@ useEffect(() => {
 function showNotice(text: string, type: "success" | "error" = "error") {
   setNotice({ text, type });
 }
+
+// Egen fråga i stället för webbläsarens confirm(). Väntar på svaret (true/false).
+const [confirmDialog, setConfirmDialog] = useState<{
+  title: string;
+  text: string;
+  confirmLabel: string;
+  tone: "danger" | "primary";
+  resolve: (answer: boolean) => void;
+} | null>(null);
+
+function askConfirm(options: {
+  title: string;
+  text: string;
+  confirmLabel?: string;
+  tone?: "danger" | "primary";
+}) {
+  return new Promise<boolean>((resolve) => {
+    setConfirmDialog({
+      title: options.title,
+      text: options.text,
+      confirmLabel: options.confirmLabel ?? "Da, obriši",
+      tone: options.tone ?? "danger",
+      resolve,
+    });
+  });
+}
+
+function closeConfirm(answer: boolean) {
+  confirmDialog?.resolve(answer);
+  setConfirmDialog(null);
+}
 const [isUploadingImage, setIsUploadingImage] = useState(false);
 const [selectedServiceBarberIds, setSelectedServiceBarberIds] = useState<number[]>([]);
 const [showFilterMenu, setShowFilterMenu] = useState(false);
@@ -581,7 +612,14 @@ async function handleDeleteServiceCategory(id: number) {
     return;
   }
 
-  const confirmDelete = confirm("Da li ste sigurni da želite obrisati kategoriju?");
+  const categoryName = serviceCategories.find((category) => category.id === id)?.name;
+
+  const confirmDelete = await askConfirm({
+    title: "Obrisati kategoriju?",
+    text: categoryName
+      ? `Kategorija „${categoryName}“ će biti obrisana.`
+      : "Kategorija će biti obrisana.",
+  });
 
   if (!confirmDelete) return;
 
@@ -957,9 +995,14 @@ async function handleAddTime() {
   showNotice("Termin je dodan.", "success");
 }
 async function handleDeleteTime(id: number) {
-  const confirmDelete = confirm(
-    "Da li ste sigurni da želite obrisati vrijeme?"
-  );
+  const timeToDelete = times.find((item) => item.id === id)?.time;
+
+  const confirmDelete = await askConfirm({
+    title: "Obrisati termin?",
+    text: timeToDelete
+      ? `Termin u ${String(timeToDelete).slice(0, 5)} će biti obrisan.`
+      : "Termin će biti obrisan.",
+  });
 
   if (!confirmDelete) return;
 
@@ -998,11 +1041,13 @@ async function handleDeleteTime(id: number) {
   showNotice("Termin je obrisan.", "success");
 }
 async function handleDeleteAllTimesForDate() {
-  const confirmDelete = confirm(
-    manualTimeBarberId === "all"
-      ? "Da li ste sigurni da želite obrisati sve termine za ovaj datum za cijeli salon?"
-      : "Da li ste sigurni da želite obrisati sve termine za ovaj datum za odabranog člana osoblja?"
-  );
+  const confirmDelete = await askConfirm({
+    title: "Obrisati sve termine za ovaj dan?",
+    text:
+      manualTimeBarberId === "all"
+        ? "Svi termini za ovaj datum će biti obrisani za cijeli salon."
+        : "Svi termini za ovaj datum će biti obrisani za odabranog člana osoblja.",
+  });
 
   if (!confirmDelete) return;
 
@@ -1075,7 +1120,14 @@ async function handleAddBarber() {
 }
 
 async function handleDeleteBarber(id: number) {
-  const confirmDelete = confirm("Da li ste sigurni da želite obrisati člana osoblja?");
+  const barberName = barbers.find((barber) => barber.id === id)?.name;
+
+  const confirmDelete = await askConfirm({
+    title: "Obrisati člana osoblja?",
+    text: barberName
+      ? `${barberName} će biti obrisan/a iz salona.`
+      : "Član osoblja će biti obrisan.",
+  });
 
   if (!confirmDelete) return;
 
@@ -1153,7 +1205,10 @@ async function handleAddClosedDay() {
   showNotice("Zatvoreni dani su sačuvani.", "success");
 }
 async function handleDeleteClosedDay(id: number) {
-  const confirmDelete = confirm("Da li ste sigurni da želite obrisati zatvoreni dan?");
+  const confirmDelete = await askConfirm({
+    title: "Obrisati zatvoreni dan?",
+    text: "Klijenti će ponovo moći rezervisati u ovaj dan.",
+  });
 
   if (!confirmDelete) return;
 
@@ -1174,11 +1229,13 @@ async function handleDeleteClosedDay(id: number) {
 
 // Tar bort en hel period (flera dagar i rad) med en enda fråga.
 async function handleDeleteClosedDayGroup(ids: number[]) {
-  const confirmDelete = confirm(
-    ids.length === 1
-      ? "Da li ste sigurni da želite obrisati zatvoreni dan?"
-      : `Da li ste sigurni da želite obrisati ovih ${ids.length} zatvorenih dana?`
-  );
+  const confirmDelete = await askConfirm({
+    title: ids.length === 1 ? "Obrisati zatvoreni dan?" : "Obrisati zatvorene dane?",
+    text:
+      ids.length === 1
+        ? "Klijenti će ponovo moći rezervisati u ovaj dan."
+        : `Svih ${ids.length} dana će biti obrisano. Klijenti će ponovo moći rezervisati u te dane.`,
+  });
 
   if (!confirmDelete) return;
 
@@ -1412,7 +1469,14 @@ showNotice("Usluga je uspješno dodana.", "success");
 
   
 async function handleDeleteService(id: number) {
-  const confirmDelete = confirm("Da li ste sigurni da želite obrisati uslugu?");
+  const serviceName = services.find((service) => service.id === id)?.name;
+
+  const confirmDelete = await askConfirm({
+    title: "Obrisati uslugu?",
+    text: serviceName
+      ? `Usluga „${serviceName}“ će biti trajno obrisana. Ovo se ne može poništiti.`
+      : "Usluga će biti trajno obrisana. Ovo se ne može poništiti.",
+  });
 
   if (!confirmDelete) return;
 
@@ -1524,7 +1588,10 @@ setGalleryFile(null);
 fetchGalleryImages();
 }
 async function handleDeleteGalleryImage(id: number) {
-  const confirmDelete = confirm("Da li ste sigurni da želite obrisati sliku iz galerije?");
+  const confirmDelete = await askConfirm({
+    title: "Obrisati sliku?",
+    text: "Slika će biti uklonjena iz galerije salona.",
+  });
 
   if (!confirmDelete) return;
 
@@ -1738,10 +1805,11 @@ function handleAddShortenedHours() {
   setShowShortenedForm(false);
 }
 
-function handleDeleteShortenedHours(id: number | string) {
-  const confirmed = window.confirm(
-    "Da li ste sigurni da želite obrisati ovo skraćeno radno vrijeme?"
-  );
+async function handleDeleteShortenedHours(id: number | string) {
+  const confirmed = await askConfirm({
+    title: "Obrisati skraćeno radno vrijeme?",
+    text: "Promjena se čuva kada kliknete „Sačuvaj promjene“.",
+  });
 
   if (!confirmed) return;
 
@@ -2267,9 +2335,12 @@ console.log("Generisani termini:", generatedSlots);
 
 
 async function handleReplaceTimes() {
-  const confirmed = window.confirm(
-  "Jeste li sigurni da želite zamijeniti postojeće termine?"
-);
+  const confirmed = await askConfirm({
+    title: "Zamijeniti postojeće termine?",
+    text: "Postojeći termini odabranog osoblja u ovim danima biće zamijenjeni novim terminima.",
+    confirmLabel: "Da, zamijeni",
+    tone: "primary",
+  });
 
 if (!confirmed) {
   return;
@@ -2429,6 +2500,92 @@ if (!isLoggedIn) {
           >
             ×
           </button>
+        </div>
+      )}
+
+      {confirmDialog && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => closeConfirm(false)}
+          className="flex items-center justify-center"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 70,
+            padding: "16px",
+            backgroundColor: "rgba(17, 24, 39, 0.45)",
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full bg-white text-center"
+            style={{
+              maxWidth: "420px",
+              borderRadius: "20px",
+              padding: isMobile ? "22px 18px 18px" : "26px 26px 22px",
+              boxShadow: "0 20px 50px rgba(0,0,0,0.25)",
+            }}
+          >
+            <div
+              className="mx-auto flex items-center justify-center rounded-full"
+              style={{
+                width: "52px",
+                height: "52px",
+                fontSize: "24px",
+                backgroundColor: "#fdf2f2",
+                color: confirmDialog.tone === "danger" ? "#ef4444" : "#611a1a",
+              }}
+            >
+              {confirmDialog.tone === "danger" ? "🗑" : "⟳"}
+            </div>
+
+            <p className="font-bold" style={{ marginTop: "14px", fontSize: "19px", color: "#111827" }}>
+              {confirmDialog.title}
+            </p>
+
+            <p style={{ marginTop: "8px", fontSize: "15px", lineHeight: 1.5, color: "#4b5563" }}>
+              {confirmDialog.text}
+            </p>
+
+            <div
+              className="flex"
+              style={{
+                marginTop: "20px",
+                gap: "10px",
+                flexDirection: isMobile ? "column-reverse" : "row",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => closeConfirm(false)}
+                className="rounded-xl border bg-white font-bold"
+                style={{
+                  flex: isMobile ? undefined : 1,
+                  height: "50px",
+                  fontSize: "16px",
+                  color: "#374151",
+                  borderColor: "#d1d5db",
+                }}
+              >
+                Odustani
+              </button>
+
+              <button
+                type="button"
+                onClick={() => closeConfirm(true)}
+                className="rounded-xl font-bold text-white"
+                style={{
+                  flex: isMobile ? undefined : 1,
+                  height: "50px",
+                  fontSize: "16px",
+                  backgroundColor: confirmDialog.tone === "danger" ? "#ef4444" : "#611a1a",
+                }}
+              >
+                {confirmDialog.confirmLabel}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -4848,10 +5005,11 @@ height: isMobile ? "90px" : "88px",
                   {serviceSteps.length > 1 && (
                     <button
                       type="button"
-                      onClick={() => {
-                        const shouldDelete = window.confirm(
-                          "Da li ste sigurni da želite izbrisati ovaj korak?"
-                        );
+                      onClick={async () => {
+                        const shouldDelete = await askConfirm({
+                          title: "Obrisati korak?",
+                          text: `Korak ${index + 1} će biti uklonjen iz tretmana.`,
+                        });
 
                         if (!shouldDelete) return;
 
