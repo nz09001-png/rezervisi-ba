@@ -2145,9 +2145,9 @@ const isCurrentTimeInsideCalendar =
 const currentTimeTop =
   ((currentTimeMinutes - calendarStartMinutes) / 60) * 80;
 
-// Höjd i px för en timme i kalendern. Desktop har lite högre rader så att
-// namn och tjänst får plats på korten. Mobil oförändrad (80).
-const calendarHourHeight = isMobile ? 80 : 100;
+// Höjd i px för en timme i kalendern (mobil och desktop), så att namn och
+// tjänst får plats på korten.
+const calendarHourHeight = 100;
 
 function hasThreeOrMoreOverlappingBookings(dateString: string) {
   const dayBookings = calendarWeekBookings.filter(
@@ -7920,8 +7920,8 @@ const isLaterOverlappingMultiStepBooking =
 const shouldInsetParallelBooking =
   isAllBarbersView && isParallelBooking;
 
-// Desktop: mindre indrag så att texten i pauskortet får mer plats.
-const parallelInset = shouldInsetParallelBooking ? (isMobile ? 6 : 3) : 0;
+// Litet indrag så att texten i pauskortet får plats.
+const parallelInset = shouldInsetParallelBooking ? 3 : 0;
 
 const hasParallelBookingInside = (() => {
   if (!isAllBarbersView || !isMultiStepBooking) {
@@ -7979,15 +7979,14 @@ const hasParallelBookingInside = (() => {
 }}
     style={{
   position: "absolute",
-  // Desktop: kortet med "2" ligger över grannkortet (så cirkeln syns),
+  // Kortet med "2" ligger över grannkortet (så cirkeln syns),
   // och kunden i pausen ligger överst.
-  zIndex: !isMobile
-    ? isAllBarbersView && isParallelBooking
+  zIndex:
+    isAllBarbersView && isParallelBooking
       ? 3
       : hasParallelBookingInside
       ? 2
-      : 1
-    : 1,
+      : 1,
   top: "0px",
   left: `calc(${bookingColumn * bookingWidth}% + ${
   2 + parallelInset + multiStepOverlapInset
@@ -7999,36 +7998,26 @@ width: `calc(${bookingWidth}% - ${
   height: `${((booking.duration_minutes || 30) / 60) * calendarHourHeight}px`,
   backgroundColor: barberColor.backgroundColor,
 color: barberColor.textColor,
-border: !isMobile
-  ? // Desktop: kunden i pausen får vit ram + skugga (ligger "ovanpå").
-    isAllBarbersView && isParallelBooking
+// Kunden i pausen får vit ram + skugga (ligger "ovanpå").
+border:
+  isAllBarbersView && isParallelBooking
     ? "2px solid #ffffff"
-    : `1px solid ${barberColor.borderColor}`
-  : hasParallelBookingInside
-    ? `1px solid ${barberColor.textColor}`
-    : isAllBarbersView && isParallelBooking
-    ? `1px solid ${barberColor.textColor}`
     : `1px solid ${barberColor.borderColor}`,
 boxShadow:
-  !isMobile && isAllBarbersView && isParallelBooking
+  isAllBarbersView && isParallelBooking
     ? "0 1px 4px rgba(0, 0, 0, 0.2)"
     : undefined,
 
 
 borderRadius: "8px",
-  padding: !isMobile
-  ? "4px 5px"
-  : (booking.duration_minutes || 30) <= 30
-    ? "4px 6px"
-    : "6px 7px",
+  padding: "4px 5px",
 fontSize: "13px",
   fontWeight: 600,
 boxSizing: "border-box",
 cursor: "pointer",
 }}
       >
-{!isMobile ? (
-  // Desktop: namn och tjänst utan "…" (texten bryts mellan ord i stället).
+{/* Namn och tjänst utan "…" (texten bryts mellan ord i stället). */}
   <>
     <div
       style={{
@@ -8082,121 +8071,8 @@ cursor: "pointer",
       </div>
     )}
   </>
-) : (
-       <div
-  style={{
-    lineHeight: isThreeOrMoreOverlapping ? 1 : 1.1,
-    overflow: "hidden",
-  }}
->
-  <div
-  style={{
-    fontSize: "11px",
-    fontWeight: 700,
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    lineHeight: 1.2,
-    letterSpacing: "-0.1px",
-  }}
->
-  {shortCustomerName}
-</div>
-
-  <div
-    style={{
-      marginTop:
-  (booking.duration_minutes || 30) >= 60
-    ? "6px"
-    : isThreeOrMoreOverlapping
-    ? "0px"
-    : "2px",
-      fontSize:
-  (booking.duration_minutes || 30) >= 60
-    ? "10px"
-    : "9px",
-      fontWeight: 500,
-      opacity: 0.85,
-      display: "-webkit-box",
-      WebkitLineClamp:
-  (booking.duration_minutes || 30) >= 60 ? 2 : 1,
-      WebkitBoxOrient: "vertical",
-      overflow: "hidden",
-    }}
-  >
-    {booking.service}
-  </div>
-
-  {(
-  isThreeOrMoreOverlapping
-    ? (booking.duration_minutes || 30) > 30
-    : (booking.duration_minutes || 30) >= 60
-) && (
-    <div
-      style={{
-        marginTop:
-  (booking.duration_minutes || 30) >= 60
-    ? "6px"
-    : isThreeOrMoreOverlapping
-    ? "0px"
-    : "2px",
-        fontSize:
-  (booking.duration_minutes || 30) >= 60
-    ? "10px"
-    : "9px",
-        fontWeight: 500,
-        opacity:
-  (booking.duration_minutes || 30) >= 60
-    ? 0.6
-    : 0.75,
-        display: "-webkit-box",
-        WebkitLineClamp: 1,
-        WebkitBoxOrient: "vertical",
-        overflow: "hidden",
-      }}
-    >
-      {booking.barber_name || "Bez preferencije"}
-    </div>
-    )}
-    {(booking.duration_minutes || 30) >= 60 && (
-  <div
-    style={{
-      marginTop: "3px",
-      fontSize: "9px",
-      fontWeight: 500,
-      opacity: 0.55,
-      lineHeight: 1.1,
-    }}
-  >
-    {booking.duration_minutes || 30} min
-  </div>
-)}
-</div>
-)}
 </div>,
 
-isMobile && hasParallelBookingInside && !isLaterOverlappingMultiStepBooking ? (
-  <div
-    key={`end-line-${booking.id}`}
-    style={{
-      position: "absolute",
-      zIndex: 3,
-      top: `${((booking.duration_minutes || 30) / 60) * calendarHourHeight - 6}px`,
-      left: `calc(${bookingColumn * bookingWidth}% + 2px)`,
-      width: `calc(${bookingWidth}% - 4px)`,
-      height: "6px",
-
-      borderLeft: `1px solid ${barberColor.textColor}`,
-      borderRight: `1px solid ${barberColor.textColor}`,
-      borderBottom: `1px solid ${barberColor.textColor}`,
-
-      borderBottomLeftRadius: "8px",
-      borderBottomRightRadius: "8px",
-
-      boxSizing: "border-box",
-      pointerEvents: "none",
-    }}
-  />
-) : null,
 
 ];
   })}
