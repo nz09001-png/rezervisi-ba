@@ -219,6 +219,26 @@ const [selectedSettings, setSelectedSettings] = useState<string[]>([]);
 const [showServiceForm, setShowServiceForm] = useState(false);
 const [timesTab, setTimesTab] = useState<"week" | "day">("week");
 const [showShortenedForm, setShowShortenedForm] = useState(false);
+// Meddelanderutan överst (ersätter webbläsarens grå alert-rutor).
+const [notice, setNotice] = useState<{
+  text: string;
+  type: "success" | "error";
+} | null>(null);
+
+useEffect(() => {
+  if (!notice) return;
+
+  const timer = setTimeout(
+    () => setNotice(null),
+    notice.type === "success" ? 3000 : 6000
+  );
+
+  return () => clearTimeout(timer);
+}, [notice]);
+
+function showNotice(text: string, type: "success" | "error" = "error") {
+  setNotice({ text, type });
+}
 const [isUploadingImage, setIsUploadingImage] = useState(false);
 const [selectedServiceBarberIds, setSelectedServiceBarberIds] = useState<number[]>([]);
 const [showFilterMenu, setShowFilterMenu] = useState(false);
@@ -535,11 +555,13 @@ async function handleAddServiceCategory(suggestedName?: string) {
 
   if (error) {
     console.error(error);
+    showNotice("Greška pri dodavanju kategorije.");
     return;
   }
 
   if (!suggestedName) setNewServiceCategoryName("");
   fetchServiceCategories();
+  showNotice("Kategorija je dodana.", "success");
 }
 
 async function handleDeleteServiceCategory(id: number) {
@@ -555,7 +577,7 @@ async function handleDeleteServiceCategory(id: number) {
   }
 
   if (linkedServices && linkedServices.length > 0) {
-    alert("Kategorija se ne može obrisati jer sadrži usluge.");
+    showNotice("Kategorija se ne može obrisati jer sadrži usluge.");
     return;
   }
 
@@ -570,10 +592,12 @@ async function handleDeleteServiceCategory(id: number) {
 
   if (error) {
     console.error(error);
+    showNotice("Greška pri brisanju kategorije.");
     return;
   }
 
   fetchServiceCategories();
+  showNotice("Kategorija je obrisana.", "success");
 }
 
 async function fetchTimes(date?: string) {
@@ -807,7 +831,7 @@ async function markNotificationAsRead(id: number) {
 
   if (error) {
     console.error(error);
-    alert("Nije moguće označiti obavijest kao pročitanu.");
+    showNotice("Nije moguće označiti obavijest kao pročitanu.");
     return;
   }
 
@@ -826,7 +850,7 @@ async function markAllNotificationsAsRead() {
 
   if (error) {
     console.error(error);
-    alert("Nije moguće označiti obavijesti kao pročitane.");
+    showNotice("Nije moguće označiti obavijesti kao pročitane.");
     return;
   }
 
@@ -870,7 +894,7 @@ function renderNotificationMessage(message?: string) {
 
 async function handleAddTime() {
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(newTime)) {
-  alert("Unesite vrijeme u formatu HH:MM, npr. 15:30.");
+  showNotice("Unesite vrijeme u formatu HH:MM, npr. 15:30.");
   return;
 }
 
@@ -886,7 +910,7 @@ async function handleAddTime() {
     );
 
     if (barbersToAdd.length === 0) {
-      alert("Ovo vrijeme već postoji.");
+      showNotice("Ovo vrijeme već postoji.");
       return;
     }
 
@@ -902,13 +926,13 @@ async function handleAddTime() {
       );
 
     if (error) {
-      alert("Greška pri dodavanju vremena.");
+      showNotice("Greška pri dodavanju vremena.");
       console.error(error);
       return;
     }
   } else {
     if (times.some((item) => item.time === newTime)) {
-      alert("Ovo vrijeme već postoji.");
+      showNotice("Ovo vrijeme već postoji.");
       return;
     }
 
@@ -922,7 +946,7 @@ async function handleAddTime() {
       });
 
     if (error) {
-      alert("Greška pri dodavanju vremena.");
+      showNotice("Greška pri dodavanju vremena.");
       console.error(error);
       return;
     }
@@ -930,6 +954,7 @@ async function handleAddTime() {
 
   setNewTime("09:00");
   fetchTimes(selectedDate);
+  showNotice("Termin je dodan.", "success");
 }
 async function handleDeleteTime(id: number) {
   const confirmDelete = confirm(
@@ -951,7 +976,7 @@ async function handleDeleteTime(id: number) {
       .eq("time", selectedTime);
 
     if (error) {
-      alert("Greška pri brisanju vremena.");
+      showNotice("Greška pri brisanju vremena.");
       console.error(error);
       return;
     }
@@ -963,13 +988,14 @@ async function handleDeleteTime(id: number) {
       .eq("barber_id", manualTimeBarberId);
 
     if (error) {
-      alert("Greška pri brisanju vremena.");
+      showNotice("Greška pri brisanju vremena.");
       console.error(error);
       return;
     }
   }
 
   fetchTimes(selectedDate);
+  showNotice("Termin je obrisan.", "success");
 }
 async function handleDeleteAllTimesForDate() {
   const confirmDelete = confirm(
@@ -993,12 +1019,13 @@ async function handleDeleteAllTimesForDate() {
   const { error } = await query;
 
   if (error) {
-    alert("Greška pri brisanju termina.");
+    showNotice("Greška pri brisanju termina.");
     console.error(error);
     return;
   }
 
   fetchTimes(selectedDate);
+  showNotice("Termini za ovaj dan su obrisani.", "success");
 }
 
 
@@ -1007,7 +1034,7 @@ async function handleDeleteAllTimesForDate() {
 
 async function handleAddBarber() {
   if (!newBarberName.trim()) {
-    alert("Unesite ime člana osoblja.");
+    showNotice("Unesite ime člana osoblja.");
     return;
   }
 
@@ -1023,7 +1050,7 @@ async function handleAddBarber() {
   );
 
   if (availableColorIndex === -1) {
-    alert("Nema više dostupnih boja za novog člana osoblja.");
+    showNotice("Nema više dostupnih boja za novog člana osoblja.");
     return;
   }
 
@@ -1037,13 +1064,14 @@ async function handleAddBarber() {
     });
 
   if (error) {
-    alert("Greška pri dodavanju člana osoblja.");
+    showNotice("Greška pri dodavanju člana osoblja.");
     console.error(error);
     return;
   }
 
   setNewBarberName("");
   fetchBarbers();
+  showNotice("Član osoblja je dodan.", "success");
 }
 
 async function handleDeleteBarber(id: number) {
@@ -1057,22 +1085,23 @@ async function handleDeleteBarber(id: number) {
     .eq("id", id);
 
   if (error) {
-    alert("Greška pri brisanju člana osoblja.");
+    showNotice("Greška pri brisanju člana osoblja.");
     console.error(error);
     return;
   }
 
   fetchBarbers();
+  showNotice("Član osoblja je obrisan.", "success");
 }
 
 async function handleAddClosedDay() {
   if (!closedDate || !closedEndDate) {
-    alert("Odaberite početni i završni datum.");
+    showNotice("Odaberite početni i završni datum.");
     return;
   }
 
   if (new Date(closedEndDate) < new Date(closedDate)) {
-    alert("Završni datum ne može biti prije početnog datuma.");
+    showNotice("Završni datum ne može biti prije početnog datuma.");
     return;
   }
 
@@ -1101,7 +1130,7 @@ async function handleAddClosedDay() {
   );
 
   if (duplicate) {
-    alert("Ovaj zatvoreni dan već postoji.");
+    showNotice("Ovaj zatvoreni dan već postoji.");
     return;
   }
 
@@ -1110,7 +1139,7 @@ async function handleAddClosedDay() {
     .insert(dates);
 
   if (error) {
-    alert("Greška pri dodavanju zatvorenih dana.");
+    showNotice("Greška pri dodavanju zatvorenih dana.");
     console.error(error);
     return;
   }
@@ -1121,6 +1150,7 @@ async function handleAddClosedDay() {
   setClosedBarberId(null);
 
   fetchClosedDays();
+  showNotice("Zatvoreni dani su sačuvani.", "success");
 }
 async function handleDeleteClosedDay(id: number) {
   const confirmDelete = confirm("Da li ste sigurni da želite obrisati zatvoreni dan?");
@@ -1133,12 +1163,13 @@ async function handleDeleteClosedDay(id: number) {
     .eq("id", id);
 
   if (error) {
-    alert("Greška pri brisanju zatvorenog dana.");
+    showNotice("Greška pri brisanju zatvorenog dana.");
     console.error(error);
     return;
   }
 
   fetchClosedDays();
+  showNotice("Zatvoreni dan je obrisan.", "success");
 }
 
 // Tar bort en hel period (flera dagar i rad) med en enda fråga.
@@ -1157,22 +1188,26 @@ async function handleDeleteClosedDayGroup(ids: number[]) {
     .in("id", ids);
 
   if (error) {
-    alert("Greška pri brisanju zatvorenog dana.");
+    showNotice("Greška pri brisanju zatvorenog dana.");
     console.error(error);
     return;
   }
 
   fetchClosedDays();
+  showNotice(
+    ids.length === 1 ? "Zatvoreni dan je obrisan." : "Zatvoreni dani su obrisani.",
+    "success"
+  );
 }
 
 async function handleAddService() {
   if (!selectedServiceCategoryId) {
-    alert("Izaberite kategoriju.");
+    showNotice("Izaberite kategoriju.");
     return;
   }
 
   if (!serviceName.trim()) {
-    alert("Unesite naziv usluge.");
+    showNotice("Unesite naziv usluge.");
     return;
   }
 
@@ -1200,7 +1235,8 @@ console.log("UPPDATERADE RADER:", updatedServices);
 
   if (updateError) {
   console.log(updateError);
-  alert(JSON.stringify(updateError));
+  console.error(updateError);
+  showNotice("Greška pri spremanju usluge. Pokušajte ponovo.");
   return;
 }
 
@@ -1219,7 +1255,8 @@ const { error: deleteStepsError } = await supabase
   .eq("service_id", editingServiceId);
 
 if (deleteStepsError) {
-  alert(JSON.stringify(deleteStepsError));
+  console.error(deleteStepsError);
+  showNotice("Greška pri spremanju usluge. Pokušajte ponovo.");
   return;
 }
 
@@ -1237,7 +1274,8 @@ if (hasServiceSteps) {
     .insert(stepsToInsert);
 
   if (insertStepsError) {
-    alert(JSON.stringify(insertStepsError));
+    console.error(insertStepsError);
+  showNotice("Greška pri spremanju usluge. Pokušajte ponovo.");
     return;
   }
 }
@@ -1248,7 +1286,8 @@ const { error: deleteServiceBarbersError } = await supabase
   .eq("service_id", editingServiceId);
 
 if (deleteServiceBarbersError) {
-  alert(JSON.stringify(deleteServiceBarbersError));
+  console.error(deleteServiceBarbersError);
+  showNotice("Greška pri spremanju usluge. Pokušajte ponovo.");
   return;
 }
 
@@ -1265,7 +1304,8 @@ if (selectedServiceBarberIds.length > 0) {
     .insert(serviceBarbersToInsert);
 
   if (insertServiceBarbersError) {
-    alert(JSON.stringify(insertServiceBarbersError));
+    console.error(insertServiceBarbersError);
+  showNotice("Greška pri spremanju usluge. Pokušajte ponovo.");
     return;
   }
 }
@@ -1273,7 +1313,7 @@ if (selectedServiceBarberIds.length > 0) {
 await fetchServices();
 handleCancelServiceEdit();
 
-alert("Usluga je uspješno ažurirana.");
+showNotice("Usluga je uspješno ažurirana.", "success");
 return;
 }
 
@@ -1298,7 +1338,8 @@ category_id: selectedServiceCategoryId || null,
 .single();
 
   if (error) {
-  alert(JSON.stringify(error));
+  console.error(error);
+  showNotice("Greška pri spremanju usluge. Pokušajte ponovo.");
   return;
 }
 
@@ -1316,7 +1357,8 @@ if (hasServiceSteps) {
     .insert(stepsToInsert);
 
   if (stepError) {
-    alert(JSON.stringify(stepError));
+    console.error(stepError);
+  showNotice("Greška pri spremanju usluge. Pokušajte ponovo.");
     return;
   }
 }
@@ -1334,7 +1376,8 @@ if (selectedServiceBarberIds.length > 0) {
     .insert(serviceBarbersToInsert);
 
   if (serviceBarbersError) {
-    alert(JSON.stringify(serviceBarbersError));
+    console.error(serviceBarbersError);
+  showNotice("Greška pri spremanju usluge. Pokušajte ponovo.");
     return;
   }
 }
@@ -1363,6 +1406,7 @@ setSelectedServiceBarberIds([]);
 setShowServiceForm(false);
 
 fetchServices();
+showNotice("Usluga je uspješno dodana.", "success");
 }
   
 
@@ -1378,12 +1422,13 @@ async function handleDeleteService(id: number) {
     .eq("id", id);
 
   if (error) {
-    alert("Greška pri brisanju usluge.");
+    showNotice("Greška pri brisanju usluge.");
     console.error(error);
     return;
   }
 
   fetchServices();
+  showNotice("Usluga je obrisana.", "success");
 }
 
  // Avbokning från bokningsrutan. Frågan "Da li ste sigurni" visas i rutan
@@ -1431,7 +1476,7 @@ async function handleDeleteService(id: number) {
 
 async function handleGalleryImageUpload() {
   if (!galleryFile) {
-    alert("Prvo odaberite sliku za galeriju.");
+    showNotice("Prvo odaberite sliku za galeriju.");
     return;
   }
 
@@ -1448,7 +1493,7 @@ const fileName = `gallery-${salon?.id}-${Date.now()}-${safeFileName}`;
     .upload(fileName, galleryFile);
 
   if (uploadError) {
-    alert("Greška pri učitavanju slike u galeriju.");
+    showNotice("Greška pri učitavanju slike u galeriju.");
     console.error(uploadError);
     return;
   }
@@ -1467,12 +1512,12 @@ const fileName = `gallery-${salon?.id}-${Date.now()}-${safeFileName}`;
     });
 
   if (insertError) {
-    alert("Slika je učitana, ali nije spremljena u galeriju.");
+    showNotice("Slika je učitana, ali nije spremljena u galeriju.");
     console.error(insertError);
     return;
   }
 
-  alert("Slika je dodana u galeriju.");
+  showNotice("Slika je dodana u galeriju.", "success");
 
 setGalleryFile(null);
 
@@ -1489,24 +1534,25 @@ async function handleDeleteGalleryImage(id: number) {
     .eq("id", id);
 
   if (error) {
-    alert("Greška pri brisanju slike iz galerije.");
+    showNotice("Greška pri brisanju slike iz galerije.");
     console.error(error);
     return;
   }
 
   fetchGalleryImages();
+  showNotice("Slika je obrisana iz galerije.", "success");
 }
   async function handleImageUpload() {
   setIsUploadingImage(true);
 
   try {
     if (!selectedFile) {
-      alert("Prvo odaberite sliku.");
+      showNotice("Prvo odaberite sliku.");
       return;
     }
 
     if (!imagePreview || !croppedAreaPixels) {
-      alert("Prvo odaberite područje slike.");
+      showNotice("Prvo odaberite područje slike.");
       return;
     }
 
@@ -1522,7 +1568,7 @@ async function handleDeleteGalleryImage(id: number) {
       .upload(fileName, croppedBlob);
 
     if (uploadError) {
-      alert("Greška pri učitavanju slike.");
+      showNotice("Greška pri učitavanju slike.");
       console.error(uploadError);
       return;
     }
@@ -1539,12 +1585,12 @@ async function handleDeleteGalleryImage(id: number) {
       .eq("id", salon?.id);
 
     if (updateError) {
-      alert("Slika je učitana, ali nije spremljena u profil.");
+      showNotice("Slika je učitana, ali nije spremljena u profil.");
       console.error(updateError);
       return;
     }
 
-    alert("Slika je uspješno spremljena.");
+    showNotice("Slika je uspješno spremljena.", "success");
 
         setSalon((prevSalon: any) =>
       prevSalon
@@ -1592,7 +1638,7 @@ console.log("UPPDATERAD SALONG:", updatedSalon);
 console.log("SHOW BARBERS STATE:", showBarbers);
 
   if (error) {
-    alert("Greška pri spremanju podataka.");
+    showNotice("Greška pri spremanju podataka.");
     console.error(error);
     return;
   }
@@ -1607,7 +1653,7 @@ if (deleteShortenedHoursError) {
     "Greška pri brisanju skraćenog radnog vremena:",
     deleteShortenedHoursError
   );
-  alert("Greška pri spremanju skraćenog radnog vremena.");
+  showNotice("Greška pri spremanju skraćenog radnog vremena.");
   return;
 }
 
@@ -1628,30 +1674,30 @@ if (shortenedHours.length > 0) {
       "Greška pri spremanju skraćenog radnog vremena:",
       shortenedHoursError
     );
-    alert("Greška pri spremanju skraćenog radnog vremena.");
+    showNotice("Greška pri spremanju skraćenog radnog vremena.");
     return;
   }
 }
 
 await fetchShortenedHours();
 
-  alert("Podaci su uspješno spremljeni.");
+  showNotice("Podaci su uspješno spremljeni.", "success");
 }
 
 
 function handleAddShortenedHours() {
   if (!shortenedFrom || !shortenedTo) {
-    alert("Odaberite vrijeme od i do.");
+    showNotice("Odaberite vrijeme od i do.");
     return;
   }
 
   if (shortenedFrom >= shortenedTo) {
-    alert('Vrijeme "Do" mora biti kasnije od vremena "Od".');
+    showNotice('Vrijeme "Do" mora biti kasnije od vremena "Od".');
     return;
   }
 
   if (selectedShortenedWeekdays.length === 0) {
-    alert("Odaberite najmanje jedan dan.");
+    showNotice("Odaberite najmanje jedan dan.");
     return;
   }
 
@@ -1660,7 +1706,7 @@ function handleAddShortenedHours() {
   );
 
   if (conflictingClosedDays.length > 0) {
-    alert(
+    showNotice(
       `Nije moguće dodati skraćeno radno vrijeme za neradni dan: ${conflictingClosedDays.join(
         ", "
       )}.`
@@ -2138,17 +2184,17 @@ const todaysBookings = bookings.filter(
 
 function handleGenerateTimes() {
   if (selectedScheduleBarberIds.length === 0) {
-    alert("Izaberite najmanje jednog člana osoblja.");
+    showNotice("Izaberite najmanje jednog člana osoblja.");
     return;
   }
 
   if (!scheduleStartDate || !scheduleEndDate) {
-    alert("Odaberite početni i završni datum.");
+    showNotice("Odaberite početni i završni datum.");
     return;
   }
 
   if (!startTime || !endTime) {
-    alert("Odaberite početno i završno vrijeme.");
+    showNotice("Odaberite početno i završno vrijeme.");
     return;
   }
 
@@ -2156,7 +2202,7 @@ function handleGenerateTimes() {
   const endDate = new Date(`${scheduleEndDate}T00:00:00`);
 
   if (startDate > endDate) {
-    alert("Početni datum ne može biti nakon završnog datuma.");
+    showNotice("Početni datum ne može biti nakon završnog datuma.");
     return;
   }
 
@@ -2169,7 +2215,7 @@ function handleGenerateTimes() {
     Number(endTime.split(":")[1]);
 
   if (startMinutes >= endMinutes) {
-    alert("Početno vrijeme mora biti prije završnog vremena.");
+    showNotice("Početno vrijeme mora biti prije završnog vremena.");
     return;
   }
 
@@ -2229,17 +2275,17 @@ if (!confirmed) {
   return;
 }
   if (!salon?.id) {
-  alert("Salon nije pronađen.");
+  showNotice("Salon nije pronađen.");
   return;
 }
 
 if (selectedScheduleBarberIds.length === 0) {
-  alert("Izaberite najmanje jednog člana osoblja.");
+  showNotice("Izaberite najmanje jednog člana osoblja.");
   return;
 }
 
 if (generatedTimes.length === 0) {
-  alert("Nema generisanih termina.");
+  showNotice("Nema generisanih termina.");
   return;
 }
 
@@ -2257,7 +2303,7 @@ const { error: deleteError } = await supabase
 
 if (deleteError) {
   console.error(deleteError);
-  alert("Greška pri brisanju termina.");
+  showNotice("Greška pri brisanju termina.");
   return;
 }
 
@@ -2277,14 +2323,14 @@ if (deleteError) {
 
   if (insertError) {
     console.error(insertError);
-    alert("Greška pri spremanju termina.");
+    showNotice("Greška pri spremanju termina.");
     return;
   }
 
   await fetchTimes(scheduleStartDate);
 await fetchCalendarAvailableTimes();
 
-alert("Termini uspješno zamijenjeni.");
+showNotice("Termini uspješno zamijenjeni.", "success");
 setTimesSaved(true);
 }
 if (!isLoggedIn) {
@@ -2335,6 +2381,57 @@ if (!isLoggedIn) {
     padding: isMobile ? "24px 16px" : "32px",
   }}
 >
+      {notice && (
+        <div
+          role={notice.type === "error" ? "alert" : "status"}
+          className="flex items-start"
+          style={{
+            position: "fixed",
+            zIndex: 60,
+            top: isMobile ? "12px" : "20px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: isMobile ? "calc(100% - 24px)" : "440px",
+            gap: "12px",
+            padding: "14px 14px 14px 16px",
+            borderRadius: "14px",
+            backgroundColor: notice.type === "success" ? "#f0fdf4" : "#fef2f2",
+            border: `1px solid ${notice.type === "success" ? "#86efac" : "#fca5a5"}`,
+            boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+            color: notice.type === "success" ? "#14532d" : "#7f1d1d",
+          }}
+        >
+          <span
+            className="flex shrink-0 items-center justify-center rounded-full font-bold text-white"
+            style={{
+              width: "26px",
+              height: "26px",
+              fontSize: "14px",
+              backgroundColor: notice.type === "success" ? "#16a34a" : "#dc2626",
+            }}
+          >
+            {notice.type === "success" ? "✓" : "!"}
+          </span>
+
+          <span
+            className="font-semibold"
+            style={{ flex: 1, fontSize: "15px", lineHeight: 1.4, paddingTop: "3px" }}
+          >
+            {notice.text}
+          </span>
+
+          <button
+            type="button"
+            onClick={() => setNotice(null)}
+            aria-label="Zatvori"
+            className="shrink-0"
+            style={{ fontSize: "20px", lineHeight: 1, opacity: 0.6, padding: "2px 4px" }}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       <div className="mx-auto max-w-6xl">
         {!isMobile && (
         <div className="mb-6 flex items-start justify-between">
@@ -6552,9 +6649,17 @@ formatWeekDay={(dayName) => {
 
     if (error) {
       setShowBarbers(!newValue);
-      alert("Greška pri spremanju postavke.");
+      showNotice("Greška pri spremanju postavke.");
       console.error(error);
+      return;
     }
+
+    showNotice(
+      newValue
+        ? "Klijenti sada biraju člana osoblja."
+        : "Osoblje se više ne prikazuje klijentima.",
+      "success"
+    );
   };
 
   return (
