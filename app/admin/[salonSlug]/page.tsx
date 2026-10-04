@@ -2595,38 +2595,65 @@ if (!isLoggedIn) {
 
       <div className="mx-auto max-w-6xl">
         {!isMobile && (
-        <div className="mb-6 flex items-start justify-between">
+        <>
+        {/* Vit list överst: liten Salonix-logga + "Admin", "Odjavi se" som länk. */}
+        <div
+          style={{
+            height: "60px",
+            marginTop: "-8px",
+            marginBottom: "26px",
+            borderBottom: "1px solid #ead1d1",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <img
+              src="/salonix-horisontell-maroon.png"
+              alt="Salonix"
+              style={{ height: "26px", width: "auto", display: "block" }}
+            />
+            <span
+              style={{
+                fontSize: "13px",
+                fontWeight: 600,
+                color: "#9ca3af",
+                borderLeft: "1px solid #e5e7eb",
+                paddingLeft: "10px",
+              }}
+            >
+              Admin
+            </span>
+          </div>
+
+          <button
+            onClick={() => setIsLoggedIn(false)}
+            style={{
+              background: "none",
+              border: "none",
+              padding: 0,
+              color: "#611a1a",
+              fontSize: "14px",
+              fontWeight: 600,
+              textDecoration: "underline",
+              cursor: "pointer",
+            }}
+          >
+            Odjavi se
+          </button>
+        </div>
+
+        <div className="mb-6 flex items-center justify-between">
   <div>
-    <div>
-  <h1 className="text-3xl font-semibold">
-    {salon?.salon_name}
-  </h1>
+    <h1 style={{ fontSize: "30px", fontWeight: 700, color: "#111827" }}>
+      {salon?.salon_name}
+    </h1>
 
-  <p
-  style={{
-    marginTop: "2px",
-    fontSize: "18px",
-    fontWeight: 600,
-    color: "#111827",
-  }}
->
-  Admin
-</p>
-</div>
-
-    <p
-  className="mt-2"
-  style={{
-    color: "#6b7280",
-    fontSize: "15px",
-    fontWeight: 400,
-  }}
->
-  Upravljajte rezervacijama, uslugama, osobljem i informacijama o salonu.
-</p>
+    <p style={{ marginTop: "4px", fontSize: "15px", color: "#6b7280" }}>
+      Upravljajte rezervacijama, uslugama, osobljem i informacijama o salonu.
+    </p>
   </div>
-
-  
 
   <div className="flex items-center gap-3">
   <button
@@ -2783,111 +2810,104 @@ if (!isLoggedIn) {
 </div>
 )}
 </div>
-
-  <button
-  onClick={() => setIsLoggedIn(false)}
-  className="h-12 rounded-xl border px-5 text-sm font-medium shadow-sm transition hover:opacity-90"
-  style={{
-    backgroundColor: "#ffffff",
-    color: "#611a1a",
-    borderColor: "#611a1a",
-  }}
->
-  Odjavi se
-</button>
 </div>
 </div>
+</>
 )}
 
 {isMobile && (
-  <div className="mb-6">
+  <div className="mb-5">
+    {/* Vit list överst: liten Salonix-logga + "Admin", "Odjavi se" som länk. */}
     <div
       style={{
+        height: "52px",
+        marginTop: "-8px",
+        marginBottom: "18px",
+        borderBottom: "1px solid #ead1d1",
         display: "flex",
+        alignItems: "center",
         justifyContent: "space-between",
-        alignItems: "flex-start",
-        gap: "16px",
       }}
     >
-      <div
-  style={{
-    minWidth: 0,
-    flex: 1,
-    paddingRight: "4px",
-  }}
->
-  <h1
-    style={{
-      fontSize: "18px",
-      fontWeight: 600,
-      lineHeight: 1.25,
-      whiteSpace: "normal",
-    }}
-  >
-    {salon?.salon_name}
-  </h1>
-
-  <p
-    style={{
-      marginTop: "4px",
-      fontSize: "16px",
-      fontWeight: 600,
-    }}
-  >
-    Admin
-  </p>
-
-  <p
-    style={{
-      marginTop: "16px",
-      color: "#6b7280",
-      fontSize: "15px",
-      fontWeight: 400,
-      lineHeight: 1.5,
-    }}
-  >
-    Upravljajte rezervacijama, uslugama, osobljem i informacijama o salonu.
-  </p>
-</div>
-
-      <div
-  style={{
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "stretch",
-    gap: "8px",
-    flexShrink: 0,
-    width: "105px",
-  }}
->
-        {/* Mobil: ordningen visas som Postavke, Obavijesti, Odjavi se (order). */}
-        <button
-          onClick={() => setIsLoggedIn(false)}
-          className="rounded-xl border px-2 text-sm font-medium shadow-sm transition hover:opacity-90"
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <img
+          src="/salonix-horisontell-maroon.png"
+          alt="Salonix"
+          style={{ height: "22px", width: "auto", display: "block" }}
+        />
+        <span
           style={{
-            order: 3,
-            height: "40px",
-            backgroundColor: "#ffffff",
-            color: "#611a1a",
-            borderColor: "#611a1a",
+            fontSize: "13px",
+            fontWeight: 600,
+            color: "#9ca3af",
+            borderLeft: "1px solid #e5e7eb",
+            paddingLeft: "10px",
           }}
         >
-          Odjavi se
-        </button>
+          Admin
+        </span>
+      </div>
 
+      <button
+        onClick={() => setIsLoggedIn(false)}
+        style={{
+          background: "none",
+          border: "none",
+          padding: 0,
+          color: "#611a1a",
+          fontSize: "14px",
+          fontWeight: 600,
+          textDecoration: "underline",
+          cursor: "pointer",
+        }}
+      >
+        Odjavi se
+      </button>
+    </div>
+
+    <h1
+      style={{
+        fontSize: "24px",
+        fontWeight: 700,
+        lineHeight: 1.25,
+        color: "#111827",
+      }}
+    >
+      {salon?.salon_name}
+    </h1>
+
+    <p
+      style={{
+        marginTop: "4px",
+        fontSize: "14px",
+        lineHeight: 1.45,
+        color: "#6b7280",
+      }}
+    >
+      Upravljajte rezervacijama, uslugama, osobljem i informacijama o salonu.
+    </p>
+
+      {/* Postavke och Obavijesti bredvid varandra. */}
+      <div
+  style={{
+    marginTop: "14px",
+    display: "flex",
+    gap: "10px",
+  }}
+>
         <div
   ref={notificationsRef}
   style={{
     order: 2,
     position: "relative",
-    width: "100%",
+    flex: 1,
   }}
 >
   <button
     onClick={() => setShowNotifications(!showNotifications)}
-    className="flex w-full items-center justify-center gap-2 rounded-xl px-2 text-sm font-medium text-white shadow-sm"
+    className="flex w-full items-center justify-center gap-2 rounded-xl px-2 text-sm font-semibold text-white shadow-sm"
     style={{
-      height: "40px",
+      height: "44px",
       backgroundColor: "#611a1a",
     }}
   >
@@ -3010,45 +3030,40 @@ overflowX: "hidden",
 
 <button
   onClick={openSettingsPage}
-  className="w-full rounded-xl px-2 text-sm font-medium text-white shadow-sm"
+  className="rounded-xl px-2 text-sm font-semibold text-white shadow-sm"
   style={{
     order: 1,
-    height: "40px",
+    flex: 1,
+    height: "44px",
     backgroundColor: "#611a1a",
   }}
 >
   Postavke
 </button>
       </div>
-    </div>
-
-
   </div>
 )}
 
 <div
-  className="mb-3 grid grid-cols-2"
+  className="mb-7 grid grid-cols-2"
   style={{
-    gap: isMobile ? "12px" : "24px",
+    gap: isMobile ? "12px" : "20px",
   }}
 >
   <div
-    className="rounded-2xl border bg-white shadow-sm"
+    className="rounded-2xl bg-white shadow-sm"
     style={{
-      borderColor: "#ead1d1",
-      borderLeft: "4px solid #611a1a",
-      padding: isMobile ? "14px 16px" : "16px 20px",
-height: isMobile ? "90px" : "88px",
+      border: "1px solid #ead1d1",
+      padding: isMobile ? "12px 14px" : "14px 18px",
     }}
   >
     <p
       className="font-semibold text-gray-500"
       style={{
         fontSize: isMobile ? "13px" : "14px",
-        lineHeight: isMobile ? 1.35 : undefined,
       }}
     >
-      Današnje rezervacije
+      Danas
     </p>
 
     <p
@@ -3062,22 +3077,28 @@ height: isMobile ? "90px" : "88px",
     >
       {todaysBookings.length}
     </p>
+
+    {/* Bosnisk böjning: 1 rezervacija, 2–4 rezervacije, 5+ rezervacija. */}
+    <p style={{ marginTop: "6px", fontSize: "13px", color: "#6b7280" }}>
+      {todaysBookings.length % 10 >= 2 &&
+      todaysBookings.length % 10 <= 4 &&
+      (todaysBookings.length % 100 < 12 || todaysBookings.length % 100 > 14)
+        ? "rezervacije"
+        : "rezervacija"}
+    </p>
   </div>
 
   <div
-    className="rounded-2xl border bg-white shadow-sm"
+    className="rounded-2xl bg-white shadow-sm"
     style={{
-      borderColor: "#ead1d1",
-      borderLeft: "4px solid #611a1a",
-      padding: isMobile ? "14px 16px" : "16px 20px",
-      height: isMobile ? "90px" : "88px",
+      border: "1px solid #ead1d1",
+      padding: isMobile ? "12px 14px" : "14px 18px",
     }}
   >
     <p
       className="font-semibold text-gray-500"
       style={{
         fontSize: isMobile ? "13px" : "14px",
-        lineHeight: isMobile ? 1.35 : undefined,
       }}
     >
       {/* Etiketten visar vilket filter under "Statistika" som räknas. */}
@@ -3103,12 +3124,11 @@ height: isMobile ? "90px" : "88px",
     >
       {filteredBookings.length}
     </p>
-  </div>
-</div>
 
+    {/* "Statistika" inne i kortet – samma meny som förut. */}
   <div
-  className="mb-7"
   style={{
+    marginTop: "10px",
     position: "relative",
     display: "inline-block",
   }}
@@ -3123,15 +3143,16 @@ height: isMobile ? "90px" : "88px",
       setShowDateFilter(true);
     }
   }}
-  className="rounded-xl border px-4 py-2 text-sm font-medium transition hover:opacity-90"
+  className="rounded-full border text-sm font-semibold transition hover:opacity-90"
   style={{
+    padding: "4px 12px",
     backgroundColor: "#ffffff",
     color: "#611a1a",
     borderColor: "#611a1a",
   }}
 >
   <span className="flex items-center gap-2">
-    Statistika
+    Statistika ▾
 
     {filter !== "all" && (
       <span
@@ -3338,6 +3359,9 @@ height: isMobile ? "90px" : "88px",
 </div>
 )}
 </div>
+  </div>
+</div>
+
 
 {showSettingsMenu && (
   <div
@@ -8367,6 +8391,28 @@ cursor: "pointer",
   </div>
 )}
 
+{/* Diskret Salonix-signatur längst ner (ägarens val: engelska "Powered by"). */}
+<div
+  style={{
+    marginTop: "40px",
+    paddingTop: "16px",
+    paddingBottom: "8px",
+    borderTop: "1px solid #f1e4e4",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px",
+    fontSize: "12px",
+    color: "#9ca3af",
+  }}
+>
+  <span>Powered by</span>
+  <img
+    src="/salonix-horisontell-maroon.png"
+    alt="Salonix"
+    style={{ height: "16px", width: "auto", display: "block" }}
+  />
+</div>
 
       </div>
     </main>
