@@ -7270,129 +7270,98 @@ formatWeekDay={(dayName) => {
 
 {isMobile && (
   <div className="mb-3">
-    <div
-  style={{
-    display: "flex",
-    justifyContent: "flex-start",
-    alignItems: "center",
-    gap: "8px",
-  }}
->
-    {(showPreviousBookings || !isCurrentCalendarWeek) && (
-  <button
-    onClick={() => {
-      mobileCalendarScrollModeRef.current = "monday";
+    <div className="flex items-center" style={{ gap: "8px" }}>
+      <button
+        type="button"
+        onClick={() => {
+          mobileCalendarScrollModeRef.current = "today";
 
-      const previousWeek = new Date(calendarWeekStart);
-      previousWeek.setDate(calendarWeekStart.getDate() - 7);
-      setCalendarWeekStart(previousWeek);
-    }}
-    className="rounded-xl border px-4 py-2 text-sm font-medium"
-    style={{
-      borderColor: "#611a1a",
-      color: "#611a1a",
-      backgroundColor: "white",
-    }}
-  >
-    ←
-  </button>
-)}
-    <div
-      className="text-sm font-semibold"
-      style={{
-        color: "#611a1a",
-        whiteSpace: "nowrap",
-      }}
-    >
+          const today = new Date();
+          const monday = new Date(today);
+          const currentDay = today.getDay();
+
+          const diffToMonday =
+            currentDay === 0 ? -6 : 1 - currentDay;
+
+          monday.setDate(today.getDate() + diffToMonday);
+          monday.setHours(0, 0, 0, 0);
+
+          setCalendarWeekStart(monday);
+        }}
+        className="rounded-xl border bg-white font-semibold"
+        style={{ height: "40px", padding: "0 16px", fontSize: "15px", color: "#611a1a", borderColor: "#611a1a" }}
+      >
+        Danas
+      </button>
+
+      {(showPreviousBookings || !isCurrentCalendarWeek) && (
+        <button
+          type="button"
+          onClick={() => {
+            mobileCalendarScrollModeRef.current = "monday";
+
+            const previousWeek = new Date(calendarWeekStart);
+            previousWeek.setDate(calendarWeekStart.getDate() - 7);
+            setCalendarWeekStart(previousWeek);
+          }}
+          aria-label="Prethodna sedmica"
+          className="flex shrink-0 items-center justify-center rounded-xl border bg-white"
+          style={{ width: "40px", height: "40px", fontSize: "22px", color: "#611a1a", borderColor: "#d1d5db" }}
+        >
+          ‹
+        </button>
+      )}
+
+      <button
+        type="button"
+        onClick={() => {
+          mobileCalendarScrollModeRef.current = "monday";
+
+          const nextWeek = new Date(calendarWeekStart);
+          nextWeek.setDate(calendarWeekStart.getDate() + 7);
+          setCalendarWeekStart(nextWeek);
+        }}
+        aria-label="Sljedeća sedmica"
+        className="flex shrink-0 items-center justify-center rounded-xl border bg-white"
+        style={{ width: "40px", height: "40px", fontSize: "22px", color: "#611a1a", borderColor: "#d1d5db" }}
+      >
+        ›
+      </button>
+
       {(() => {
         const weekEnd = new Date(calendarWeekStart);
         weekEnd.setDate(calendarWeekStart.getDate() + 6);
 
-        const months = [
-          "jan",
-          "feb",
-          "mar",
-          "apr",
-          "maj",
-          "jun",
-          "jul",
-          "aug",
-          "sep",
-          "okt",
-          "nov",
-          "dec",
+        const monthNames = [
+          "januar", "februar", "mart", "april", "maj", "juni",
+          "juli", "august", "septembar", "oktobar", "novembar", "decembar",
         ];
 
-        return `${calendarWeekStart.getDate()}. ${
-          months[calendarWeekStart.getMonth()]
-        } – ${weekEnd.getDate()}. ${months[weekEnd.getMonth()]}`;
+        const startMonth = monthNames[calendarWeekStart.getMonth()];
+        const endMonth = monthNames[weekEnd.getMonth()];
+        const startYear = calendarWeekStart.getFullYear();
+        const endYear = weekEnd.getFullYear();
+
+        const mainText =
+          startMonth === endMonth
+            ? `${calendarWeekStart.getDate()}. – ${weekEnd.getDate()}. ${endMonth}`
+            : `${calendarWeekStart.getDate()}. ${startMonth} – ${weekEnd.getDate()}. ${endMonth}`;
+
+        return (
+          <p className="font-bold" style={{ marginLeft: "4px", fontSize: "16px", lineHeight: 1.2, color: "#111827" }}>
+            {mainText}
+            <span className="block font-normal text-gray-500" style={{ fontSize: "13px" }}>
+              {startYear === endYear ? endYear : `${startYear}/${endYear}`}
+            </span>
+          </p>
+        );
       })()}
     </div>
 
-    
-
     <button
-      onClick={() => {
-  mobileCalendarScrollModeRef.current = "monday";
-
-  const nextWeek = new Date(calendarWeekStart);
-  nextWeek.setDate(calendarWeekStart.getDate() + 7);
-  setCalendarWeekStart(nextWeek);
-}}
-      className="rounded-xl border px-4 py-2 text-sm font-medium"
-      style={{
-        borderColor: "#611a1a",
-        color: "#611a1a",
-        backgroundColor: "white",
-      }}
-    >
-      →
-       </button>
-  </div>
-
-  <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: "8px",
-    marginTop: "12px",
-  }}
->
-  <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  }}
->
-    <button
-      onClick={() => {
-  mobileCalendarScrollModeRef.current = "today";
-
-  const today = new Date();
-  const monday = new Date(today);
-  const currentDay = today.getDay();
-
-  const diffToMonday =
-    currentDay === 0 ? -6 : 1 - currentDay;
-
-  monday.setDate(today.getDate() + diffToMonday);
-  monday.setHours(0, 0, 0, 0);
-
-  setCalendarWeekStart(monday);
-}}
-      className="rounded-xl border px-4 py-2 text-sm font-medium"
-      style={{
-        borderColor: "#611a1a",
-        color: "#611a1a",
-        backgroundColor: "white",
-      }}
-    >
-      Danas
-    </button>
-
-    <button
+      type="button"
+      role="switch"
+      aria-checked={showPreviousBookings}
       onClick={() => {
         if (showPreviousBookings) {
           setShowPreviousBookings(false);
@@ -7413,146 +7382,64 @@ formatWeekDay={(dayName) => {
 
         setShowPreviousBookings(true);
       }}
-      className="rounded-xl border px-4 py-2 text-sm font-medium"
-      style={{
-        borderColor: "#611a1a",
-        color: showPreviousBookings ? "#ffffff" : "#611a1a",
-        backgroundColor: showPreviousBookings ? "#611a1a" : "#ffffff",
-      }}
+      className="flex items-center"
+      style={{ marginTop: "12px", gap: "8px", fontSize: "14px", color: "#374151" }}
     >
-  {(() => {
-    if (calendarBarberFilter === "all") {
-      return "Prethodne rezervacije";
-    }
-
-    const selectedBarber = barbers.find(
-      (barber) => barber.id === calendarBarberFilter
-    );
-
-    return selectedBarber && selectedBarber.name.length >= 7
-  ? "Prethodne..."
-  : "Prethodne rezervacije";
-  })()}
-</button>
-    </div>
-  <div
-  style={{
-    position: "relative",
-    flexShrink: 0,
-  }}
->
-  <button
-    onClick={() => setShowBarberFilterMenu(!showBarberFilterMenu)}
-    className="rounded-xl border px-4 py-2 text-sm font-medium transition hover:opacity-90"
-    style={{
-      backgroundColor: "#ffffff",
-      color: "#611a1a",
-      borderColor: "#611a1a",
-    }}
-  >
-    <span className="flex items-center gap-2">
-      {calendarBarberFilter === "all"
-        ? "Osoblje"
-        : barbers.find(
-            (barber) => barber.id === calendarBarberFilter
-          )?.name || "Osoblje"}
-
-      {calendarBarberFilter !== "all" && (
+      <span
+        className="relative inline-block rounded-full transition"
+        style={{ width: "38px", height: "22px", backgroundColor: showPreviousBookings ? "#611a1a" : "#d1d5db" }}
+      >
         <span
-          style={{
-            width: "10px",
-            height: "10px",
-            borderRadius: "9999px",
-            backgroundColor: getBarberColor(
-              calendarBarberFilter as number
-            ).borderColor,
-            display: "inline-block",
-            flexShrink: 0,
-          }}
+          className="absolute rounded-full bg-white transition-all"
+          style={{ top: "2px", left: showPreviousBookings ? "18px" : "2px", width: "18px", height: "18px" }}
         />
-      )}
-    </span>
-  </button>
-  {showBarberFilterMenu && (
-  <div
-    className="flex flex-col items-stretch gap-2 rounded-2xl border bg-white p-3 shadow-sm"
-    style={{
-      position: "absolute",
-      top: "100%",
-      right: 0,
-      marginTop: "8px",
-      width: "max-content",
-      minWidth: "180px",
-      borderColor: "#ead1d1",
-      zIndex: 50,
-    }}
-  >
-    <button
-      onClick={() => {
-        setCalendarBarberFilter("all");
-        setShowBarberFilterMenu(false);
-      }}
-      className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-gray-100"
-      style={{
-        color:
-          calendarBarberFilter === "all" ? "#611a1a" : "#111827",
-        backgroundColor:
-          calendarBarberFilter === "all" ? "#f7eeee" : "#ffffff",
-      }}
-    >
-      <span className="mr-2 w-4">
-        {calendarBarberFilter === "all" ? "✓" : ""}
       </span>
-
-      <span>Svo osoblje</span>
+      Prikaži prošle rezervacije
     </button>
 
-    {barbers.map((barber) => (
-      <button
-        key={barber.id}
-        onClick={() => {
-          setCalendarBarberFilter(barber.id);
-          setShowBarberFilterMenu(false);
-        }}
-        className="flex w-full items-center rounded-lg px-3 py-2 text-left text-sm font-medium hover:bg-gray-100"
-        style={{
-          color:
-            calendarBarberFilter === barber.id
-              ? "#611a1a"
-              : "#111827",
-          backgroundColor:
-            calendarBarberFilter === barber.id
-              ? "#f7eeee"
-              : "#ffffff",
-        }}
-      >
-        <span className="mr-2 w-4">
-          {calendarBarberFilter === barber.id ? "✓" : ""}
-        </span>
+    <div className="flex flex-wrap" style={{ marginTop: "12px", gap: "8px" }}>
+      {[
+        { id: "all" as const, name: "Svo osoblje" },
+        ...barbers.map((barber) => ({ id: barber.id as number, name: barber.name })),
+      ].map((option) => {
+        const isSelected = calendarBarberFilter === option.id;
+        const color = option.id === "all" ? null : getBarberColor(option.id);
 
-        <span className="flex items-center gap-2">
-          <span
+        return (
+          <button
+            key={String(option.id)}
+            type="button"
+            onClick={() => setCalendarBarberFilter(option.id)}
+            className="inline-flex items-center rounded-full border transition"
             style={{
-              width: "10px",
-              height: "10px",
-              borderRadius: "9999px",
-              backgroundColor: getBarberColor(barber.id).borderColor,
-              display: "inline-block",
-              flexShrink: 0,
+              gap: "6px",
+              height: "36px",
+              padding: "0 12px",
+              fontSize: "14px",
+              fontWeight: isSelected ? 600 : 400,
+              backgroundColor: isSelected ? "#611a1a" : "#ffffff",
+              borderColor: isSelected ? "#611a1a" : "#e5e7eb",
+              color: isSelected ? "#ffffff" : "#374151",
             }}
-          />
-
-          {barber.name}
-        </span>
-      </button>
-    ))}
+          >
+            {color && (
+              <span
+                className="inline-block rounded-full"
+                style={{
+                  width: "10px",
+                  height: "10px",
+                  backgroundColor: color.backgroundColor,
+                  border: `1px solid ${color.borderColor}`,
+                }}
+              />
+            )}
+            {option.name}
+          </button>
+        );
+      })}
+    </div>
   </div>
 )}
-</div>
-  </div>
-</div>
-)}
-
 <div
   className="mb-6 rounded-2xl border bg-white shadow-sm"
   style={{
