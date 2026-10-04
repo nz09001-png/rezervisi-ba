@@ -7491,6 +7491,10 @@ if (!todayElement) return;
 element.scrollLeft =
   todayElement.offsetLeft - mondayElement.offsetLeft;
 
+// Gå till i dag bara EN gång – sedan står kalendern kvar där man swipar
+// (annars hoppar den tillbaka till i dag vid varje uppdatering).
+mobileCalendarScrollModeRef.current = "keep";
+
 mobileCalendarSavedScrollLeftRef.current =
   element.scrollLeft;
    });
