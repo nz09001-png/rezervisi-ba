@@ -2145,6 +2145,10 @@ const isCurrentTimeInsideCalendar =
 const currentTimeTop =
   ((currentTimeMinutes - calendarStartMinutes) / 60) * 80;
 
+// Höjd i px för en timme i kalendern. Desktop har lite högre rader så att
+// namn och tjänst får plats på korten. Mobil oförändrad (80).
+const calendarHourHeight = isMobile ? 80 : 100;
+
 function hasThreeOrMoreOverlappingBookings(dateString: string) {
   const dayBookings = calendarWeekBookings.filter(
     (booking) => booking.booking_date === dateString
@@ -7589,7 +7593,7 @@ className="overflow-x-auto"
   style={{
     gridTemplateColumns: calendarGridTemplateColumns,
     borderBottom: "1px solid #ead1d1",
-    minHeight: `${(calendarIntervalMinutes / 60) * 80}px`,
+    minHeight: `${(calendarIntervalMinutes / 60) * calendarHourHeight}px`,
   }}
 >
         <div
@@ -7629,7 +7633,7 @@ currentTimeMinutes <
           left: "12px",
           right: 0,
           top: `${
-  ((currentTimeMinutes - getCalendarTimeMinutes(time)) / 60) * 80
+  ((currentTimeMinutes - getCalendarTimeMinutes(time)) / 60) * calendarHourHeight
 }px`,
           height: "0.5px",
           backgroundColor: "#611a1a",
@@ -7643,7 +7647,7 @@ currentTimeMinutes <
           position: "absolute",
           left: "8px",
           top: `calc(${
-  ((currentTimeMinutes - getCalendarTimeMinutes(time)) / 60) * 80
+  ((currentTimeMinutes - getCalendarTimeMinutes(time)) / 60) * calendarHourHeight
 }px - 4px)`,
           width: "9px",
           height: "9px",
@@ -7681,7 +7685,7 @@ const isToday =
     <div
   key={index}
   style={{
-    minHeight: `${(calendarIntervalMinutes / 60) * 80}px`,
+    minHeight: `${(calendarIntervalMinutes / 60) * calendarHourHeight}px`,
     borderRight:
   index < 6 ? "1.5px solid rgba(97, 26, 26, 0.35)" : "none",
     position: "relative",
@@ -7698,7 +7702,7 @@ const isToday =
         left: 0,
         right: 0,
         top: `${
-          ((currentTimeMinutes - getCalendarTimeMinutes(time)) / 60) * 80
+          ((currentTimeMinutes - getCalendarTimeMinutes(time)) / 60) * calendarHourHeight
         }px`,
         height: "0.5px",
         backgroundColor: "#611a1a",
@@ -7912,7 +7916,8 @@ const isLaterOverlappingMultiStepBooking =
 const shouldInsetParallelBooking =
   isAllBarbersView && isParallelBooking;
 
-const parallelInset = shouldInsetParallelBooking ? 6 : 0;
+// Desktop: mindre indrag så att texten i pauskortet får mer plats.
+const parallelInset = shouldInsetParallelBooking ? (isMobile ? 6 : 3) : 0;
 
 const hasParallelBookingInside = (() => {
   if (!isAllBarbersView || !isMultiStepBooking) {
@@ -7970,7 +7975,15 @@ const hasParallelBookingInside = (() => {
 }}
     style={{
   position: "absolute",
-  zIndex: 1,
+  // Desktop: kortet med "2" ligger över grannkortet (så cirkeln syns),
+  // och kunden i pausen ligger överst.
+  zIndex: !isMobile
+    ? isAllBarbersView && isParallelBooking
+      ? 3
+      : hasParallelBookingInside
+      ? 2
+      : 1
+    : 1,
   top: "0px",
   left: `calc(${bookingColumn * bookingWidth}% + ${
   2 + parallelInset + multiStepOverlapInset
@@ -7979,20 +7992,29 @@ const hasParallelBookingInside = (() => {
 width: `calc(${bookingWidth}% - ${
   4 + parallelInset * 2 + multiStepOverlapInset * 2
 }px)`,
-  height: `${((booking.duration_minutes || 30) / 60) * 80}px`,
+  height: `${((booking.duration_minutes || 30) / 60) * calendarHourHeight}px`,
   backgroundColor: barberColor.backgroundColor,
 color: barberColor.textColor,
-border:
-  hasParallelBookingInside
+border: !isMobile
+  ? // Desktop: kunden i pausen får vit ram + skugga (ligger "ovanpå").
+    isAllBarbersView && isParallelBooking
+    ? "2px solid #ffffff"
+    : `1px solid ${barberColor.borderColor}`
+  : hasParallelBookingInside
     ? `1px solid ${barberColor.textColor}`
     : isAllBarbersView && isParallelBooking
     ? `1px solid ${barberColor.textColor}`
     : `1px solid ${barberColor.borderColor}`,
+boxShadow:
+  !isMobile && isAllBarbersView && isParallelBooking
+    ? "0 1px 4px rgba(0, 0, 0, 0.2)"
+    : undefined,
 
 
 borderRadius: "8px",
-  padding:
-  (booking.duration_minutes || 30) <= 30
+  padding: !isMobile
+  ? "4px 5px"
+  : (booking.duration_minutes || 30) <= 30
     ? "4px 6px"
     : "6px 7px",
 fontSize: "13px",
@@ -8001,6 +8023,62 @@ boxSizing: "border-box",
 cursor: "pointer",
 }}
       >
+{!isMobile ? (
+  // Desktop: namn och tjänst utan "…" (texten bryts mellan ord i stället).
+  <>
+    <div
+      style={{
+        height: "100%",
+        overflow: "hidden",
+        lineHeight: 1.15,
+      }}
+    >
+      <div
+        style={{
+          fontSize: "12px",
+          fontWeight: 700,
+        }}
+      >
+        {shortCustomerName}
+      </div>
+
+      <div
+        style={{
+          marginTop: "2px",
+          fontSize: "11px",
+          fontWeight: 500,
+          opacity: 0.85,
+        }}
+      >
+        {booking.service}
+      </div>
+    </div>
+
+    {/* Vinröd "2" = två kunder samtidigt (en i pausen). */}
+    {hasParallelBookingInside && (
+      <div
+        style={{
+          position: "absolute",
+          top: "-7px",
+          right: "-6px",
+          width: "18px",
+          height: "18px",
+          borderRadius: "50%",
+          border: "2px solid #ffffff",
+          backgroundColor: "#611a1a",
+          color: "#ffffff",
+          fontSize: "11px",
+          fontWeight: 700,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        2
+      </div>
+    )}
+  </>
+) : (
        <div
   style={{
     lineHeight: isThreeOrMoreOverlapping ? 1 : 1.1,
@@ -8089,15 +8167,16 @@ cursor: "pointer",
   </div>
 )}
 </div>
+)}
 </div>,
 
-hasParallelBookingInside && !isLaterOverlappingMultiStepBooking ? (
+isMobile && hasParallelBookingInside && !isLaterOverlappingMultiStepBooking ? (
   <div
     key={`end-line-${booking.id}`}
     style={{
       position: "absolute",
       zIndex: 3,
-      top: `${((booking.duration_minutes || 30) / 60) * 80 - 6}px`,
+      top: `${((booking.duration_minutes || 30) / 60) * calendarHourHeight - 6}px`,
       left: `calc(${bookingColumn * bookingWidth}% + 2px)`,
       width: `calc(${bookingWidth}% - 4px)`,
       height: "6px",
