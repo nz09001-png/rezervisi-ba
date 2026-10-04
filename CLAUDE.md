@@ -118,10 +118,14 @@ Finjustera aldrig godkänd design "för att det ser bättre ut".
     "Brzi izbor" med 22 förslag (samma för alla salonger, alternativ A) som läggs
     till med ett tryck. `service_categories` är salongens egna grupper och har inget
     med startsidans `salons.categories` att göra.
-- **Nästa i punkt 8:** 1) grå alert-rutor i admin → tydliga meddelanden (visa förslag
-  först), 2) admin-kalendern allra sist (stavfelet "Osooblje", klick på notis → rätt
-  vecka), 3) uppdatera `SALONIX-MASTER-CHECKPOINT.md`. Kvar från kundsidorna:
-  salongsnamn i Montserrat och eget fliknamn per salongssida.
+  - Meddelanderuta `showNotice()` (grön/röd) ersätter alert(), egen fråga-ruta
+    `askConfirm()` ersätter confirm(). Kalenderns knapprad omgjord på desktop och
+    mobil (4 oktober). Detaljer: `SALONIX-MASTER-CHECKPOINT.md` avsnitt 7 och 14.
+  - Flerstegstjänster med paus: under paus-steg (`is_barber_busy = false`) får andra
+    kunder boka samma person. Dubbelbokningen är meningen. Kalenderns räkning för
+    överlapp/paus får aldrig ändras vid designarbete.
+- **Nästa i punkt 8:** salongsnamn i Montserrat och eget fliknamn per salongssida
+  (salongssidan är fryst – visa förslag först). Sedan punkt 9 (QA).
 - Idéer efter punkt 8: Brzi izbor anpassat efter salongens typ (alternativ B),
   ordning på kategorier (`sort_order` finns) och galleribilder (kräver kolumn),
   varning/förifyllda tider i Slobodni termini utifrån öppettiderna, salongen väljer

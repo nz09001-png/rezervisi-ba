@@ -1,16 +1,19 @@
 ============================================================
 SALONIX – MASTER CHECKPOINT / PROJEKTSAMMANFATTNING
-Senast uppdaterad: 3 oktober 2026 (kväll)
+Senast uppdaterad: 4 oktober 2026
 ============================================================
 
 VIKTIGT TILL NÄSTA CHATT:
 Det här är den aktuella master-checkpointen för Salonix.
 Punkt 1–7 i lanseringsplanen är KLARA och FRYSTA.
-Vi är MITT I punkt 8: Design/UX-kontroll av hela Salonix.
+Vi är i SLUTET av punkt 8: Design/UX-kontroll av hela Salonix.
 - Kundsidorna (startsida, salongssida, bokningsflöde, avbokning, mejl)
   är genomgångna och fixade.
-- Admin gås igenom nu. Nästa beslut: förslaget "Postavke som egen sida"
-  (se avsnitt 14).
+- Admin är genomgången och omgjord: Postavke som egen sida, alla 8
+  avsnitt, meddelanderutor, egen fråga-ruta och kalenderns knapprad
+  (desktop + mobil). Se avsnitt 7 och 14.
+- Kvar i punkt 8: salongsnamn i Montserrat + eget fliknamn per
+  salongssida. Sedan punkt 9 (QA).
 Läs först: CLAUDE.md (regler) och SALONIX-KARTA.md (hur filerna hänger
 ihop + testlista). Läs sedan avsnitt 14 här.
 
@@ -37,7 +40,7 @@ en dag.
 ============================================================
 - Next.js (App Router, version 16 – ny version, läs node_modules/next/dist/docs)
 - React 19 + TypeScript
-- Tailwind CSS + inline styles
+- Tailwind CSS (v4) + inline styles
 - Supabase (databas)
 - Resend (e-post)
 - Leaflet + react-leaflet + OpenStreetMap (karta på startsidan)
@@ -47,6 +50,11 @@ en dag.
 - Kodassistent: Claude Code i Claude-appen (ändrar filer direkt, men frågar
   först). Claude har en egen webbläsarpanel i appen där den tar skärmbilder
   på mobil och desktop.
+- Test på mobil: telefonen öppnar http://<datorns IP>:3000 (samma Wi-Fi).
+  Datorns IP måste stå i allowedDevOrigins i next.config.ts, annars går
+  inga knappar att trycka på (t.ex. inloggningen). Nu: 192.168.0.112 och
+  192.168.0.18. Ändras IP:n (Systeminställningar → Wi-Fi → Detaljer) –
+  lägg till den nya och starta om `npm run dev`.
 
 ============================================================
 3. HUR VI ARBETAR (MYCKET VIKTIGT)
@@ -57,11 +65,11 @@ en dag.
 - Fråga innan filer ändras eller skapas.
 - Inför VARJE ändring:
   1. Läs SALONIX-KARTA.md (vilka "trådar" berörs?).
-  2. Visa buggen/nuläget med skärmbilder på MOBIL och DESKTOP.
-  3. Visa planen (fil, vad som ändras, vad som INTE ändras).
-     Vid designval: gör en tillfällig förhandsvisning i webbläsaren
-     (ändrar ingen fil) och låt ägaren välja.
-  4. Ändra efter ägarens ja.
+  2. Visa nuläget med skärmbilder på MOBIL och DESKTOP.
+  3. Visa ett förslag som bild (tillfällig förhandsvisning i webbläsaren
+     eller en testfil – ändrar ingen projektfil). Skärmbilder från
+     panelen syns INTE för ägaren – de måste skickas som filer.
+  4. Vänta på "kör". Ändra sedan.
   5. Visa resultatet på mobil och desktop.
   6. Ge Git-kommando i ETT kopierbart block.
   7. Lista de kommande stegen och vad de innebär (ägaren glömmer annars).
@@ -74,7 +82,12 @@ en dag.
 - Git-kommandon: git add ... && git commit -m "..." && git push
 - Ha inte samma fil öppen och osparad i VS Code medan Claude ändrar den.
 - Claude skriver ALDRIG in lösenord. Ägaren loggar in själv i admin i
-  Claude-appens webbläsarpanel (inte i sin egen Safari/telefon).
+  Claude-appens webbläsarpanel.
+- En ny useState i admin-filen loggar ut ägaren under utveckling – säg
+  till i förväg, återanvänd befintlig state när det går.
+- Testa aldrig genom att spara/radera riktig data utan att fråga.
+  Claude testar spara/radera genom att fånga upp databasanropen i
+  webbläsaren (inget når Supabase).
 
 ============================================================
 4. VIKTIGA REGLER I KODEN
@@ -88,13 +101,21 @@ en dag.
 - Ändra aldrig bokningslogik när uppgiften bara gäller design.
   Tidsreglerna finns i TRE kopior (/times, /potvrda, admin-kalendern) –
   se SALONIX-KARTA.md tråd 3.
+- FLERSTEGSTJÄNSTER MED PAUS (mycket viktigt, ägarens krav): en tjänst
+  kan ha "Koraci tretmana" (service_steps). Steg med is_barber_busy =
+  false är PAUS – då kan en annan kund boka samma person samtidigt.
+  Dubbelbokningar under paus är MENINGEN. Admin-kalendern ritar dem som
+  en bokning inuti en annan. Räkningen för överlapp/paus får ALDRIG
+  ändras vid designarbete.
+- Om ingen personal är vald på en tjänst tillåter bokningen ALL personal
+  (/times: eligibleBarberIds tom = alla).
 - Byt inte det globala typsnittet i globals.css.
 - Mörkt läge är borttaget i globals.css – Salonix är alltid ljust.
-- ADMIN-KALENDERN (mobil OCH desktop) rörs INTE förrän allra sist i
-  admin-genomgången. Andra admin-ändringar får inte påverka den.
 - Bokningar kopplas till salong via salongens NAMN (bookings.salon =
   salons.salon_name). Byt inte salongsnamn direkt i Supabase.
 - Kundtext som visas i mejl escapas (görs säker).
+- Salongssidan visar bara tjänster som har en kategori (tomma
+  kategorier och tjänster utan kategori syns inte för kunder).
 
 ============================================================
 5. DESIGN
@@ -112,6 +133,22 @@ Typsnitt:
 - Outfit: vissa boknings-/successrubriker, avbokningskortet
 - Montserrat: startsidan – KATEGORIJE, SALONI och salongsnamnen på korten
 - Admin: behåller Arial (ägarens beslut – bara personalen ser admin)
+
+Admin-stil (Postavke m.m.):
+- Rubrik 24 px mobil / 30 px desktop + grå förklaring under.
+- Kort med kant #ead1d1, rundade hörn, lätt skugga. Formulär som
+  "öppnas" har vinröd ram (2 px).
+- Val som runda knappar ("chips"): vald = vinröd fylld, ej vald = vit
+  med grå kant. Personal visas med sin kalenderfärg.
+- Primärknapp vinröd. "Odustani" vit med grå kant. "Obriši" vit med
+  röd kant (#ef4444).
+- Tips/info i ruta #faf7f7. Varning orange (#b45309 / #fff7ed).
+- Meddelanderuta överst: grön (lyckat, 3 s) / röd (saknas eller fel, 6 s).
+- Fråga-ruta mitt på skärmen: "Da, obriši" röd eller "Da, zamijeni"
+  vinröd + "Odustani".
+- Tidsfält på iPhone: appearance: none, min-width: 0, line-height 44px
+  (annars går de ihop/text hamnar högst upp).
+- Bosnisk böjning: uslugaLabel() → 1 usluga, 2–4 usluge, 5+ usluga.
 
 Språk/format:
 - Ni-form i rubriker och instruktioner ("Odaberite termin", "Unesite
@@ -138,17 +175,19 @@ Kundsidor:
 /uspjesno          → "Rezervacija potvrđena" – FRYST
 /cancel            → avbokning via mejllänk (id + token) – FRYST
 app/api/send-email/route.ts        → bokningsmejl – FRYST
-app/api/send-cancel-email/route.ts → NY: mejl när salongen avbokar i admin
+app/api/send-cancel-email/route.ts → mejl när salongen avbokar i admin
 Admin:
-/admin/[salonSlug] → app/admin/[salonSlug]/page.tsx – genomgång pågår
+/admin/[salonSlug] → app/admin/[salonSlug]/page.tsx – omgjord i punkt 8
+                     (ca 7 600 rader, en enda fil)
 Övrigt:
 components/SalonMap.tsx → kartan på startsidan – FRYST
 app/layout.tsx → fliknamn, beskrivning, språk
 app/globals.css → gemensam stil (påverkar ALLA sidor)
 lib/supabase.ts → kopplingen till databasen
+next.config.ts → allowedDevOrigins (datorns IP för test på mobil)
 
 Dokument i rotmappen:
-- CLAUDE.md – regler för Claude
+- CLAUDE.md – regler för Claude + "Var vi är nu"
 - SALONIX-MASTER-CHECKPOINT.md – den här filen
 - SALONIX-KARTA.md – trådarna mellan filerna + testlista efter ändringar
 
@@ -165,20 +204,98 @@ Avbokning: kunden via /cancel (mejllänk) eller salongen i admin.
 ============================================================
 7. ADMINPANELEN
 ============================================================
+Startvyn (orörd i punkt 8 utöver kalenderns knapprad):
 Header (desktop: Postavke, Obavijesti, Odjavi se; mobil: samma ordning
 uppifrån), statistik (Današnje rezervacije + ruta som följer filtret
-under "Statistika": Danas/Ova sedmica/Ovaj mjesec/Datum), veckokalender
-med personalfilter och färger, bokningsruta, Obavijesti, Postavke:
-Naslovna slika (cropper), Galerija, Informacije o salonu (beskrivning,
-telefon, adress, öppettider, Neradni dani, Skraćeno radno vrijeme,
-sociala länkar), Kategorije usluga, Usluge (med "Koraci tretmana"),
-Termini (Posebni/Standardni), Osoblje (+ "Prikaži osoblje na stranici"),
-Zatvoreni dani.
-OBS: Admin sparar inte koordinater, stad eller kategorier – sätts i Supabase.
+under "Statistika"), veckokalender, bokningsruta (klick på bokning),
+Obavijesti.
+
+Kalendern – knapprad (ny, desktop och mobil var för sig):
+- "Danas", ‹ ›, veckan i klartext ("5. – 11. oktobar 2026"; mobil har
+  året under). Pilen bakåt syns bara om "Prikaži prošle rezervacije" är
+  på ELLER man tittar på en framtida vecka (samma regel som förut).
+- Strömbrytare "Prikaži prošle rezervacije" (= gamla knappen
+  "Prethodne rezervacije", samma kod; av → tillbaka till denna vecka).
+- Personalknappar "Svo osoblje" + varje person med kalenderfärg
+  (= gamla menyn "Osoblje"/"Osooblje", samma filter). Stavfelet borta.
+- Mobil: knapparna sätter fortfarande mobileCalendarScrollModeRef
+  ("today" för Danas, "monday" för ‹ ›) – får inte tas bort.
+- Desktop: klick på en notis i Obavijesti → kalendern hoppar till den
+  veckan (+ slår på "prošle" om datumet passerat). "Prikaži u kalendaru ›"
+  visas på notisen. INTE på mobil (ägarens val).
+- Rutnätet, placeringen och överlapp/paus-räkningen är ORÖRDA.
+- Oanvänd state kvar: showBarberFilterMenu (kan tas bort senare).
+
+Meddelanden (hela admin):
+- showNotice(text, "success" | "error") → ruta överst. Grön 3 s, röd 6 s,
+  × stänger. Ersätter alla alert() utom "Pogrešna lozinka" (inloggning,
+  görs om i punkt 10).
+- Grön ruta efter ALLA lyckade spara/lägg till/ta bort.
+- Tekniska fel visar "Greška pri spremanju usluge. Pokušajte ponovo.",
+  detaljer bara i webbläsarens logg.
+- askConfirm({ title, text, confirmLabel, tone }) → egen fråga-ruta
+  (await, true/false). Ersätter alla 11 confirm(). Visar namn där det
+  går ("Usluga „X“ će biti trajno obrisana."). Klick utanför = Odustani.
+
+Postavke – egen helsida ovanpå kalendern:
+- Knappen Postavke öppnar sidan (id="postavke-stranica", fixed,
+  z-index 40). "← Nazad na kalendar", rubrik, "Šta želite promijeniti?",
+  8 rutor (2 per rad desktop, 1 per rad mobil). Ett avsnitt i taget med
+  "← Nazad na postavke". Tekniskt: showSettingsMenu = sidan öppen,
+  selectedSettings = valt avsnitt (en i taget).
+- Rutornas ordning: Slobodni termini, Zatvoreni dani, Usluge,
+  Kategorije usluga, Osoblje, Informacije o salonu, Naslovna slika,
+  Galerija.
+
+Avsnitten:
+1. Slobodni termini (Termini): flikar
+   - "Raspored po sedmici": 5 steg (Za koga? med "Svi", period, dagar,
+     tid + "Novi termin svakih", Prikaži pregled). Pregled visar
+     personal, period, antal dagar, tider per dag. Orange varning att
+     befintliga tider ersätts. "Sačuvaj termine" → fråga "Da, zamijeni".
+     "Prikaži pregled" = gamla "Generiši termine" (samma funktion).
+   - "Jedan dan": datum, "Za koga?" (Cijeli salon/person), rutnät med
+     tider och ✕, "+ Dodaj", "Obriši sve termine za ovaj dan".
+2. Zatvoreni dani: personknappar, Od/Do, Razlog med snabbknappar
+   (Godišnji odmor, Praznik, Bolovanje, Edukacija) + eget fält,
+   sammanfattning ("Amar neće raditi 5 dana …"), "Sačuvaj zatvorene
+   dane". Listan grupperar dagar i rad (samma person + anledning) till
+   en period med en Obriši (handleDeleteClosedDayGroup). Gamla dagar
+   under "Prikaži prošle dane". Varje dag sparas fortfarande som egen rad.
+3. Usluge: "+ Dodaj novu uslugu" överst (formuläret dolt tills öppnat,
+   showServiceForm). Lista per kategori (2 per rad desktop),
+   "Svo osoblje" när ingen personal vald, etiketter "Cijena/Trajanje
+   skriveno", "Bez kategorije" med varning. Formulär med rubriker,
+   KM/min i fälten, personal som knappar, "Tretman ima pauzu" →
+   Koraci tretmana med "Osoblje radi / Pauza" + färgad stapel.
+   Trajanje räknas automatiskt från stegen. Odustani tömmer nu även
+   personalvalet (rättad bugg).
+4. Kategorije usluga: antal tjänster per kategori, Obriši bara för tomma
+   ("Prazna – klijenti je ne vide"), "Brzi izbor" med 22 förslag (bl.a.
+   Muško šišanje, Šišanje i brada, Fade, Manikir) som läggs till med ett
+   tryck (redan befintliga döljs), + eget namn.
+5. Osoblje: rund bokstav i kalenderfärg, "Plava boja u kalendaru · 9
+   usluga", "+ Dodaj" (Ime, npr. Lejla), strömbrytare "Klijenti biraju
+   člana osoblja" som sparar show_barbers DIREKT.
+6. Informacije o salonu: rutor O salonu (Opis, Telefon, Adresa + påminnelse
+   om kartan), Radno vrijeme (Uobičajeno radno vrijeme, Neradni dani,
+   Skraćeno radno vrijeme med "+ Dodaj skraćeno radno vrijeme" och
+   "još nije sačuvano"), Društvene mreže. Spara-rad längst ner som alltid
+   syns: "Sačuvaj promjene" sparar ALLT (även förkortade dagar).
+   Öppettiderna (opening_hours) visas bara för kunder – de styr inte
+   bokningsbara tider (det gör bara Slobodni termini).
+7. Naslovna slika: "Trenutna slika" + "📷 Promijeni sliku"; ny bild i två
+   steg (beskärning med zoomreglage 1–3× och −/+, förhandsvisning).
+   Cropper oförändrad (1000:360).
+8. Galerija: stor uppladdningsruta, "Nova slika" med Odustani, bilder
+   numrerade i den ordning de visas på salongssidan, liten "✕ Obriši".
+
+OBS: Admin sparar inte koordinater, stad eller startsidans kategorier
+(salons.categories) – sätts i Supabase. service_categories (Kategorije
+usluga) är salongens egna grupper och har inget med startsidan att göra.
 OBS: Inloggningen gäller bara medan sidan är öppen – omladdning loggar ut.
-Under utveckling loggas man också ut när Claude lägger till nya
-funktioner (hooks) i admin-filen. Admin hämtar notiser och bokningar
-automatiskt varje minut, så man behöver inte ladda om.
+Under utveckling loggas man också ut när en ny useState läggs till.
+Admin hämtar notiser och bokningar automatiskt varje minut.
 
 ============================================================
 8. SUPABASE – TABELLER
@@ -189,20 +306,23 @@ salons: id, salon_name, slug, description, phone, address,
   hero_position, show_barbers, admin_password, city, categories (text[]),
   is_published (bool), latitude, longitude
 services (salon_id, name, description, price, duration_minutes,
-  show_price, show_duration, category_id), service_categories,
-service_steps, barbers (= personal), service_barbers, available_times,
-bookings (customer_name, phone, email, note, salon [= salongsnamn],
-  booking_date, booking_time, service, service_id, duration_minutes,
-  barber_name, barber_id, cancel_token, created_at),
+  show_price, show_duration, category_id), service_categories (salon_id,
+  name, sort_order), service_steps (service_id, name, duration_minutes,
+  is_barber_busy, step_order), barbers (= personal: name, is_active,
+  color_index), service_barbers, available_times (salon_id, barber_id,
+  date, time), bookings (customer_name, phone, email, note, salon
+  [= salongsnamn], booking_date, booking_time, service, service_id,
+  duration_minutes, barber_name, barber_id, cancel_token, created_at),
 admin_notifications (salon_id, type, title, message, event_date,
-  event_time, is_read, created_at), closed_days (salong eller person,
-  per datum), salon_shortened_hours (salon_id, weekday, start_time,
-  end_time), salon_images.
+  event_time, is_read, created_at), closed_days (salon_id, date, reason,
+  barber_id – en rad per dag; barber_id null = hela salongen),
+  salon_shortened_hours (salon_id, weekday, start_time, end_time),
+  salon_images (salon_id, image_url – ordning = id).
 
 Notisernas message: nya sparas som två rader "Namn\n05.10.2026 u 09:00 ·
 Personal" (admin visar namnet fetstilt). Gamla är en hel mening.
 
-Kategorier (måste stämma EXAKT med salons.categories):
+Kategorier på startsidan (måste stämma EXAKT med salons.categories):
 Frizura, Barber, Nokti, Trepavice i obrve, Depilacija, Masaža,
 Njega lica, Solarijum
 
@@ -212,6 +332,9 @@ Nya salonger måste få koordinater manuellt tills vidare.
 Studio M Exclusive (id 1, /salon-x): Kranjčevićeva 15, Sarajevo,
 koordinater 43.858024, 18.404882. Öppettider 09:00–18:00,
 Subota 10:00–15:00 (förkortad), Nedjelja stängd. Telefon 033875-600.
+Personal: Amar (blå), Jasmin (gul), Muhamed (grön), Sulejman (lila).
+Tjänstekategorier: Šišanje, Brada, Farbanje (+ några testtjänster
+"Bez kategorije"). Naslovna slika = salongens logga.
 Gentlemen Tuzla (id 2, /salon-y): en tjänst "Test", personal Suljo,
 inga lediga tider just nu.
 
@@ -240,8 +363,13 @@ danas = stängd dag > förkortade tider > vanliga tider.
 Ca 38 testsalonger (slug börjar med "test-") i 9 städer.
 Behålls under punkt 8 och 9, tas bort i punkt 11 med:
 delete from salons where slug like 'test-%';
-Studio M har flera testbokningar (Nedim Z, Lamija Test m.fl.), bl.a. en
-bokning söndag 4 okt fast söndag är stängd (gjord innan) – kan avbokas.
+Studio M har flera testbokningar (Nedim Z, Lamija, Ajdin, Adel M,
+Almedin m.fl.), bl.a. två färgningar med en bokning under pausen
+(tisdag 6 okt 11:00) – bra för att kontrollera att paus-dubbelbokning
+visas rätt. En bokning söndag 4 okt fast söndag är stängd (gjord innan).
+Studio M har också lediga tider på söndagar (gamla testdata).
+Testtjänster: "test sisanje" (används av Claude vid test, data ändras
+inte), "TEST"-namn m.fl.
 
 ============================================================
 11. CHECKLISTA FRAM TILL LANSERING
@@ -253,8 +381,9 @@ bokning söndag 4 okt fast söndag är stängd (gjord innan) – kan avbokas.
 5. Admin desktop ..................... ✅ KLAR & FRYST
 6. Startsida/katalog mobil ........... ✅ KLAR & FRYST
 7. Startsida desktop (+ surfplatta) .. ✅ KLAR & FRYST
-8. Design/UX-kontroll av hela Salonix  🔄 PÅGÅR (kundsidor klara,
-                                          admin pågår)
+8. Design/UX-kontroll av hela Salonix  🔄 NÄSTAN KLAR (kundsidor och
+                                          admin klara; kvar: Montserrat
+                                          + fliknamn på salongssidan)
 9. Full QA inkl. edge cases .......... ⬜
 10. Säkerhet och produktion .......... ⬜ (RLS, admininloggning,
     åtkomstkontroll, server-side validering, secrets)
@@ -271,6 +400,16 @@ Punkt 9 (QA):
 - Admin-kalendern: en bokning syns bara om dess tid matchar en rad i
   kalendern. Testa om bokningar försvinner när admin tar bort en dags
   lediga tider.
+- Paus-dubbelbokningar: testa hela flödet (kund bokar under paus) och
+  att kalendern visar dem rätt, mobil + desktop.
+- Studio M har lediga tider på söndagar trots stängt – kontrollera att
+  kunden inte kan boka då, och ta bort tiderna.
+- Vad händer med tider (available_times) och bokningar när en person
+  tas bort i Osoblje?
+- Testa ALLA nya admin-delar på riktig iPhone (tidsfält, datumfält,
+  bildväljare, beskärning med fingret, meddelanderutan, fråga-rutan).
+- Testa avbokningsmejl från admin med riktig e-post (ägarens iCloud) och
+  bokningsmejl i iPhone mörkt läge.
 - Testa hela flödet med testlistan i SALONIX-KARTA.md (mobil + desktop).
 Punkt 10 (säkerhet):
 - salons.admin_password kan läsas av vem som helst med den publika
@@ -280,8 +419,8 @@ Punkt 10 (säkerhet):
   Stäng/ta bort den (fråga först).
 - Admininloggningen ("Admin prijava") byggs om säkert OCH får Salonix-
   utseende samtidigt: logga, salongens namn, vinröd knapp, röd text vid
-  fel lösenord. Inloggningen ska överleva omladdning. (Ägarens beslut:
-  görs i punkt 10, inte i punkt 8.)
+  fel lösenord (i stället för alert "Pogrešna lozinka"). Inloggningen
+  ska överleva omladdning. (Ägarens beslut: görs i punkt 10.)
 - Kundens namn/telefon/e-post skickas i webbadressen mellan sidorna.
 - Personuppgifter: Bosniens lag om personuppgifter. Bekräftelse-sms/mejl
   = servicemeddelande; reklam kräver samtycke.
@@ -303,6 +442,8 @@ Punkt 12 (lansering):
   potvrdu rezervacije." Påminnelser kräver dessutom ett schemalagt jobb.
 - Kontrollera att "npm run build" fungerar (sidor med useSearchParams
   utan Suspense kan ge byggfel).
+- allowedDevOrigins i next.config.ts gäller bara utveckling – påverkar
+  inte Vercel.
 Allmänt:
 - Efter git pull på en ny dator: kör npm install.
 - .env.local sparas inte i Git – måste kopieras manuellt.
@@ -317,100 +458,68 @@ Allmänt:
 - Etikett "Istaknuto" för salonger som betalar för synlighet
 - Etikett "Novo" (kräver datumkolumn i salons)
 - Admin: stad, kategorier och koordinater automatiskt från adressen
-- Salongssidan: salongsnamn i Montserrat, eget fliknamn per salong
-  (t.ex. "Studio M Exclusive – Salonix")
+- Salongen väljer själv startsidans kategorier (A: kryssrutor i admin,
+  B: bara Salonix via egen adminsida)
 - "Za salone – registrujte svoj salon" i sidfoten (behöver kontaktuppgift)
-- Admin: klick på en notis → hoppa till rätt vecka i kalendern (görs när
-  kalendern gås igenom)
+- Brzi izbor (Kategorije usluga) anpassat efter salongens typ
+  (alternativ B, läser salons.categories)
+- Ändra ordning på kategorier (sort_order finns redan) och galleribilder
+  (kräver ny kolumn)
+- Slobodni termini: varning när tider ligger utanför öppettiderna, eller
+  förifyllda Od/Do från öppettiderna
+- Notisklick → rätt vecka även på mobil (ägaren valde bort det nu)
+- Ta bort oanvänd state showBarberFilterMenu i admin
 
 ============================================================
-14. NÄSTA STEG – PUNKT 8 (PÅGÅR)
+14. NÄSTA STEG – PUNKT 8 (NÄSTAN KLAR)
 ============================================================
-KLART i punkt 8 – kundsidor och mejl:
-- Salongssidan mobil: "Rezerviši" syns även när personal är dold (till
-  höger i kortet, går ner en rad vid lång text, alltid högerkant).
+KLART i punkt 8 – kundsidor och mejl (3 oktober):
+- Salongssidan mobil: "Rezerviši" syns även när personal är dold.
 - Mörkt läge borttaget i globals.css (alltid ljus design).
 - "← Nazad" på /podaci kommer ihåg vald personal (barberId).
 - Svensk text → bosniska (laddning, kalenderfil, admin-felruta).
-- Fel salongsadress: sidan "Salon nije pronađen" + "Nazad na početnu".
-  Laddning: "Učitava se..." centrerat.
-- Telefontexten på /podaci: "Salon će vas kontaktirati na ovaj broj ako
-  bude potrebno." (lovar inte påminnelser).
+- Fel salongsadress: "Salon nije pronađen" + "Nazad na početnu".
+- Telefontexten på /podaci lovar inte påminnelser.
 - KM överallt. Datum 10.10.2026 överallt (även mejl och notiser).
-- Ni-form i rubriker/instruktioner (även admin "Izaberite...").
-- Rubrikfärger: sidrubriker svarta, även "Pregled rezervacije" på desktop.
-  "Rezervacija potvrđena" vinröd. /cancel-kortets rubriker svarta (val).
-- /cancel: knappen 16 px rundning + fet. Frågan "Da, otkaži"/"Ne" i kortet,
-  fel i vinröd ruta ("Rezervacija nije pronađena" / "Došlo je do greške").
-  Behöver inte visa bokningen (står i mejlet – ägarens beslut).
-- /uspjesno utan e-post: grå text "Za otkazivanje termina kontaktirajte
-  salon." (inget telefonnummer – ägarens val).
-- /podaci: fel visas som röd ram + röd text under fältet (inga alert).
-- /potvrda: fel i vinröd ruta i kortet. Tidsfel → "Odaberite drugi
-  termin" (till /times). Tekniska fel → "Došlo je do greške", knappen
-  "Završi rezervaciju" står kvar.
-- /times: vecka utan lediga tider → "Nema slobodnih termina ove sedmice"
-  + "Sljedeća sedmica →" (mobil under kalendern, desktop mitt i den).
-- Salongssidan: telefon = ringlänk (telefonen frågar själv), öppettider
-  med långt streck, galleripilar bara vid > 2 bilder (helskärm > 1),
-  vit list överst med Salonix-logga (+ "← Svi saloni" på desktop),
-  sidfot som startsidan (utan knapp "Pogledajte sve salone").
-  Etiketten "SALON" behålls.
-- Bokningsmejl (alternativ A): "SALONIX" överst, vitt kort på beige,
-  "Rezervacija potvrđena", hälsning med förnamn, Salon/Usluga/Osoblje/
-  Datum/Vrijeme (+ Trajanje/Cijena om salongen visar dem), kalenderrad,
-  "Otkaži rezervaciju", sidfot. Ämne "Rezervacija potvrđena – [salong],
-  [datum] u [tid]". "color-scheme: light only" (iPhone mörkt läge testat –
-  gjordes om till ljust; nya mejl ska nu vara ljusa).
+- Ni-form i rubriker/instruktioner.
+- /cancel, /uspjesno, /podaci, /potvrda, /times: felrutor, texter och
+  "Nema slobodnih termina ove sedmice" + "Sljedeća sedmica →".
+- Salongssidan: ringlänk, öppettider med långt streck, galleripilar,
+  vit list med Salonix-logga, sidfot som startsidan.
+- Bokningsmejl (alternativ A) + avbokningsmejl från admin.
 
-KLART i punkt 8 – admin:
-- Mobil: knappordning Postavke → Obavijesti → Odjavi se. Desktop orörd.
-- Statistik: vinröd siffra, etikett som följer filtret ("Sve rezervacije",
-  "Rezervacije danas/ove sedmice/ovog mjeseca/[datum]"). Räknar rätt:
-  lokal tid, vecka mån–sön (även söndag), hela månaden.
-- Bokningsrutan: två kolumner, "Trajanje: 60 min", klickbar telefon och
-  e-post, knappen "Otkaži rezervaciju" med frågan "Da, otkaži"/"Ne" i
-  rutan, fel i rutan, stängs med ×/klick utanför/Esc.
-- Avbokning i admin → mejl "Rezervacija otkazana" till kunden (om e-post)
-  via app/api/send-cancel-email/route.ts. (Ej testat med riktigt mejl än.)
-- Obavijesti: "Označi sve kao pročitano", tid ("prije 9 min"), nya
-  notiser med namnet fetstilt på egen rad (testat – fungerar).
-- Admin hämtar notiser + bokningar automatiskt varje minut (testat).
-- Beslut: admin behåller typsnittet Arial.
+KLART i punkt 8 – admin (3–4 oktober), se avsnitt 7 för detaljer:
+- Mobil header-ordning, statistik, bokningsruta, Obavijesti
+  (markera alla, tid, automatisk hämtning varje minut).
+- Postavke som egen helsida med 8 rutor, ett avsnitt i taget.
+- Alla 8 avsnitt omgjorda (Slobodni termini, Zatvoreni dani, Usluge,
+  Kategorije usluga, Osoblje, Informacije o salonu, Naslovna slika,
+  Galerija).
+- Meddelanderuta (grön/röd) i stället för 63 alert-rutor + grön
+  bekräftelse överallt.
+- Egen fråga-ruta i stället för 11 confirm-rutor.
+- Kalenderns knapprad desktop + mobil (veckotext, ‹ ›, strömbrytare,
+  personalknappar). Stavfelet "Osooblje" borta. Notisklick → vecka
+  (bara desktop).
+- next.config.ts: ny IP 192.168.0.18 för test på mobil.
 
 ÄGAREN BEHÖVER TESTA / SPARA I GIT:
-- Avbokning i admin med en testbokning som har ägarens iCloud-adress →
-  kommer mejlet "Rezervacija otkazana" fram och är det ljust?
-- Nytt bokningsmejl i iPhone med mörkt läge → är det ljust nu?
-- Spara allt i Git (se kommandot som gavs vid checkpointen).
+- Senaste ändringen (mobilkalenderns knapprad) var inte sparad i Git
+  när checkpointen skrevs. Kör:
+  git add "app/admin/[salonSlug]/page.tsx" SALONIX-MASTER-CHECKPOINT.md CLAUDE.md && git commit -m "..." && git push
+- Testa på telefonen: kalenderns knapprad, fråga-rutan, gröna/röda
+  rutor, tids- och datumfält i Slobodni termini/Zatvoreni dani/
+  Informacije.
 
-NÄSTA – ADMIN, I DEN HÄR ORDNINGEN:
-1. POSTAVKE SOM EGEN SIDA (förslag, väntar på ägarens ja):
-   - "Postavke" öppnar en helsidesvy OVANPÅ kalendern (kalendern orörd):
-     "← Nazad na kalendar", rubrik "Postavke", "Šta želite promijeniti?"
-     och stora rutor (ikon + namn + förklaring), 2 per rad desktop,
-     1 per rad mobil:
-       🗓️ Slobodni termini – Kada klijenti mogu rezervisati
-       🚫 Zatvoreni dani – Godišnji odmor, praznici, bolovanje
-       ✂️ Usluge – Usluge, cijene i trajanje
-       📂 Kategorije usluga – Grupe usluga, npr. Šišanje, Brada
-       👥 Osoblje – Ko radi u salonu
-       ℹ️ Informacije o salonu – Adresa, telefon, radno vrijeme, opis
-       🖼️ Naslovna slika – Velika slika na vrhu stranice salona
-       📷 Galerija – Slike salona
-   - Tryck på en ruta → bara det avsnittet, med "← Nazad na postavke".
-     Ett avsnitt i taget (i dag staplas de ovanför kalendern och stängs
-     bara genom att välja dem igen i menyn).
-   - Innehållet i avsnitten oförändrat i det steget.
-   - Ägaren kan vilja ändra namn/förklaringar/ordning.
-2. Gå igenom varje Postavke-avsnitt (mobil + desktop) och förenkla:
-   förklarande texter, större knappar, grå alert-rutor (ca 74 i admin)
-   → tydliga meddelanden, stavfel: "Edit" → "Uredi" (Usluge),
-   "Ime Osoblja" → "Ime člana osoblja" (Osoblje), "Osobolje" (Zatvoreni dani).
-3. KALENDERN – allra sist (mobil + desktop): stavfelet "Osooblje" på
-   filterknappen (desktop), klick på notis → rätt vecka, m.m.
-4. Därefter: punkt 9 (full QA) med testlistan i SALONIX-KARTA.md.
+NÄSTA – I DEN HÄR ORDNINGEN:
+1. Kvar i punkt 8 (kundsidor): salongsnamn i Montserrat på salongssidan
+   och eget fliknamn per salongssida (t.ex. "Studio M Exclusive –
+   Salonix"). app/[salonSlug]/page.tsx är FRYST – visa förslag först.
+2. Punkt 9: full QA med testlistan i SALONIX-KARTA.md + listan i
+   avsnitt 12 (paus-dubbelbokningar, söndagstider, borttagen personal,
+   iPhone).
+3. Punkt 10: säkerhet (fråga innan start).
 
 ============================================================
-SLUT PÅ MASTER CHECKPOINT – 3 OKTOBER 2026
+SLUT PÅ MASTER CHECKPOINT – 4 OKTOBER 2026
 ============================================================
