@@ -121,11 +121,28 @@ Finjustera aldrig godkänd design "för att det ser bättre ut".
   - Meddelanderuta `showNotice()` (grön/röd) ersätter alert(), egen fråga-ruta
     `askConfirm()` ersätter confirm(). Kalenderns knapprad omgjord på desktop och
     mobil (4 oktober). Detaljer: `SALONIX-MASTER-CHECKPOINT.md` avsnitt 7 och 14.
+  - Kalenderkort (4 oktober, mobil + desktop): `calendarHourHeight = 100` px per
+    timme, kort med namn ("Nedim Z") + tjänst utan "…", vinröd "2" på kortet som
+    har en kund i pausen, kunden i pausen vit ram + skugga. Smala kort när 3+
+    jobbar samtidigt klipps (ägarens val). Mobilbugg rättad: kalendern hoppar
+    inte längre tillbaka till dagens datum (`mobileCalendarScrollModeRef` →
+    "keep"). Danas/‹ ›/swipe ska fungera exakt som nu.
+  - Bokningsrutan: dag + datum + tid start–slut överst med personalfärg, lista
+    Usluga/Telefon/Email/Napomena (länkar), "Otkaži" vit med röd ram.
+  - Header: vit list med liten Salonix-logga + "Admin", "Odjavi se" som länk,
+    salongens namn + "Upravljajte rezervacijama…", statistikkort ("Danas" +
+    kort med "Statistika ▾" inuti), "Powered by" + logga längst ner (engelska
+    med flit – ägarens undantag). Obavijesti-listan oförändrad (ägaren nöjd).
   - Flerstegstjänster med paus: under paus-steg (`is_barber_busy = false`) får andra
     kunder boka samma person. Dubbelbokningen är meningen. Kalenderns räkning för
     överlapp/paus får aldrig ändras vid designarbete.
-- **Nästa i punkt 8:** salongsnamn i Montserrat och eget fliknamn per salongssida
-  (salongssidan är fryst – visa förslag först). Sedan punkt 9 (QA).
+- **Nästa i punkt 8:** salongssidan – förslaget är redan visat (bilder),
+  vänta på ägarens "kör". B först: eget fliknamn "Studio M Exclusive – Salonix"
+  via ny fil `app/[salonSlug]/layout.tsx` (generateMetadata). Öppen fråga: ska
+  salongens beskrivning användas som sidbeskrivning? Sedan A: salongsnamnet i
+  Montserrat i den frysta `app/[salonSlug]/page.tsx`. Sedan punkt 9 (QA).
+- Ägaren vill se FLERA alternativ som bilder (mobil + desktop) och välja; enkelt
+  men tydligt. "Testa X" = lägg in och visa, ägaren bestämmer sedan.
 - Idéer efter punkt 8: Brzi izbor anpassat efter salongens typ (alternativ B),
   ordning på kategorier (`sort_order` finns) och galleribilder (kräver kolumn),
   varning/förifyllda tider i Slobodni termini utifrån öppettiderna, salongen väljer

@@ -1,6 +1,6 @@
 ============================================================
 SALONIX – MASTER CHECKPOINT / PROJEKTSAMMANFATTNING
-Senast uppdaterad: 4 oktober 2026
+Senast uppdaterad: 4 oktober 2026 (kväll)
 ============================================================
 
 VIKTIGT TILL NÄSTA CHATT:
@@ -10,10 +10,13 @@ Vi är i SLUTET av punkt 8: Design/UX-kontroll av hela Salonix.
 - Kundsidorna (startsida, salongssida, bokningsflöde, avbokning, mejl)
   är genomgångna och fixade.
 - Admin är genomgången och omgjord: Postavke som egen sida, alla 8
-  avsnitt, meddelanderutor, egen fråga-ruta och kalenderns knapprad
-  (desktop + mobil). Se avsnitt 7 och 14.
-- Kvar i punkt 8: salongsnamn i Montserrat + eget fliknamn per
-  salongssida. Sedan punkt 9 (QA).
+  avsnitt, meddelanderutor, egen fråga-ruta, kalenderns knapprad,
+  kalenderkorten (namn + tjänst, vinröd "2" vid paus-dubbelbokning),
+  bokningsrutan och headern med Salonix-logga (desktop + mobil).
+  Se avsnitt 7 och 14.
+- Kvar i punkt 8: eget fliknamn per salongssida (B) och salongsnamn i
+  Montserrat (A). Förslaget är visat – väntar på ägarens "kör".
+  Sedan punkt 9 (QA).
 Läs först: CLAUDE.md (regler) och SALONIX-KARTA.md (hur filerna hänger
 ihop + testlista). Läs sedan avsnitt 14 här.
 
@@ -133,6 +136,8 @@ Typsnitt:
 - Outfit: vissa boknings-/successrubriker, avbokningskortet
 - Montserrat: startsidan – KATEGORIJE, SALONI och salongsnamnen på korten
 - Admin: behåller Arial (ägarens beslut – bara personalen ser admin)
+- Undantag från "allt på bosniska": admin har "Powered by" + Salonix-loggan
+  längst ner (ägarens val, engelska med flit).
 
 Admin-stil (Postavke m.m.):
 - Rubrik 24 px mobil / 30 px desktop + grå förklaring under.
@@ -204,11 +209,40 @@ Avbokning: kunden via /cancel (mejllänk) eller salongen i admin.
 ============================================================
 7. ADMINPANELEN
 ============================================================
-Startvyn (orörd i punkt 8 utöver kalenderns knapprad):
-Header (desktop: Postavke, Obavijesti, Odjavi se; mobil: samma ordning
-uppifrån), statistik (Današnje rezervacije + ruta som följer filtret
-under "Statistika"), veckokalender, bokningsruta (klick på bokning),
-Obavijesti.
+Startvyn (omgjord 4 oktober):
+- Vit list överst: liten Salonix-logga (salonix-horisontell-maroon.png)
+  + "| Admin" till vänster, "Odjavi se" som understruken länk till höger.
+- Salongens namn stort + grå text "Upravljajte rezervacijama, uslugama,
+  osobljem i informacijama o salonu." Desktop: Postavke + Obavijesti till
+  höger om namnet. Mobil: Postavke + Obavijesti bredvid varandra under.
+- Statistikkort (tunn ram #ead1d1, ingen tjock vänsterkant):
+  "Danas" + siffra + "rezervacija/rezervacije" (bosnisk böjning) och
+  kort 2 med filteretiketten + siffra + knappen "Statistika ▾" INNE i
+  kortet (samma meny som förut: Danas, Ova sedmica, Ovaj mjesec, Datum).
+- Längst ner: "Powered by" + liten Salonix-logga (grå, centrerad).
+- Obavijesti-listan: oförändrad (ägaren nöjd).
+
+Kalendern – rutnät och kort (4 oktober, mobil + desktop likadant):
+- 100 px per timme (konstant calendarHourHeight, förut 80).
+- Korten: förnamn + första bokstaven i efternamnet (12 px fet) och
+  tjänsten under (11 px). Ingen tid, ingen "…" – texten bryts mellan ord.
+  När 3–4 personer jobbar samtidigt blir korten smala och långa namn
+  klipps – ägaren valde att låta det vara (alternativ D).
+- Paus-dubbelbokning: kortet med paus får en vinröd rund "2" i hörnet,
+  kunden i pausen får vit ram (2 px) + skugga och ligger överst.
+  Den gamla lilla "bottenlinjen" och den gamla mobilkortkoden är borttagna.
+- Placering/bredd/överlapp/paus-räkning är ORÖRD.
+- Mobil-bugg rättad: efter start/Danas gick kalendern aldrig över till
+  "keep" och hoppade tillbaka till dagens datum vid varje uppdatering
+  (öppna bokning, automatisk hämtning). Nu sätts
+  mobileCalendarScrollModeRef = "keep" efter första hoppet till i dag.
+
+Bokningsrutan (klick på bokning, 4 oktober, mobil + desktop):
+- Kundens namn + ×. Ljus ruta (#faf7f7) med "Utorak, 06.10.2026",
+  tid start–slut stort i vinrött och personal med kalenderfärg.
+- Lista: Usluga, Telefon (tel-länk), Email (mailto-länk), Napomena.
+- "Otkaži rezervaciju" vit med röd ram; frågan "Da li ste sigurni…" med
+  Ne / Da, otkaži är oförändrad.
 
 Kalendern – knapprad (ny, desktop och mobil var för sig):
 - "Danas", ‹ ›, veckan i klartext ("5. – 11. oktobar 2026"; mobil har
@@ -223,7 +257,7 @@ Kalendern – knapprad (ny, desktop och mobil var för sig):
 - Desktop: klick på en notis i Obavijesti → kalendern hoppar till den
   veckan (+ slår på "prošle" om datumet passerat). "Prikaži u kalendaru ›"
   visas på notisen. INTE på mobil (ägarens val).
-- Rutnätet, placeringen och överlapp/paus-räkningen är ORÖRDA.
+- Placeringen och överlapp/paus-räkningen är ORÖRDA (se ovan för korten).
 - Oanvänd state kvar: showBarberFilterMenu (kan tas bort senare).
 
 Meddelanden (hela admin):
@@ -382,8 +416,8 @@ inte), "TEST"-namn m.fl.
 6. Startsida/katalog mobil ........... ✅ KLAR & FRYST
 7. Startsida desktop (+ surfplatta) .. ✅ KLAR & FRYST
 8. Design/UX-kontroll av hela Salonix  🔄 NÄSTAN KLAR (kundsidor och
-                                          admin klara; kvar: Montserrat
-                                          + fliknamn på salongssidan)
+                                          admin klara; kvar: fliknamn +
+                                          Montserrat på salongssidan)
 9. Full QA inkl. edge cases .......... ⬜
 10. Säkerhet och produktion .......... ⬜ (RLS, admininloggning,
     åtkomstkontroll, server-side validering, secrets)
@@ -407,7 +441,9 @@ Punkt 9 (QA):
 - Vad händer med tider (available_times) och bokningar när en person
   tas bort i Osoblje?
 - Testa ALLA nya admin-delar på riktig iPhone (tidsfält, datumfält,
-  bildväljare, beskärning med fingret, meddelanderutan, fråga-rutan).
+  bildväljare, beskärning med fingret, meddelanderutan, fråga-rutan,
+  nya headern, Statistika-menyn i kortet, bokningsrutan, kalenderkorten
+  med "2", att kalendern står kvar efter swipe + öppnad bokning).
 - Testa avbokningsmejl från admin med riktig e-post (ägarens iCloud) och
   bokningsmejl i iPhone mörkt läge.
 - Testa hela flödet med testlistan i SALONIX-KARTA.md (mobil + desktop).
@@ -468,7 +504,12 @@ Allmänt:
 - Slobodni termini: varning när tider ligger utanför öppettiderna, eller
   förifyllda Od/Do från öppettiderna
 - Notisklick → rätt vecka även på mobil (ägaren valde bort det nu)
-- Ta bort oanvänd state showBarberFilterMenu i admin
+- Ta bort oanvänd state showBarberFilterMenu i admin (och oanvänd
+  isThreeOrMoreOverlapping i kalenderkorten)
+- Mobilkalender "M3": bredare dagar (min-bredd 1400 i st. f. 1000) så att
+  namn + tjänst syns helt även när 3+ personer jobbar samtidigt
+- Bokningsrutan förslag 2: knappar "Pozovi"/"Email" + paus-info
+  ("Pauza 11:20–12:00 · Za vrijeme pauze: Ajdin Z")
 
 ============================================================
 14. NÄSTA STEG – PUNKT 8 (NÄSTAN KLAR)
@@ -489,32 +530,35 @@ KLART i punkt 8 – kundsidor och mejl (3 oktober):
 - Bokningsmejl (alternativ A) + avbokningsmejl från admin.
 
 KLART i punkt 8 – admin (3–4 oktober), se avsnitt 7 för detaljer:
-- Mobil header-ordning, statistik, bokningsruta, Obavijesti
-  (markera alla, tid, automatisk hämtning varje minut).
-- Postavke som egen helsida med 8 rutor, ett avsnitt i taget.
-- Alla 8 avsnitt omgjorda (Slobodni termini, Zatvoreni dani, Usluge,
-  Kategorije usluga, Osoblje, Informacije o salonu, Naslovna slika,
-  Galerija).
-- Meddelanderuta (grön/röd) i stället för 63 alert-rutor + grön
-  bekräftelse överallt.
-- Egen fråga-ruta i stället för 11 confirm-rutor.
-- Kalenderns knapprad desktop + mobil (veckotext, ‹ ›, strömbrytare,
-  personalknappar). Stavfelet "Osooblje" borta. Notisklick → vecka
-  (bara desktop).
-- next.config.ts: ny IP 192.168.0.18 för test på mobil.
+- Postavke som egen helsida med 8 rutor, alla 8 avsnitt omgjorda.
+- Meddelanderuta (grön/röd) i stället för alert, egen fråga-ruta i
+  stället för confirm.
+- Kalenderns knapprad desktop + mobil.
+- Kalenderkorten (namn + tjänst, vinröd "2", vit ram i pausen),
+  100 px per timme, mobil + desktop.
+- Mobilkalendern hoppar inte längre tillbaka till dagens datum.
+- Bokningsrutan (dag/datum/tid överst, personalfärg, Otkaži med röd ram).
+- Headern (vit list med logga, Odjavi se som länk), statistikkort med
+  Statistika i kortet, "Powered by Salonix" längst ner.
+Allt ovan är sparat i Git (senaste commit: "Admin header: …").
 
-ÄGAREN BEHÖVER TESTA / SPARA I GIT:
-- Senaste ändringen (mobilkalenderns knapprad) var inte sparad i Git
-  när checkpointen skrevs. Kör:
-  git add "app/admin/[salonSlug]/page.tsx" SALONIX-MASTER-CHECKPOINT.md CLAUDE.md && git commit -m "..." && git push
-- Testa på telefonen: kalenderns knapprad, fråga-rutan, gröna/röda
-  rutor, tids- och datumfält i Slobodni termini/Zatvoreni dani/
-  Informacije.
+ARBETSSÄTT SOM FUNGERADE (ägaren):
+- Visa FLERA alternativ som bilder (mobil + desktop) – ägaren väljer,
+  ofta en blandning. Ägaren vill ha det enkelt men tydligt.
+- "Testa X så får vi se" = lägg in, visa, ägaren bestämmer behålla/ändra.
+- Förslagsbilder görs som testfiler i scratchpad + en tillfällig lokal
+  server (python3 -m http.server 8765), bilder skickas som filer.
 
 NÄSTA – I DEN HÄR ORDNINGEN:
-1. Kvar i punkt 8 (kundsidor): salongsnamn i Montserrat på salongssidan
-   och eget fliknamn per salongssida (t.ex. "Studio M Exclusive –
-   Salonix"). app/[salonSlug]/page.tsx är FRYST – visa förslag först.
+1. Salongssidan (förslaget är redan visat, vänta på "kör"):
+   B) Eget fliknamn "Studio M Exclusive – Salonix" via NY fil
+      app/[salonSlug]/layout.tsx (generateMetadata, hämtar salon_name
+      från Supabase utifrån slug). Rör inte den frysta page.tsx.
+      Öppen fråga till ägaren: ska salongens egen beskrivning användas
+      som beskrivning (Google/WhatsApp/Viber) – ja eller nej?
+   A) Salongsnamnet i Montserrat (600) på salongssidan: importera
+      Montserrat i app/[salonSlug]/page.tsx (FRYST – ägaren måste säga
+      "kör A") och byt bara h1:ans typsnitt. Färg/storlek oförändrade.
 2. Punkt 9: full QA med testlistan i SALONIX-KARTA.md + listan i
    avsnitt 12 (paus-dubbelbokningar, söndagstider, borttagen personal,
    iPhone).
