@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Cropper from "react-easy-crop";
@@ -8132,45 +8132,108 @@ cursor: "pointer",
           ×
         </button>
       </div>
-      {/* Uppgifterna i två kolumner: etikett till vänster, värde till höger. */}
+      {/* Överst: dag, datum, tid (start–slut) och personal med kalenderfärg. */}
+      {(() => {
+        const [year, month, day] = String(selectedBooking.booking_date || "")
+          .split("-")
+          .map(Number);
+        const bosnianWeekdays = [
+          "Nedjelja",
+          "Ponedjeljak",
+          "Utorak",
+          "Srijeda",
+          "Četvrtak",
+          "Petak",
+          "Subota",
+        ];
+        const weekday =
+          year && month && day
+            ? bosnianWeekdays[new Date(year, month - 1, day).getDay()]
+            : "";
+        const formattedDate = selectedBooking.booking_date
+          ? selectedBooking.booking_date.split("-").reverse().join(".")
+          : "";
+
+        const [startHour, startMinute] = String(
+          selectedBooking.booking_time || "00:00"
+        )
+          .split(":")
+          .map(Number);
+        const endTotal =
+          startHour * 60 + startMinute + (selectedBooking.duration_minutes || 30);
+        const endTime = `${String(Math.floor(endTotal / 60)).padStart(2, "0")}:${String(
+          endTotal % 60
+        ).padStart(2, "0")}`;
+
+        const staffColor = getBarberColor(selectedBooking.barber_id);
+
+        return (
+          <div
+            style={{
+              marginTop: "14px",
+              backgroundColor: "#faf7f7",
+              border: "1px solid #ead1d1",
+              borderRadius: "14px",
+              padding: "14px",
+            }}
+          >
+            <div style={{ fontSize: "17px", fontWeight: 700, color: "#111827" }}>
+              {weekday ? `${weekday}, ${formattedDate}` : formattedDate}
+            </div>
+
+            <div
+              style={{
+                marginTop: "4px",
+                fontSize: "24px",
+                fontWeight: 700,
+                color: "#611a1a",
+              }}
+            >
+              {selectedBooking.booking_time?.slice(0, 5)} – {endTime}
+            </div>
+
+            <div
+              style={{
+                marginTop: "8px",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                fontSize: "15px",
+                fontWeight: 600,
+                color: "#111827",
+              }}
+            >
+              <span
+                style={{
+                  width: "12px",
+                  height: "12px",
+                  borderRadius: "50%",
+                  backgroundColor: staffColor.borderColor,
+                  border: `1px solid ${staffColor.textColor}`,
+                  flex: "none",
+                }}
+              />
+              {selectedBooking.barber_name || "Bez preferencije"}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Övriga uppgifter: etikett till vänster, värde till höger. */}
       <div
   style={{
-    marginTop: "20px",
+    marginTop: "14px",
     display: "grid",
-    gridTemplateColumns: "100px 1fr",
+    gridTemplateColumns: "96px 1fr",
     columnGap: "12px",
     rowGap: "10px",
     fontSize: "15px",
   }}
 >
-  {(
-    [
-      [
-        "Usluga",
-        `${selectedBooking.service || "Nije odabrano"}${
-          calendarServiceSteps.some(
-            (step) => step.service_id === selectedBooking.service_id
-          )
-            ? " (usluga s više koraka)"
-            : ""
-        }`,
-      ],
-      ["Trajanje", `${selectedBooking.duration_minutes || 30} min`],
-      ["Osoblje", selectedBooking.barber_name || "Bez preferencije"],
-      [
-        "Datum",
-        selectedBooking.booking_date
-          ? selectedBooking.booking_date.split("-").reverse().join(".")
-          : "",
-      ],
-      ["Vrijeme", selectedBooking.booking_time?.slice(0, 5)],
-    ] as [string, string][]
-  ).map(([label, value]) => (
-    <Fragment key={label}>
-      <span style={{ color: "#6b7280" }}>{label}</span>
-      <span style={{ color: "#111827", fontWeight: 600 }}>{value}</span>
-    </Fragment>
-  ))}
+  <span style={{ color: "#6b7280" }}>Usluga</span>
+  <span style={{ color: "#111827", fontWeight: 600 }}>
+    {selectedBooking.service || "Nije odabrano"}
+  </span>
 
   <span style={{ color: "#6b7280" }}>Telefon</span>
   <span style={{ fontWeight: 600 }}>
@@ -8286,13 +8349,13 @@ cursor: "pointer",
     <button
       onClick={() => setConfirmCancelBooking(true)}
       style={{
-        backgroundColor: "#ef4444",
-        color: "white",
-        border: "none",
+        backgroundColor: "#ffffff",
+        color: "#ef4444",
+        border: "1px solid #ef4444",
         borderRadius: "12px",
-        padding: "10px 16px",
+        padding: "11px 16px",
         fontSize: "14px",
-        fontWeight: 600,
+        fontWeight: 700,
         cursor: "pointer",
       }}
     >
