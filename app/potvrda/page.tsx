@@ -4,10 +4,20 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
-import { Source_Sans_3 } from "next/font/google";
+import { Source_Sans_3, Geist, Montserrat } from "next/font/google";
 
 const sourceSans = Source_Sans_3({
   subsets: ["latin"],
+});
+
+const geist = Geist({
+  subsets: ["latin"],
+});
+
+// Rubriker och salongens namn – samma som tidssidan och Podaci.
+const montserrat = Montserrat({
+  weight: ["600", "700"],
+  subsets: ["latin", "latin-ext"],
 });
 
 const timeToMinutes = (time: string) => {
@@ -612,476 +622,221 @@ router.replace(
 );
 }
 
-  return (
-  <main
-    className={`${sourceSans.className} min-h-screen bg-white px-8 py-6`}
-  >
-      <Link
-  href={`/podaci?salon=${encodeURIComponent(
+  // Bara för visningen (notisen använder formattedDate som förut).
+  const displayDate = date
+    ? (() => {
+        const [y, m, d] = date.split("-").map(Number);
+        const shortDays = ["Ned", "Pon", "Uto", "Sri", "Čet", "Pet", "Sub"];
+        const weekday = shortDays[new Date(y, m - 1, d).getDay()];
+        return `${weekday}, ${String(d).padStart(2, "0")}.${String(m).padStart(2, "0")}.${y}`;
+      })()
+    : "";
+
+  // Tid som "09:30 – 10:00" (slut = start + tjänstens längd).
+  const displayTime = (() => {
+    if (!time) return "";
+    if (!service) return time;
+    const end = timeToMinutes(time) + (service.duration_minutes || 60);
+    return `${time} – ${String(Math.floor(end / 60)).padStart(2, "0")}:${String(end % 60).padStart(2, "0")}`;
+  })();
+
+  const podaciHref = `/podaci?salon=${encodeURIComponent(
     salon || ""
   )}&salonSlug=${encodeURIComponent(
     salonSlug || ""
   )}&serviceId=${serviceId}&date=${date}&time=${time}${
     barberId ? `&barberId=${barberId}` : ""
-  }`}
+  }`;
+
+  const timesHref = `/times?salon=${encodeURIComponent(
+    salon || ""
+  )}&salonSlug=${encodeURIComponent(
+    salonSlug || ""
+  )}&serviceId=${serviceId}&barberId=${encodeURIComponent(barberId || "")}`;
+
+  const cardStyle = {
+    border: "1px solid #ead1d1",
+    borderRadius: "16px",
+    backgroundColor: "#ffffff",
+    padding: "16px",
+  };
+
+  const capsStyle = {
+    margin: 0,
+    fontSize: "11px",
+    fontWeight: 600,
+    letterSpacing: "2px",
+    textTransform: "uppercase" as const,
+    color: "#9ca3af",
+  };
+
+  const editLink = {
+    color: "#611a1a",
+    fontWeight: 600,
+    fontSize: "14px",
+    textDecoration: "underline",
+    textUnderlineOffset: "3px",
+  };
+
+  const row = (label: string, value: React.ReactNode, muted = false, first = false) => (
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "space-between",
+        gap: "12px",
+        padding: "10px 0",
+        borderTop: first ? "none" : "1px solid #f1e4e4",
+        fontSize: "16px",
+      }}
+    >
+      <span style={{ color: "#6b7280" }}>{label}</span>
+      <span
+        style={{
+          fontWeight: muted ? 400 : 600,
+          color: muted ? "#9ca3af" : "#111827",
+          textAlign: "right",
+          wordBreak: "break-word",
+        }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+
+  const showConfirmButton = !timeTaken && (!errorBox || errorBox.canRetry);
+
+  return (
+  <main
+    className={`${sourceSans.className} min-h-screen bg-white px-3 py-6 md:px-8`}
+    style={{ paddingBottom: "110px" }}
+  >
+  <div className="mx-auto w-full" style={{ maxWidth: "860px" }}>
+      <Link
+  href={podaciHref}
   style={{
     color: "#611a1a",
     textDecoration: "none",
     fontWeight: "700",
     display: "inline-block",
-    marginBottom: isMobile ? "0px" : "16px",
+    marginBottom: "4px",
   }}
 >
   ← Nazad
 </Link>
 
+{/* Stegen med namn – alla fyra klara. */}
 <div
-  className="mx-auto max-w-4xl"
   style={{
-    marginTop: isMobile ? "-8px" : undefined,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    gap: "6px",
+    margin: "10px 0 14px",
   }}
 >
-        <div
-  className="flex items-end justify-between"
-  style={{
-    marginBottom: "14px",
-    gap: "40px",
-    transform: isMobile ? "none" : "translateX(110px)",
-  }}
->
-<div>
-  {!isMobile && (
-    <h1 className="text-3xl font-bold text-[#111827]">
-      Pregled rezervacije
-    </h1>
-  )}
-</div>
-
-  <div
-  className={
-    isMobile
-      ? "hidden"
-      : "flex items-center gap-2"
-  }
->
-    {[
-      { nr: "1", label: "USLUGA" },
-      { nr: "2", label: "VRIJEME" },
-      { nr: "3", label: "PODACI" },
-      { nr: "4", label: "POTVRDA" },
-    ].map((step, index) => (
-      <div key={step.nr} className="flex items-center gap-4">
-        <div className="flex flex-col items-center">
-          <div
-            style={{
-              width: "18px",
-              height: "18px",
-              borderRadius: "9999px",
-              backgroundColor: "#611a1a",
-              color: "#ffffff",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "10px",
-              fontWeight: "bold",
-            }}
-          >
-            {step.nr}
-          </div>
-
-          <p className="mt-1 text-[11px] font-semibold tracking-wide text-[#611a1a]">
-            {step.label}
-          </p>
-        </div>
-
-        {index < 3 && (
-          <div
-            style={{
-              width: "15px",
-              height: "1px",
-              backgroundColor: "#611a1a",
-              marginBottom: "24px",
-            }}
-          />
-        )}
-      </div>
-    ))}
-  </div>
-</div>
-
-
-
-
-  <div
-  className="mb-6"
-  style={{
-    width: isMobile ? "100%" : "420px",
-    maxWidth: isMobile ? "100%" : "420px",
-    marginLeft: "auto",
-    marginRight: "auto",
-    padding: isMobile ? "12px 16px" : "18px 20px",
-    borderRadius: "18px",
-    backgroundColor: "rgba(97, 26, 26, 0.03)",
-    border: "1px solid rgba(97, 26, 26, 0.15)",
-    boxShadow: "0 4px 14px rgba(0, 0, 0, 0.04)",
-  }}
->
-  <p
-    style={{
-      margin: 0,
-      color: "#111827",
-      fontSize: isMobile ? "18px" : "24px",
-      fontWeight: "700",
-    }}
-  >
-    {service ? service.name : "Učitava se..."}
-  </p>
-
-  {service?.description && (
-    <p
-      style={{
-        marginTop: "4px",
-        marginRight: 0,
-        marginBottom: 0,
-        marginLeft: 0,
-        color: "#6b7280",
-        fontSize: "14px",
-        lineHeight: "1.5",
-      }}
-    >
-      {service.description}
-    </p>
-  )}
-
-  <div
-    style={{
-      display: "flex",
-      gap: "40px",
-      alignItems: "center",
-      marginTop: isMobile ? "10px" : "18px",
-      marginBottom: isMobile ? "10px" : "18px",
-    }}
-  >
-    <div>
-      <p
-        style={{
-          margin: 0,
-          marginBottom: "3px",
-          color: "#6b7280",
-          fontSize: "13px",
-        }}
-      >
-        Datum
-      </p>
-
-      <p
-        style={{
-          margin: 0,
-          color: "#111827",
-          fontSize: "17px",
-          fontWeight: "700",
-        }}
-      >
-        {formattedDate}
-      </p>
-    </div>
-
-    <div>
-      <p
-        style={{
-          margin: 0,
-          marginBottom: "3px",
-          color: "#6b7280",
-          fontSize: "13px",
-        }}
-      >
-        Vrijeme
-      </p>
-
-      <p
-        style={{
-          margin: 0,
-          color: "#111827",
-          fontSize: "17px",
-          fontWeight: "700",
-        }}
-      >
-        {time}
-      </p>
-    </div>
-  </div>
-
-  <div
-    style={{
-      display: isMobile ? "grid" : "flex",
-      gridTemplateColumns: isMobile
-        ? "repeat(3, minmax(0, 1fr))"
-        : undefined,
-      gap: isMobile ? "12px" : "32px",
-      alignItems: "start",
-    }}
-  >
-    {service?.show_price && (
-      <div>
-        <p
-          style={{
-            margin: 0,
-            marginBottom: "3px",
-            color: "#6b7280",
-            fontSize: "13px",
-          }}
-        >
-          Cijena
-        </p>
-
-        <p
-          style={{
-            margin: 0,
-            color: "#111827",
-            fontSize: "17px",
-            fontWeight: "700",
-          }}
-        >
-          {service.price} KM
-        </p>
-      </div>
-    )}
-
-    {service?.show_duration && (
-      <div>
-        <p
-          style={{
-            margin: 0,
-            marginBottom: "3px",
-            color: "#6b7280",
-            fontSize: "13px",
-          }}
-        >
-          Trajanje
-        </p>
-
-        <p
-          style={{
-            margin: 0,
-            color: "#111827",
-            fontSize: "17px",
-            fontWeight: "700",
-          }}
-        >
-          {service.duration_minutes || 60} min
-        </p>
-      </div>
-    )}
-
-    <div
-  style={{
-    transform: isMobile ? "translateX(-8px)" : undefined,
-  }}
->
-  <p
-    style={{
-      margin: 0,
-      marginBottom: "3px",
-      color: "#6b7280",
-      fontSize: "13px",
-    }}
-  >
-    Osoblje
-  </p>
-
-      <p
-        style={{
-          margin: 0,
-          color: "#111827",
-          fontSize: isMobile ? "15px" : "17px",
-          fontWeight: "700",
-          whiteSpace: isMobile ? "nowrap" : undefined,
-        }}
-      >
-        {barberId ? barberName : "Bez preferencije"}
-      </p>
-    </div>
-  </div>
-</div>
-
-{isMobile && ( 
-  <div 
-    className="flex w-full items-center justify-center" 
-    style={{ 
-      marginBottom: "10px",
-    }} 
-  >
-    {[
-      { nr: "1" },
-      { nr: "2" },
-      { nr: "3" },
-      { nr: "4" },
-    ].map((step, index) => (
-      <div key={step.nr} className="flex items-center">
+  {["USLUGA", "VRIJEME", "PODACI", "POTVRDA"].map((label, index) => (
+    <div key={label} style={{ display: "flex", alignItems: "flex-start", gap: "6px" }}>
+      {index > 0 && (
+        <div style={{ width: "16px", height: "2px", marginTop: "10px", backgroundColor: "#611a1a" }} />
+      )}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", width: "62px" }}>
         <div
           style={{
-            width: "20px",
-            height: "20px",
+            width: "22px",
+            height: "22px",
             borderRadius: "9999px",
-            backgroundColor: "#611a1a",
-            color: "white",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "10px",
-            fontWeight: "700",
+            fontSize: "11px",
+            fontWeight: 700,
+            backgroundColor: "#611a1a",
+            color: "#ffffff",
           }}
         >
-          {step.nr}
+          {index + 1}
         </div>
-
-        {index < 3 && (
-          <div
-            style={{
-              width: "24px",
-              height: "1px",
-              backgroundColor: "#611a1a",
-            }}
-          />
-        )}
+        <p style={{ margin: 0, fontSize: "10px", fontWeight: 700, letterSpacing: "0.5px", color: "#611a1a" }}>
+          {label}
+        </p>
       </div>
-    ))}
-  </div>
-)}
+    </div>
+  ))}
+</div>
 
-{isMobile && (
-  <h1
-    style={{
-      margin: 0,
-      marginBottom: "6px",
-      color: "#111827",
-      fontSize: "22px",
-      fontWeight: "700",
-      lineHeight: "1.2",
-    }}
-  >
-    Pregled rezervacije
-  </h1>
-)}
-
-        <div
-  className="mx-auto rounded-3xl bg-white shadow-sm"
+<h1
+  className={montserrat.className}
   style={{
-    width: "420px",
-    maxWidth: "100%",
-    border: isMobile ? "1px solid #611a1a" : "2px solid #611a1a",
-    paddingTop: isMobile ? "16px" : "24px",
-    paddingRight: "24px",
-    paddingBottom: "24px",
-    paddingLeft: "24px",
+    margin: "0 0 12px",
+    fontSize: isMobile ? "20px" : "24px",
+    fontWeight: 700,
+    letterSpacing: "-0.3px",
+    color: "#111827",
   }}
 >
-<h2
-  className="text-center font-bold text-[#611a1a]"
-  style={{
-    fontSize: isMobile ? "18px" : "20px",
-    marginBottom: isMobile ? "14px" : "24px",
-  }}
->
-  Podaci klijenta
-</h2>
+  Provjerite rezervaciju
+</h1>
 
 <div
-  className="mx-auto"
   style={{
-    width: "340px",
+    display: "grid",
+    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+    gap: "14px",
+    alignItems: "start",
   }}
 >
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "120px 1fr",
-      padding: isMobile ? "4px 0" : "8px 0",
-      borderBottom: isMobile ? "none" : "1px solid #f1f1f1",
-      alignItems: "center",
-      
-    }}
-  >
-    <span style={{ fontWeight: "700", color: "#611a1a", textAlign: "right", paddingRight: "20px" }}>
-      Ime:
-    </span>
-    <span>{ime}</span>
+  {/* Kort 1: termin */}
+  <div style={cardStyle}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+      <p className={montserrat.className} style={capsStyle}>Termin</p>
+      <Link href={timesHref} style={editLink}>Promijeni</Link>
+    </div>
+
+    {salon && (
+      <p
+        className={montserrat.className}
+        style={{
+          margin: "4px 0 0",
+          fontSize: "12px",
+          fontWeight: 600,
+          letterSpacing: "1.5px",
+          textTransform: "uppercase",
+          color: "#611a1a",
+        }}
+      >
+        {salon}
+      </p>
+    )}
+
+    <p style={{ margin: "2px 0 6px", fontSize: "20px", fontWeight: 700, color: "#111827" }}>
+      {service ? service.name : "Učitava se..."}
+    </p>
+
+    {row("Datum", displayDate, false, true)}
+    {row("Vrijeme", displayTime)}
+    {row("Osoblje", barberId ? barberName : "Bez preferencije")}
+    {service?.show_price && row("Cijena", `${service.price} KM`)}
   </div>
 
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "120px 1fr",
-      padding: isMobile ? "4px 0" : "8px 0",
-      borderBottom: isMobile ? "none" : "1px solid #f1f1f1",
-      alignItems: "center",
-    }}
-  >
-    <span style={{ fontWeight: "700", color: "#611a1a", textAlign: "right", paddingRight: "20px" }}>
-      Prezime:
-    </span>
-    <span>{prezime}</span>
-  </div>
+  {/* Kort 2: kundens uppgifter */}
+  <div style={cardStyle}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+      <p className={montserrat.className} style={capsStyle}>Vaši podaci</p>
+      <Link href={podaciHref} style={editLink}>Promijeni</Link>
+    </div>
 
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "120px 1fr",
-      padding: isMobile ? "4px 0" : "8px 0",
-      borderBottom: isMobile ? "none" : "1px solid #f1f1f1",
-      alignItems: "center",
-    }}
-  >
-    <span style={{ fontWeight: "700", color: "#611a1a", textAlign: "right", paddingRight: "20px" }}>
-      Telefon:
-    </span>
-    <span>{phoneCode} {phone}</span>
-  </div>
-
-  {email?.trim() && (
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "120px 1fr",
-      padding: isMobile ? "4px 0" : "8px 0",
-      borderBottom: isMobile ? "none" : "1px solid #f1f1f1",
-      alignItems: "center",
-    }}
-  >
-    <span
-      style={{
-        fontWeight: "700",
-        color: "#611a1a",
-        textAlign: "right",
-        paddingRight: "20px",
-      }}
-    >
-      Email:
-    </span>
-
-    <span>{email}</span>
-  </div>
-)}
-
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "120px 1fr",
-      padding: isMobile ? "4px 0" : "8px 0",
-      borderBottom: isMobile ? "none" : "1px solid #f1f1f1",
-      alignItems: "center",
-    }}
-  >
-    <span style={{ fontWeight: "700", color: "#611a1a", textAlign: "right", paddingRight: "20px" }}>
-      Napomena:
-    </span>
-    <span>{napomena || "Nema napomene"}</span>
+    <div style={{ marginTop: "4px" }}>
+      {row("Ime i prezime", `${ime || ""} ${prezime || ""}`.trim(), false, true)}
+      {row("Telefon", `${phoneCode || ""} ${phone || ""}`.trim())}
+      {email?.trim() && row("Email", email)}
+      {row("Napomena", napomena || "Nema napomene", !napomena)}
+    </div>
   </div>
 </div>
 
 {timeTaken && (
   <div
-    className="mx-auto mt-8 max-w-md rounded-2xl p-5 text-center"
+    className="mx-auto mt-6 max-w-md rounded-2xl p-5 text-center"
     style={{
       border: "2px solid #611a1a",
       backgroundColor: "#fff7f7",
@@ -1117,7 +872,7 @@ router.replace(
 )}
 {!timeTaken && errorBox && (
   <div
-    className="mx-auto mt-8 max-w-md rounded-2xl p-5 text-center"
+    className="mx-auto mt-6 max-w-md rounded-2xl p-5 text-center"
     style={{
       border: "2px solid #611a1a",
       backgroundColor: "#fff7f7",
@@ -1138,13 +893,7 @@ router.replace(
 
     {!errorBox.canRetry && (
       <Link
-        href={`/times?salon=${encodeURIComponent(
-          salon || ""
-        )}&salonSlug=${encodeURIComponent(
-          salonSlug || ""
-        )}&serviceId=${serviceId}&barberId=${encodeURIComponent(
-          barberId || ""
-        )}`}
+        href={timesHref}
         style={{
           display: "inline-block",
           backgroundColor: "#611a1a",
@@ -1160,25 +909,38 @@ router.replace(
     )}
   </div>
 )}
-{!timeTaken && (!errorBox || errorBox.canRetry) && (
+</div>
+
+{/* List längst ner: Završi rezervaciju (döljs när tiden inte längre går att boka). */}
+{showConfirmButton && (
   <div
-    className="flex justify-center"
     style={{
-      marginTop: isMobile ? "20px" : "40px",
+      position: "fixed",
+      left: 0,
+      right: 0,
+      bottom: 0,
+      zIndex: 30,
+      backgroundColor: "#ffffff",
+      borderTop: "1px solid #ead1d1",
+      boxShadow: "0 -6px 20px rgba(0, 0, 0, 0.08)",
+      padding: "10px 16px calc(10px + env(safe-area-inset-bottom))",
     }}
   >
+    <div style={{ maxWidth: "860px", margin: "0 auto", display: "flex", justifyContent: "flex-end" }}>
     <button
       type="button"
       onClick={handleConfirmBooking}
       disabled={loading || confirmed}
+      className={geist.className}
       style={{
+  width: isMobile ? "100%" : "280px",
+  height: "48px",
   backgroundColor: "#611a1a",
   color: "white",
-  padding: isMobile ? "12px 24px" : "16px 80px",
-  borderRadius: "16px",
-  fontFamily: "var(--font-geist-sans)",
+  borderRadius: "12px",
   fontWeight: "700",
-  whiteSpace: isMobile ? "nowrap" : undefined,
+  fontSize: "16px",
+  opacity: loading || confirmed ? 0.7 : 1,
 }}
     >
       {confirmed
@@ -1187,10 +949,9 @@ router.replace(
   ? "Rezerviše se..."
   : "Završi rezervaciju"}
     </button>
+    </div>
   </div>
 )}
-</div>
-      </div>
     </main>
   );
 }
