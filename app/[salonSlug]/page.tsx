@@ -1152,12 +1152,14 @@ gap: "24px",
         
 
 <h2
+  id="usluge"
   className={dmSerif.className}
   style={{
     color: "#611a1a",
     fontSize: "28px",
     fontWeight: "600",
     marginBottom: isMobile ? "12px" : "24px",
+    scrollMarginTop: "16px",
   }}
 >
   Usluge
@@ -1193,42 +1195,103 @@ gap: "24px",
   {category.name}
 </h2>
 
-        <div className="space-y-4">
-          {categoryServices.map((service) => (
+        {/* Tjänstekort: namn + pris överst, tid under, Osoblje + Rezerviši.
+            Desktop: 2 kort per rad. Länken till /times är samma som förut. */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+            gap: isMobile ? "12px" : "16px",
+          }}
+        >
+          {categoryServices.map((service) => {
+            const bookingHref = `/times?salon=${encodeURIComponent(
+              salon.salon_name
+            )}&salonSlug=${encodeURIComponent(
+              salonSlug
+            )}&serviceId=${service.id}&barberId=${
+              salon.show_barbers && selectedBarberByService[service.id]
+                ? selectedBarberByService[service.id]
+                : ""
+            }`;
+
+            const bookingButtonStyle = {
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              height: "44px",
+              backgroundColor: "#611a1a",
+              padding: "0 18px",
+              borderRadius: "12px",
+              color: "#ffffff",
+              fontWeight: "700",
+              fontSize: "15px",
+              textDecoration: "none",
+              whiteSpace: "nowrap" as const,
+              boxShadow: "0 4px 10px rgba(97, 26, 26, 0.18)",
+            };
+
+            return (
    <div
   key={service.id}
   className={sourceSans.className}
   style={{
     border: "1px solid rgba(97, 26, 26, 0.16)",
-    borderRadius: "18px",
-    padding: isMobile ? "14px 16px" : "18px 20px",
+    borderRadius: "16px",
+    padding: "14px 16px",
     display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: isMobile ? "12px" : "24px",
-    // Mobil: blir texten för lång hamnar Rezerviši på en egen rad under.
-    flexWrap: isMobile ? "wrap" : "nowrap",
+    flexDirection: "column",
     backgroundColor: "#ffffff",
     boxShadow: "0 4px 14px rgba(0, 0, 0, 0.04)",
   }}
 >
-      <div>
-        <h3
+        <div
           style={{
-            fontSize: "22px",
-            fontWeight: "700",
-            color: "#111827",
-            marginBottom: "6px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "baseline",
+            gap: "12px",
           }}
         >
-          {service.name}
-        </h3>
+          <h3
+            style={{
+              fontSize: "19px",
+              fontWeight: "700",
+              color: "#111827",
+              lineHeight: 1.25,
+            }}
+          >
+            {service.name}
+          </h3>
+
+          {service.show_price && service.price && (
+            <span
+              style={{
+                flexShrink: 0,
+                color: "#611a1a",
+                fontWeight: "700",
+                fontSize: "17px",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {service.price} KM
+            </span>
+          )}
+        </div>
+
+        {service.show_duration && service.duration_minutes && (
+          <p style={{ marginTop: "2px", fontSize: "14px", color: "#6b7280" }}>
+            {service.duration_minutes} min
+          </p>
+        )}
+
         {service.description && (
   <p
     style={{
       color: "#6b7280",
       fontSize: "15px",
-      marginBottom: "10px",
+      marginTop: "6px",
       lineHeight: "1.5",
     }}
   >
@@ -1236,77 +1299,20 @@ gap: "24px",
   </p>
 )}
 
-       <div
-  style={{
-    display: "flex",
-    gap: "12px",
-    alignItems: "center",
-    flexWrap: "wrap",
-  }}
->
-  {service.show_price && service.price && (
-    <span
-      style={{
-        color: "#111827",
-        fontWeight: "600",
-        fontSize: "16px",
-      }}
-    >
-      {service.price} KM
-    </span>
-  )}
-
-  {service.show_price &&
-    service.price &&
-    service.show_duration &&
-    service.duration_minutes && (
-      <span
-  style={{
-    color: "#111827",
-    fontWeight: "600",
-    fontSize: "16px",
-  }}
->
-  •
-</span>
-    )}
-
-  {service.show_duration && service.duration_minutes && (
-    <span
-  style={{
-    color: "#111827",
-    fontWeight: "600",
-    fontSize: "16px",
-  }}
->
-  {service.duration_minutes} min
-</span>
-  )}
-</div>
-
-{salon.show_barbers && (
-  <div
-    style={{
-      marginTop: isMobile ? "12px" : "16px",
-    }}
-  >
+{salon.show_barbers ? (
+  <div style={{ marginTop: "auto", paddingTop: "10px" }}>
     <p
       style={{
-        marginBottom: "8px",
+        marginBottom: "4px",
+        fontSize: "13px",
         fontWeight: "600",
-        color: "#111827",
+        color: "#6b7280",
       }}
     >
       Osoblje
     </p>
 
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: isMobile ? "10px" : "0px",
-      }}
-    >
+    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
       <select
         value={selectedBarberByService[service.id] ?? ""}
         onChange={(e) => {
@@ -1318,10 +1324,13 @@ gap: "24px",
           }));
         }}
         style={{
-  width: "150px",
+  flex: 1,
+  minWidth: 0,
+  height: "44px",
   border: "1px solid #d1d5db",
   borderRadius: "12px",
-  padding: "10px 12px",
+  padding: "0 12px",
+  fontSize: "15px",
   backgroundColor: "white",
 }}
       >
@@ -1345,96 +1354,29 @@ gap: "24px",
           ))}
       </select>
 
-      {isMobile && (
-  <Link
-    className={geist.className}
-    href={`/times?salon=${encodeURIComponent(
-            salon.salon_name
-          )}&salonSlug=${encodeURIComponent(
-            salonSlug
-          )}&serviceId=${service.id}&barberId=${
-            salon.show_barbers && selectedBarberByService[service.id]
-              ? selectedBarberByService[service.id]
-              : ""
-          }`}
-          style={{
-  display: "inline-block",
-  backgroundColor: "#611a1a",
-  padding: "11px 22px",
-  borderRadius: "12px",
-  color: "#ffffff",
-  fontWeight: "700",
-  fontSize: "15px",
-  textDecoration: "none",
-  whiteSpace: "nowrap",
-  boxShadow: "0 4px 10px rgba(97, 26, 26, 0.18)",
-}}
-        >
-          Rezerviši
-        </Link>
-      )}
-    </div>
-  </div>
-)}
-
-      </div>
-
-      {/* Mobil: när personal inte visas står Rezerviši till höger i kortet (som på desktop). */}
-      {isMobile && !salon.show_barbers && (
-        <Link
-          className={geist.className}
-          href={`/times?salon=${encodeURIComponent(
-            salon.salon_name
-          )}&salonSlug=${encodeURIComponent(
-            salonSlug
-          )}&serviceId=${service.id}&barberId=`}
-          style={{
-            display: "inline-block",
-            flexShrink: 0,
-            // Alltid i högerkanten, även när knappen hamnar på en egen rad.
-            marginLeft: "auto",
-            backgroundColor: "#611a1a",
-            padding: "11px 22px",
-            borderRadius: "12px",
-            color: "#ffffff",
-            fontWeight: "700",
-            fontSize: "15px",
-            textDecoration: "none",
-            whiteSpace: "nowrap",
-            boxShadow: "0 4px 10px rgba(97, 26, 26, 0.18)",
-          }}
-        >
-          Rezerviši
-        </Link>
-      )}
-
-      <Link
-        href={`/times?salon=${encodeURIComponent(
-  salon.salon_name
-)}&salonSlug=${encodeURIComponent(
-  salonSlug
-)}&serviceId=${service.id}&barberId=${
-  salon.show_barbers && selectedBarberByService[service.id]
-    ? selectedBarberByService[service.id]
-    : ""
-}`}
-       style={{
-        display: isMobile ? "none" : "inline-block",
-  backgroundColor: "#611a1a",
-  padding: "11px 22px",
-  borderRadius: "12px",
-  color: "#ffffff",
-  fontWeight: "700",
-  fontSize: "15px",
-  textDecoration: "none",
-  whiteSpace: "nowrap",
-  boxShadow: "0 4px 10px rgba(97, 26, 26, 0.18)",
-}}
-      >
+      <Link className={geist.className} href={bookingHref} style={bookingButtonStyle}>
         Rezerviši
       </Link>
+    </div>
+  </div>
+) : (
+  // Personal visas inte: bara Rezerviši, i högerkanten.
+  <div
+    style={{
+      marginTop: "auto",
+      paddingTop: "10px",
+      display: "flex",
+      justifyContent: "flex-end",
+    }}
+  >
+    <Link className={geist.className} href={bookingHref} style={bookingButtonStyle}>
+      Rezerviši
+    </Link>
+  </div>
+)}
         </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );
@@ -1497,6 +1439,54 @@ gap: "24px",
         </p>
       </div>
     </footer>
+
+    {/* Mobil: knappen "Rezerviši termin" ligger alltid längst ner och hoppar till tjänsterna.
+        Visas bara när salongen har tjänster som syns (tjänster med kategori). */}
+    {isMobile &&
+      services.some((service) =>
+        serviceCategories.some((category) => category.id === service.category_id)
+      ) && (
+      <>
+        <div style={{ height: "76px" }} />
+
+        <div
+          style={{
+            position: "fixed",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 30,
+            backgroundColor: "#ffffff",
+            borderTop: "1px solid #ead1d1",
+            boxShadow: "0 -6px 20px rgba(0, 0, 0, 0.08)",
+            padding: "10px 16px calc(10px + env(safe-area-inset-bottom))",
+          }}
+        >
+          <button
+            type="button"
+            className={geist.className}
+            onClick={() =>
+              document
+                .getElementById("usluge")
+                ?.scrollIntoView({ behavior: "smooth", block: "start" })
+            }
+            style={{
+              width: "100%",
+              height: "48px",
+              border: "none",
+              borderRadius: "12px",
+              backgroundColor: "#611a1a",
+              color: "#ffffff",
+              fontSize: "16px",
+              fontWeight: 700,
+              cursor: "pointer",
+            }}
+          >
+            Rezerviši termin
+          </button>
+        </div>
+      </>
+    )}
   </main>
 );
 }
