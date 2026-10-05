@@ -8,6 +8,7 @@ import { createPortal } from "react-dom";
 import { FaInstagram, FaFacebookF, FaTiktok } from "react-icons/fa";
 import {
   DM_Serif_Display,
+  Montserrat,
   Outfit,
   Source_Sans_3,
   Geist,
@@ -20,6 +21,12 @@ const dmSerif = DM_Serif_Display({
 
 const outfit = Outfit({
   subsets: ["latin"],
+});
+
+// Salongsnamnet – samma typsnitt som salongskorten på startsidan.
+const montserrat = Montserrat({
+  weight: "600",
+  subsets: ["latin", "latin-ext"],
 });
 
 const sourceSans = Source_Sans_3({
@@ -486,7 +493,7 @@ return (
   </p>
 
   <h1
-  className={`${dmSerif.className} mb-3 text-3xl md:text-4xl`}
+  className={`${montserrat.className} mb-3 text-3xl md:text-4xl`}
   style={{
     color: "#611a1a",
   }}

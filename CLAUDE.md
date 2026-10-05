@@ -136,11 +136,8 @@ Finjustera aldrig godkänd design "för att det ser bättre ut".
   - Flerstegstjänster med paus: under paus-steg (`is_barber_busy = false`) får andra
     kunder boka samma person. Dubbelbokningen är meningen. Kalenderns räkning för
     överlapp/paus får aldrig ändras vid designarbete.
-- **Nästa i punkt 8:** salongssidan – förslaget är redan visat (bilder),
-  vänta på ägarens "kör". B först: eget fliknamn "Studio M Exclusive – Salonix"
-  via ny fil `app/[salonSlug]/layout.tsx` (generateMetadata). Öppen fråga: ska
-  salongens beskrivning användas som sidbeskrivning? Sedan A: salongsnamnet i
-  Montserrat i den frysta `app/[salonSlug]/page.tsx`. Sedan punkt 9 (QA).
+- **Nästa i punkt 8:** salongsnamnet i Montserrat i den frysta
+  `app/[salonSlug]/page.tsx` (visa förslag, vänta på "kör"). Sedan punkt 9 (QA).
 - Ägaren vill se FLERA alternativ som bilder (mobil + desktop) och välja; enkelt
   men tydligt. "Testa X" = lägg in och visa, ägaren bestämmer sedan.
 - Idéer efter punkt 8: Brzi izbor anpassat efter salongens typ (alternativ B),
@@ -161,6 +158,9 @@ Finjustera aldrig godkänd design "för att det ser bättre ut".
   Påpeka allvarliga problem, men börja inte säkerhetsarbetet utan att fråga.
 - Att komma ihåg till punkt 10: kolumnen `salons.admin_password` kan läsas av alla
   med den publika Supabase-nyckeln.
+- Att komma ihåg till punkt 12: välj fliknamn och länktext per salongssida
+  ("Studio M Exclusive – Salonix", med/utan beskrivning och bild) – ny fil
+  `app/[salonSlug]/layout.tsx`. Ägaren vill bestämma före deploy.
 - Att komma ihåg till punkt 12: byt OpenStreetMaps kartbilder mot en leverantör
   med gratisnivå (t.ex. MapTiler) innan lansering.
 - Att komma ihåg till punkt 12: kategoribilderna i `public/categories/` kommer från

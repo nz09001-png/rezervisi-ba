@@ -14,9 +14,8 @@ Vi är i SLUTET av punkt 8: Design/UX-kontroll av hela Salonix.
   kalenderkorten (namn + tjänst, vinröd "2" vid paus-dubbelbokning),
   bokningsrutan och headern med Salonix-logga (desktop + mobil).
   Se avsnitt 7 och 14.
-- Kvar i punkt 8: eget fliknamn per salongssida (B) och salongsnamn i
-  Montserrat (A). Förslaget är visat – väntar på ägarens "kör".
-  Sedan punkt 9 (QA).
+- Kvar i punkt 8: salongsnamn i Montserrat (A). Eget fliknamn (B) är
+  flyttat till punkt 12 (ägarens beslut). Sedan punkt 9 (QA).
 Läs först: CLAUDE.md (regler) och SALONIX-KARTA.md (hur filerna hänger
 ihop + testlista). Läs sedan avsnitt 14 här.
 
@@ -461,6 +460,12 @@ Punkt 10 (säkerhet):
 - Personuppgifter: Bosniens lag om personuppgifter. Bekräftelse-sms/mejl
   = servicemeddelande; reklam kräver samtycke.
 Punkt 12 (lansering):
+- Välj fliknamn och länktext per salongssida (Google/WhatsApp/Viber):
+  "Studio M Exclusive – Salonix", med eller utan salongens beskrivning
+  och bild. Görs i ny fil app/[salonSlug]/layout.tsx (generateMetadata),
+  den frysta page.tsx rörs inte. Förslagsbilder visades 5 oktober
+  (nuläge / utan beskrivning / med beskrivning + bild). Ägaren var osäker
+  och vill bestämma före deploy.
 - Byt OpenStreetMaps kartbilder mot en leverantör med gratisnivå (MapTiler).
 - public/categories/solarijum.jpg kommer från Pinterest – byt mot en bild
   ni har rätt att använda. Övriga kategoribilder är från Unsplash (fria).
@@ -550,12 +555,8 @@ ARBETSSÄTT SOM FUNGERADE (ägaren):
   server (python3 -m http.server 8765), bilder skickas som filer.
 
 NÄSTA – I DEN HÄR ORDNINGEN:
-1. Salongssidan (förslaget är redan visat, vänta på "kör"):
-   B) Eget fliknamn "Studio M Exclusive – Salonix" via NY fil
-      app/[salonSlug]/layout.tsx (generateMetadata, hämtar salon_name
-      från Supabase utifrån slug). Rör inte den frysta page.tsx.
-      Öppen fråga till ägaren: ska salongens egen beskrivning användas
-      som beskrivning (Google/WhatsApp/Viber) – ja eller nej?
+1. Salongssidan:
+   B) Eget fliknamn – FLYTTAT till punkt 12 (se avsnitt 12).
    A) Salongsnamnet i Montserrat (600) på salongssidan: importera
       Montserrat i app/[salonSlug]/page.tsx (FRYST – ägaren måste säga
       "kör A") och byt bara h1:ans typsnitt. Färg/storlek oförändrade.
