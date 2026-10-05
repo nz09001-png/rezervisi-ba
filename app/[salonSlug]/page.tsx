@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { createPortal } from "react-dom";
@@ -508,413 +508,311 @@ return (
 </p>
 </div>
 
-        <div
-  style={{
-    marginBottom: isMobile ? "24px" : "48px",
-  }}
->
-  <div
-  style={{
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: "18px",
-  }}
->
-  <h2
-  className={dmSerif.className}
-  style={{
-    color: "#611a1a",
-    fontSize: isMobile ? "20px" : "28px",
-    fontWeight: "600",
-    margin: 0,
-  }}
->
-  Informacije o salonu
-</h2>
+        {/* Informacije: kompakt utan rutor.
+            Desktop (K1): tabell till vänster, karta till höger.
+            Mobil (K2): rubrik + sociala medier, uppgifter i en ram, karta under. */}
+        {(() => {
+          const dayOrder = ["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"];
+          const dayNames: Record<string, string> = {
+            Pon: "Ponedjeljak",
+            Uto: "Utorak",
+            Sri: "Srijeda",
+            Čet: "Četvrtak",
+            Pet: "Petak",
+            Sub: "Subota",
+            Ned: "Nedjelja",
+          };
+          const closedDays: string[] = salon.closed_weekdays || [];
+          const shortenedDays = shortenedHours.map((item) => item.weekday);
 
-  {(salon.instagram_url || salon.facebook_url || salon.tiktok_url) && (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "12px",
-      }}
-    >
-      {salon.instagram_url && (
-        <a
-          href={salon.instagram_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Instagram"
-          title="Instagram"
-          style={{
-            color: "#611a1a",
-            textDecoration: "none",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: isMobile ? "22px" : "26px",
-          }}
-        >
-          <FaInstagram />
-        </a>
-      )}
+          // Dagar med vanliga öppettider (varken förkortade eller stängda),
+          // t.ex. "Pon – Pet" om de ligger i följd.
+          const normalDays = dayOrder.filter(
+            (day) => !closedDays.includes(day) && !shortenedDays.includes(day)
+          );
+          const normalIndexes = normalDays.map((day) => dayOrder.indexOf(day));
+          const isConsecutive = normalIndexes.every(
+            (index, i) => i === 0 || index === normalIndexes[i - 1] + 1
+          );
+          const normalLabel =
+            normalDays.length === 7
+              ? "Svaki dan"
+              : normalDays.length === 1
+              ? dayNames[normalDays[0]]
+              : isConsecutive && normalDays.length > 1
+              ? `${normalDays[0]} – ${normalDays[normalDays.length - 1]}`
+              : normalDays.join(", ");
 
-      {salon.facebook_url && (
-        <a
-          href={salon.facebook_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Facebook"
-          title="Facebook"
-          style={{
-            color: "#611a1a",
-            textDecoration: "none",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: isMobile ? "22px" : "26px",
-          }}
-        >
-          <FaFacebookF />
-        </a>
-      )}
+          const hoursRows: [string, string][] = [];
 
-      {salon.tiktok_url && (
-        <a
-          href={salon.tiktok_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="TikTok"
-          title="TikTok"
-          style={{
-            color: "#611a1a",
-            textDecoration: "none",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: isMobile ? "22px" : "26px",
-          }}
-        >
-          <FaTiktok />
-        </a>
-      )}
-    </div>
-  )}
-</div>
+          if (salon.opening_hours && normalDays.length > 0) {
+            hoursRows.push([normalLabel, salon.opening_hours.replace("-", "–")]);
+          }
 
-  <div
-    style={{
-  display: "grid",
-  gridTemplateColumns: isMobile ? "1fr" : "1.15fr 0.85fr",
-  gap: "20px",
-  alignItems: "stretch",
-}}
-  >
-    {/* GOOGLE MAPS - LIJEVO */}
-    <div
-      style={{
-  height: isMobile ? "260px" : "360px",
-  border: "1px solid rgba(97, 26, 26, 0.18)",
-  borderRadius: "20px",
-  overflow: "hidden",
-  backgroundColor: "#ffffff",
-  display: "flex",
-  flexDirection: "column",
-  order: isMobile ? 2 : 1,
-}}
-    >
-      <iframe
-        src={`https://www.google.com/maps?q=${encodeURIComponent(
-          salon.address || ""
-        )}&output=embed`}
-        width="100%"
-        style={{
-          border: 0,
-          display: "block",
-          flex: 1,
-          minHeight: 0,
-        }}
-        loading="lazy"
-      />
+          [...shortenedHours]
+            .sort((a, b) => dayOrder.indexOf(a.weekday) - dayOrder.indexOf(b.weekday))
+            .forEach((item) => {
+              hoursRows.push([
+                dayNames[item.weekday] || item.weekday,
+                `${item.start_time.slice(0, 5)}–${item.end_time.slice(0, 5)}`,
+              ]);
+            });
 
-      <div
-        style={{
-          padding: "14px 16px",
-          borderTop: "1px solid #eeeeee",
-          backgroundColor: "#ffffff",
-        }}
-      >
-        <a
-  className={geist.className}
-  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    salon.address || ""
-  )}`}
-  target="_blank"
-  rel="noopener noreferrer"
-  style={{
-            display: "block",
-            width: "100%",
-            backgroundColor: "#611a1a",
-            color: "#ffffff",
-            padding: "11px 16px",
-            borderRadius: "12px",
-            fontWeight: "700",
-            textDecoration: "none",
-            textAlign: "center",
-          }}
-        >
-          Otvori u Google Maps
-        </a>
-      </div>
-    </div>
+          [...closedDays]
+            .sort((a, b) => dayOrder.indexOf(a) - dayOrder.indexOf(b))
+            .forEach((day) => {
+              hoursRows.push([dayNames[day] || day, "Zatvoreno"]);
+            });
 
-    {/* INFORMACIJE - DESNO */}
-<div
-  style={{
-    height: isMobile ? "auto" : "360px",
-    display: "grid",
-    gridTemplateColumns: isMobile ? "1fr 1fr" : "1fr",
-    gridTemplateRows: isMobile
-  ? "auto auto"
-  : "auto repeat(3, 1fr)",
-    gap: "14px",
-    order: isMobile ? 1 : 2,
-  }}
->
+          const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+            salon.address || ""
+          )}`;
 
+          const labelStyle = {
+            fontSize: "11px",
+            fontWeight: 600,
+            letterSpacing: "2px",
+            textTransform: "uppercase" as const,
+            color: "#9ca3af",
+          };
 
-
-      <div
-  className={outfit.className}
-  style={{
-    border: "1px solid rgba(97, 26, 26, 0.18)",
-          borderRadius: "18px",
-          padding: isMobile ? "14px 16px" : "20px",
-          backgroundColor: "#ffffff",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-        }}
-      >
-        <p
-          style={{
-            color: "#611a1a",
-            fontSize: "15px",
-            fontWeight: "700",
-            marginBottom: "6px",
-          }}
-        >
-          Adresa
-        </p>
-
-        <p
-          style={{
-            color: "#111827",
+          const valueStyle = {
             fontSize: "16px",
-            fontWeight: "500",
-            lineHeight: "1.5",
-          }}
-        >
-          {salon.address}
-        </p>
-      </div>
-
-      <div
-  className={outfit.className}
-  style={{
-    border: "1px solid rgba(97, 26, 26, 0.18)",
-          borderRadius: "18px",
-          padding: isMobile ? "14px 16px" : "20px",
-          backgroundColor: "#ffffff",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-        }}
-      >
-        <p
-          style={{
-            color: "#611a1a",
-            fontSize: "15px",
-            fontWeight: "700",
-            marginBottom: "6px",
-          }}
-        >
-          Telefon
-        </p>
-
-        <p
-          style={{
+            lineHeight: 1.5,
             color: "#111827",
-            fontSize: "16px",
-            fontWeight: "500",
-            lineHeight: "1.5",
-          }}
-        >
-          {salon.phone ? (
-            // Ringlänk: telefonen frågar själv "Ring/Avbryt" innan samtalet startar.
-            <a
-              href={`tel:${salon.phone.replace(/[^\d+]/g, "")}`}
+          };
+
+          const underline = {
+            color: "#111827",
+            textDecoration: "underline",
+            textDecorationColor: "#d6b8b8",
+            textUnderlineOffset: "3px",
+          };
+
+          const hasSocial =
+            salon.instagram_url || salon.facebook_url || salon.tiktok_url;
+
+          const socialLinks = hasSocial ? (
+            <div style={{ display: "flex", gap: "8px" }}>
+              {(
+                [
+                  [salon.instagram_url, "Instagram", <FaInstagram key="ig" />],
+                  [salon.facebook_url, "Facebook", <FaFacebookF key="fb" />],
+                  [salon.tiktok_url, "TikTok", <FaTiktok key="tt" />],
+                ] as [string, string, React.ReactNode][]
+              )
+                .filter(([url]) => url)
+                .map(([url, label, icon]) => (
+                  <a
+                    key={label}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={label}
+                    title={label}
+                    style={{
+                      width: "36px",
+                      height: "36px",
+                      borderRadius: "50%",
+                      border: "1px solid #ead1d1",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "#611a1a",
+                      fontSize: "16px",
+                      textDecoration: "none",
+                    }}
+                  >
+                    {icon}
+                  </a>
+                ))}
+            </div>
+          ) : null;
+
+          const hoursList = (
+            <div
               style={{
-                color: "inherit",
-                textDecoration: "none",
-                cursor: "pointer",
+                display: "grid",
+                gridTemplateColumns: "auto auto",
+                columnGap: "16px",
+                rowGap: "2px",
+                justifyContent: "start",
+                ...valueStyle,
               }}
             >
-              {salon.phone}
-            </a>
-          ) : null}
-        </p>
-      </div>
+              {hoursRows.map(([day, time]) => (
+                <Fragment key={day}>
+                  <span style={{ color: "#6b7280" }}>{day}</span>
+                  <span style={{ whiteSpace: "nowrap" }}>{time}</span>
+                </Fragment>
+              ))}
+            </div>
+          );
 
-      <div
-  className={outfit.className}
-  style={{
-    border: "1px solid rgba(97, 26, 26, 0.18)",
-    borderRadius: "18px",
-    padding: isMobile ? "14px 16px" : "20px",
-    backgroundColor: "#ffffff",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    gridColumn: isMobile ? "1 / -1" : "auto",
-  }}
->
-        <p
-          style={{
-            color: "#611a1a",
-            fontSize: "15px",
-            fontWeight: "700",
-            marginBottom: "6px",
-          }}
-        >
-          Radno vrijeme
-        </p>
+          const infoRows: [string, React.ReactNode][] = [
+            [
+              "Adresa",
+              salon.address ? (
+                <a href={mapsHref} target="_blank" rel="noopener noreferrer" style={underline}>
+                  {salon.address}
+                </a>
+              ) : null,
+            ],
+            [
+              "Telefon",
+              salon.phone ? (
+                // Ringlänk: telefonen frågar själv "Ring/Avbryt" innan samtalet startar.
+                <a href={`tel:${salon.phone.replace(/[^\d+]/g, "")}`} style={underline}>
+                  {salon.phone}
+                </a>
+              ) : null,
+            ],
+            ["Radno vrijeme", hoursRows.length > 0 ? hoursList : null],
+          ];
 
-        <p
-          style={{
-            color: "#111827",
-            fontSize: "16px",
-            fontWeight: "500",
-            lineHeight: "1.5",
-          }}
-        >
-          {/* Samma långa streck som startsidan och de förkortade tiderna. */}
-          {salon.opening_hours?.replace("-", "–")}
-        </p>
-        {shortenedHours.length > 0 && (
-  <div
-    style={{
-      marginTop: "6px",
-      display: "flex",
-      flexDirection: "column",
-      gap: "3px",
-    }}
-  >
-    {[...shortenedHours]
-      .sort((a, b) => {
-        const dayOrder = ["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"];
-        return dayOrder.indexOf(a.weekday) - dayOrder.indexOf(b.weekday);
-      })
-      .map((item) => {
-        const dayNames: Record<string, string> = {
-          Pon: "Ponedjeljak",
-          Uto: "Utorak",
-          Sri: "Srijeda",
-          Čet: "Četvrtak",
-          Pet: "Petak",
-          Sub: "Subota",
-          Ned: "Nedjelja",
-        };
+          const visibleRows = infoRows.filter(([, value]) => value);
 
-        return (
-          <p
-            key={item.id}
-            style={{
-              fontSize: "15px",
-              lineHeight: "1.5",
-            }}
-          >
-            <span
+          const map = (
+            <div
               style={{
-                color: "#111827",
-                fontWeight: "600",
+                height: isMobile ? "220px" : "100%",
+                minHeight: isMobile ? undefined : "280px",
+                border: "1px solid rgba(97, 26, 26, 0.18)",
+                borderRadius: "16px",
+                overflow: "hidden",
+                backgroundColor: "#ffffff",
+                display: "flex",
+                flexDirection: "column",
               }}
             >
-              {dayNames[item.weekday] || item.weekday}:
-            </span>{" "}
-            <span
+              <iframe
+                src={`https://www.google.com/maps?q=${encodeURIComponent(
+                  salon.address || ""
+                )}&output=embed`}
+                width="100%"
+                style={{ border: 0, display: "block", flex: 1, minHeight: 0 }}
+                loading="lazy"
+              />
+
+              <div style={{ padding: "10px", borderTop: "1px solid #eeeeee" }}>
+                <a
+                  className={geist.className}
+                  href={mapsHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "block",
+                    backgroundColor: "#611a1a",
+                    color: "#ffffff",
+                    padding: "11px 16px",
+                    borderRadius: "12px",
+                    fontWeight: "700",
+                    textDecoration: "none",
+                    textAlign: "center",
+                  }}
+                >
+                  Otvori u Google Maps
+                </a>
+              </div>
+            </div>
+          );
+
+          if (isMobile) {
+            // K2 – mobil
+            return (
+              <div className={outfit.className} style={{ marginBottom: "28px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    margin: "8px 0 12px",
+                  }}
+                >
+                  <h2
+                    className={dmSerif.className}
+                    style={{ color: "#611a1a", fontSize: "24px", margin: 0 }}
+                  >
+                    Informacije
+                  </h2>
+                  {socialLinks}
+                </div>
+
+                {visibleRows.length > 0 && (
+                  <div
+                    style={{
+                      border: "1px solid #ead1d1",
+                      borderRadius: "16px",
+                      overflow: "hidden",
+                      marginBottom: "12px",
+                    }}
+                  >
+                    {visibleRows.map(([label, value], i) => (
+                      <div
+                        key={label}
+                        style={{
+                          padding: "12px 16px",
+                          borderTop: i ? "1px solid #f1e4e4" : "none",
+                        }}
+                      >
+                        <p className={montserrat.className} style={{ ...labelStyle, marginBottom: "4px" }}>
+                          {label}
+                        </p>
+                        <div style={valueStyle}>{value}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {salon.address && map}
+              </div>
+            );
+          }
+
+          // K1 – desktop
+          const tableRows: [string, React.ReactNode][] = hasSocial
+            ? [...visibleRows, ["Pratite nas", socialLinks]]
+            : visibleRows;
+
+          return (
+            <div
+              className={outfit.className}
               style={{
-                color: "#111827",
-                fontWeight: "500",
+                marginBottom: "48px",
+                borderTop: "1px solid #ead1d1",
+                paddingTop: "8px",
+                display: "grid",
+                gridTemplateColumns: salon.address ? "1fr 1fr" : "1fr",
+                gap: "28px",
+                alignItems: "stretch",
               }}
             >
-              {item.start_time.slice(0, 5)}–{item.end_time.slice(0, 5)}
-            </span>
-          </p>
-        );
-      })}
-  </div>
-)}
-        {salon.closed_weekdays?.length > 0 && (
-  <div
-    style={{
-      marginTop: "6px",
-      display: "flex",
-      flexDirection: "column",
-      gap: "3px",
-    }}
-  >
-    {[...salon.closed_weekdays]
-  .sort((a: string, b: string) => {
-    const dayOrder = ["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"];
-    return dayOrder.indexOf(a) - dayOrder.indexOf(b);
-  })
-  .map((day: string) => {
-      const dayNames: Record<string, string> = {
-        Pon: "Ponedjeljak",
-        Uto: "Utorak",
-        Sri: "Srijeda",
-        Čet: "Četvrtak",
-        Pet: "Petak",
-        Sub: "Subota",
-        Ned: "Nedjelja",
-      };
+              <div>
+                {tableRows.map(([label, value], i) => (
+                  <div
+                    key={label}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "140px 1fr",
+                      gap: "12px",
+                      alignItems: label === "Pratite nas" ? "center" : "start",
+                      padding: "12px 0",
+                      borderTop: i ? "1px solid #f1e4e4" : "none",
+                    }}
+                  >
+                    <p className={montserrat.className} style={{ ...labelStyle, paddingTop: "4px" }}>
+                      {label}
+                    </p>
+                    <div style={valueStyle}>{value}</div>
+                  </div>
+                ))}
+              </div>
 
-      return (
-        <p
-          key={day}
-          style={{
-            fontSize: "15px",
-            lineHeight: "1.5",
-          }}
-        >
-          <span
-            style={{
-              color: "#111827",
-              fontWeight: "600",
-            }}
-          >
-            {dayNames[day] || day}:
-          </span>{" "}
-          <span
-  style={{
-    color: "#111827",
-    fontWeight: "500",
-  }}
->
-  Zatvoreno
-</span>
-        </p>
-      );
-    })}
-  </div>
-)}
-      </div>
-    </div>
-  </div>
-</div>
+              {salon.address && <div style={{ paddingTop: "8px" }}>{map}</div>}
+            </div>
+          );
+        })()}
+
 {salonImages.length > 0 && (
   <div
   style={{
