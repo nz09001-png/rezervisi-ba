@@ -1165,6 +1165,51 @@ gap: "24px",
   Usluge
 </h2>
 
+{/* Snabbval: en knapp per kategori som har tjänster – ett tryck hoppar dit.
+    Mobil: raden går att svepa i sidled. */}
+<div
+  className={geist.className}
+  style={{
+    display: "flex",
+    gap: "8px",
+    flexWrap: isMobile ? "nowrap" : "wrap",
+    overflowX: isMobile ? "auto" : "visible",
+    margin: isMobile ? "0 -4px 4px" : "0 0 8px",
+    padding: isMobile ? "2px 4px 6px" : 0,
+    scrollbarWidth: "none",
+  }}
+>
+  {serviceCategories
+    .filter((category) =>
+      services.some((service) => service.category_id === category.id)
+    )
+    .map((category) => (
+      <button
+        key={category.id}
+        type="button"
+        onClick={() =>
+          document
+            .getElementById(`kategorija-${category.id}`)
+            ?.scrollIntoView({ behavior: "smooth", block: "start" })
+        }
+        style={{
+          flexShrink: 0,
+          border: "1px solid #611a1a",
+          backgroundColor: "#ffffff",
+          color: "#611a1a",
+          borderRadius: "999px",
+          padding: "8px 16px",
+          fontSize: "14px",
+          fontWeight: 600,
+          whiteSpace: "nowrap",
+          cursor: "pointer",
+        }}
+      >
+        {category.name}
+      </button>
+    ))}
+</div>
+
 <div className="mb-8 space-y-8">
   {serviceCategories.map((category) => {
     const categoryServices = services.filter(
@@ -1176,24 +1221,36 @@ gap: "24px",
     return (
       <div
   key={category.id}
+  id={`kategorija-${category.id}`}
   style={{
-    marginTop: isMobile ? "12px" : "32px",
+    marginTop: isMobile ? "20px" : "28px",
+    scrollMarginTop: "16px",
   }}
 >
-  <h2
-  className={dmSerif.className}
-  style={{
-    fontSize: "20px",
-    fontWeight: "700",
-    color: "#611a1a",
-    marginBottom: "14px",
-    paddingBottom: "8px",
-    borderBottom: "2px solid rgba(97, 26, 26, 0.22)",
-    letterSpacing: "0.2px",
-  }}
->
-  {category.name}
-</h2>
+  {/* Kategorirubrik i samma stil som KATEGORIJE/SALONI på startsidan. */}
+  <div
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "12px",
+      marginBottom: "12px",
+    }}
+  >
+    <h2
+      className={montserrat.className}
+      style={{
+        fontSize: "15px",
+        fontWeight: 600,
+        letterSpacing: "3px",
+        textTransform: "uppercase",
+        color: "#611a1a",
+      }}
+    >
+      {category.name}
+    </h2>
+
+    <div style={{ flex: 1, height: "1px", backgroundColor: "#ead1d1" }} />
+  </div>
 
         {/* Tjänstekort: namn + pris överst, tid under, Osoblje + Rezerviši.
             Desktop: 2 kort per rad. Länken till /times är samma som förut. */}
