@@ -25,7 +25,7 @@ const outfit = Outfit({
 
 // Salongsnamnet – samma typsnitt som salongskorten på startsidan.
 const montserrat = Montserrat({
-  weight: "600",
+  weight: ["600", "700"],
   subsets: ["latin", "latin-ext"],
 });
 
@@ -55,6 +55,14 @@ const [loadingTimes, setLoadingTimes] = useState(false);
 const [barbers, setBarbers] = useState<any[]>([]);
 const [closedDays, setClosedDays] = useState<any[]>([])
 const [isMobile, setIsMobile] = useState(false);
+// Avsnittsrubriker (Informacije, Galerija, Usluge): samma typsnitt och storlek.
+const sectionHeadingStyle = {
+  fontSize: isMobile ? "21px" : "24px",
+  fontWeight: 700,
+  color: "#111827",
+  letterSpacing: "-0.3px",
+  lineHeight: 1.2,
+};
 // Sant när salongen inte finns (fel adress), så att sidan inte laddar för evigt.
 const [notFound, setNotFound] = useState(false);
 const [selectedBarberByService, setSelectedBarberByService] = useState<
@@ -730,8 +738,8 @@ return (
                   }}
                 >
                   <h2
-                    className={dmSerif.className}
-                    style={{ color: "#611a1a", fontSize: "24px", margin: 0 }}
+                    className={montserrat.className}
+                    style={{ ...sectionHeadingStyle, margin: 0 }}
                   >
                     Informacije
                   </h2>
@@ -821,12 +829,10 @@ return (
   }}
 >
     <h2
-  className={dmSerif.className}
+  className={montserrat.className}
   style={{
-    color: "#611a1a",
-    marginBottom: "20px",
-    fontSize: "26px",
-    fontWeight: "600",
+    ...sectionHeadingStyle,
+    marginBottom: isMobile ? "12px" : "16px",
   }}
 >
   Galerija
@@ -1051,12 +1057,10 @@ gap: "24px",
 
 <h2
   id="usluge"
-  className={dmSerif.className}
+  className={montserrat.className}
   style={{
-    color: "#611a1a",
-    fontSize: "28px",
-    fontWeight: "600",
-    marginBottom: isMobile ? "12px" : "24px",
+    ...sectionHeadingStyle,
+    marginBottom: isMobile ? "12px" : "16px",
     scrollMarginTop: "16px",
   }}
 >
