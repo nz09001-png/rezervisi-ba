@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
-import { Source_Sans_3, Geist } from "next/font/google";
+import { Source_Sans_3, Geist, Montserrat } from "next/font/google";
 
 const sourceSans = Source_Sans_3({
   subsets: ["latin"],
@@ -13,6 +13,12 @@ const sourceSans = Source_Sans_3({
 
 const geist = Geist({
   subsets: ["latin"],
+});
+
+// Rubriker och salongens namn – samma som tidssidan.
+const montserrat = Montserrat({
+  weight: ["600", "700"],
+  subsets: ["latin", "latin-ext"],
 });
 
 export default function PodaciPage() {
@@ -87,12 +93,10 @@ useEffect(() => {
 
 // Samma fältstil som tidigare, men röd ram när fältet har ett fel.
 const fieldClass = (hasError: boolean) =>
-  `w-full rounded-xl border ${
-    isMobile ? "px-3 py-2" : "p-3"
-  } outline-none transition focus:ring-2 ${
+  `w-full rounded-xl border bg-white px-3.5 py-3 outline-none transition focus:ring-2 ${
     hasError
       ? "border-[#ef4444] ring-1 ring-[#ef4444] focus:border-[#ef4444] focus:ring-[#ef4444]/20"
-      : "border-[#611a1a] focus:border-[#611a1a] focus:ring-[#611a1a]/20"
+      : "border-[#d1d5db] focus:border-[#611a1a] focus:ring-[#611a1a]/20"
   }`;
 
 const errorText = (message?: string) =>
@@ -203,14 +207,27 @@ useEffect(() => {
   fetchBarber();
 }, [barberId]);
 
+  // Datum som "Sri, 07.10.2026".
+  const formattedDate = date
+    ? (() => {
+        const [year, month, day] = date.split("-").map(Number);
+        const shortDays = ["Ned", "Pon", "Uto", "Sri", "Čet", "Pet", "Sub"];
+        const weekday = shortDays[new Date(year, month - 1, day).getDay()];
+        return `${weekday}, ${String(day).padStart(2, "0")}.${String(month).padStart(2, "0")}.${year}`;
+      })()
+    : "";
+
+  const labelClass = "mb-1.5 block font-semibold text-[#111827]";
+
+  const factLabel = { margin: 0, color: "#6b7280", fontSize: "13px" };
+  const factValue = { margin: 0, color: "#111827", fontSize: "16px", fontWeight: 700 };
+
   return (
     <main
-  className={`${sourceSans.className} ${
-    isMobile
-      ? "min-h-screen bg-white px-4 py-4"
-      : "min-h-screen bg-white px-8 py-6"
-  }`}
+  className={`${sourceSans.className} min-h-screen bg-white px-3 py-6 md:px-8`}
+  style={{ paddingBottom: "110px" }}
 >
+  <div className="mx-auto w-full" style={{ maxWidth: "860px" }}>
       <Link
   href={`/times?salon=${encodeURIComponent(
     salon || ""
@@ -222,368 +239,164 @@ useEffect(() => {
     textDecoration: "none",
     fontWeight: "700",
     display: "inline-block",
-    marginBottom: isMobile ? "8px" : "16px",
+    marginBottom: "12px",
   }}
 >
   ← Nazad
 </Link>
-  <div className="mx-auto max-w-4xl">
-    
 
+  {/* Sammanfattning: salong, tjänst, datum, tid, personal, pris. */}
   <div
-  className="flex items-end justify-between"
-  style={{
-    marginBottom: isMobile ? "0px" : "16px",
-  }}
->
-
-  <div>
-
-
-   
-  </div>
-
-  <div
-  className={
-    isMobile
-      ? "hidden"
-      : "flex items-center gap-2"
-  }
->
-    {[
-      { nr: "1", label: "USLUGA", active: true },
-      { nr: "2", label: "VRIJEME", active: true },
-      { nr: "3", label: "PODACI", active: true },
-      { nr: "4", label: "POTVRDA", active: false },
-    ].map((step, index) => (
-      <div key={step.nr} className="flex items-center gap-4">
-
-        <div className="flex flex-col items-center">
-          <div
-            style={{
-              width: "18px",
-              height: "18px",
-              borderRadius: "9999px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: "bold",
-              backgroundColor: step.active ? "#611a1a" : "white",
-              color: step.active ? "white" : "#6b7280",
-              border: step.active ? "none" : "1px solid #d1d5db",
-            }}
-          >
-            {step.nr}
-          </div>
-
-          <p
-            className={`mt-1 text-[11px] font-semibold tracking-wide ${
-              step.active ? "text-[#611a1a]" : "text-gray-500"
-            }`}
-          >
-            {step.label}
-          </p>
-        </div>
-
-        {index < 3 && (
-          <div
-            style={{
-              width: "15px",
-              height: "1px",
-              backgroundColor: index < 2 ? "#611a1a" : "#d1d5db",
-              marginBottom: "24px",
-            }}
-          />
-        )}
-
-      </div>
-    ))}
-  </div>
-
-</div>
-
- 
-
-       <div
-  className="mb-6"
-  style={{
-    width: "100%",
-    maxWidth: "420px",
-    padding: isMobile ? "12px 16px" : "18px 20px",
-    borderRadius: "18px",
-    backgroundColor: "rgba(97, 26, 26, 0.03)",
-    border: "1px solid rgba(97, 26, 26, 0.15)",
-    boxShadow: "0 4px 14px rgba(0, 0, 0, 0.04)",
-  }}
->
-  <p
     style={{
-      margin: 0,
-      color: "#111827",
-      fontSize: isMobile ? "18px" : "24px",
-      fontWeight: "700",
+      width: "100%",
+      padding: isMobile ? "14px 16px" : "16px 20px",
+      borderRadius: "16px",
+      backgroundColor: "#ffffff",
+      border: "1px solid #ead1d1",
     }}
   >
-    {service ? service.name : "Učitava se..."}
-  </p>
+    {salon && (
+      <p
+        className={montserrat.className}
+        style={{
+          margin: 0,
+          fontSize: "12px",
+          fontWeight: 600,
+          letterSpacing: "1.5px",
+          textTransform: "uppercase",
+          color: "#611a1a",
+        }}
+      >
+        {salon}
+      </p>
+    )}
 
-  {service?.description && (
-    <p
-      style={{
-  marginTop: "4px",
-  marginRight: 0,
-  marginBottom: 0,
-  marginLeft: 0,
-  color: "#6b7280",
-  fontSize: "14px",
-  lineHeight: "1.5",
-}}
-    >
-      {service.description}
+    <p style={{ margin: 0, marginTop: "2px", color: "#111827", fontSize: "20px", fontWeight: 700 }}>
+      {service ? service.name : "Učitava se..."}
     </p>
-  )}
 
- <div
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "8px 22px",
+        marginTop: "8px",
+      }}
+    >
+      <div>
+        <p style={factLabel}>Datum</p>
+        <p style={factValue}>{formattedDate}</p>
+      </div>
+
+      <div>
+        <p style={factLabel}>Vrijeme</p>
+        <p style={factValue}>{time}</p>
+      </div>
+
+      <div>
+        <p style={factLabel}>Osoblje</p>
+        <p style={factValue}>
+          {barberId ? (barber ? barber.name : "Učitava se...") : "Bez preferencije"}
+        </p>
+      </div>
+
+      {service?.show_price && (
+        <div>
+          <p style={factLabel}>Cijena</p>
+          <p style={factValue}>{service.price} KM</p>
+        </div>
+      )}
+    </div>
+  </div>
+
+{/* Stegen med namn – samma på mobil och desktop. */}
+<div
   style={{
     display: "flex",
-    gap: "40px",
-    alignItems: "center",
-    marginTop: isMobile ? "10px" : "18px",
-    marginBottom: isMobile ? "10px" : "18px",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    gap: "6px",
+    margin: "14px 0",
   }}
 >
-    <div>
-      <p
-        style={{
-          margin: 0,
-          marginBottom: "3px",
-          color: "#6b7280",
-          fontSize: "13px",
-        }}
-      >
-        Datum
-      </p>
-
-      <p
-        style={{
-          margin: 0,
-          color: "#111827",
-          fontSize: "17px",
-          fontWeight: "700",
-        }}
-      >
-        {date
-          ? (() => {
-              const [year, month, day] = date.split("-");
-              return `${day}.${month}.${year}`;
-            })()
-          : ""}
-      </p>
-    </div>
-
-    <div>
-      <p
-        style={{
-          margin: 0,
-          marginBottom: "3px",
-          color: "#6b7280",
-          fontSize: "13px",
-        }}
-      >
-        Vrijeme
-      </p>
-
-      <p
-        style={{
-          margin: 0,
-          color: "#111827",
-          fontSize: "17px",
-          fontWeight: "700",
-        }}
-      >
-        {time}
-      </p>
-    </div>
-  </div>
-
-  <div
-  style={{
-    display: isMobile ? "grid" : "flex",
-    gridTemplateColumns: isMobile ? "repeat(3, minmax(0, 1fr))" : undefined,
-    gap: isMobile ? "12px" : "32px",
-    alignItems: "start",
-  }}
->
-    {service?.show_price && (
-      <div>
-        <p
-          style={{
-            margin: 0,
-            marginBottom: "3px",
-            color: "#6b7280",
-            fontSize: "13px",
-          }}
-        >
-          Cijena
-        </p>
-
-        <p
-          style={{
-            margin: 0,
-            color: "#111827",
-            fontSize: "17px",
-            fontWeight: "700",
-          }}
-        >
-          {service.price} KM
-        </p>
-      </div>
-    )}
-
-    {service?.show_duration && (
-      <div>
-        <p
-          style={{
-            margin: 0,
-            marginBottom: "3px",
-            color: "#6b7280",
-            fontSize: "13px",
-          }}
-        >
-          Trajanje
-        </p>
-
-        <p
-          style={{
-            margin: 0,
-            color: "#111827",
-            fontSize: "17px",
-            fontWeight: "700",
-          }}
-        >
-          {service.duration_minutes || 60} min
-        </p>
-      </div>
-    )}
-
-    <div>
-      <p
-        style={{
-          margin: 0,
-          marginBottom: "3px",
-          color: "#6b7280",
-          fontSize: "13px",
-        }}
-      >
-        Osoblje
-      </p>
-
-      <p
-  style={{
-    margin: 0,
-    color: "#111827",
-    fontSize: isMobile ? "15px" : "17px",
-    fontWeight: "700",
-    whiteSpace: isMobile ? "nowrap" : undefined,
-  }}
->
-        {barberId
-          ? barber
-            ? barber.name
-            : "Učitava se..."
-          : "Bez preferencije"}
-      </p>
-    </div>
-  </div>
-</div>
-
-{isMobile && (
-  <div
-    className="flex w-full items-center justify-center"
-    style={{
-      marginTop: "-10px",
-      marginBottom: "12px",
-    }}
-  >
-    {[
-      { nr: "1", active: true },
-      { nr: "2", active: true },
-      { nr: "3", active: true },
-      { nr: "4", active: false },
-    ].map((step, index) => (
-      <div key={step.nr} className="flex items-center">
+  {[
+    { nr: "1", label: "USLUGA", active: true },
+    { nr: "2", label: "VRIJEME", active: true },
+    { nr: "3", label: "PODACI", active: true },
+    { nr: "4", label: "POTVRDA", active: false },
+  ].map((step, index) => (
+    <div key={step.nr} style={{ display: "flex", alignItems: "flex-start", gap: "6px" }}>
+      {index > 0 && (
         <div
           style={{
-            width: "20px",
-            height: "20px",
+            width: "16px",
+            height: "2px",
+            marginTop: "10px",
+            backgroundColor: step.active ? "#611a1a" : "#ead1d1",
+          }}
+        />
+      )}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", width: "62px" }}>
+        <div
+          style={{
+            width: "22px",
+            height: "22px",
             borderRadius: "9999px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "10px",
-            fontWeight: "700",
+            fontSize: "11px",
+            fontWeight: 700,
             backgroundColor: step.active ? "#611a1a" : "#ffffff",
-            color: step.active ? "#ffffff" : "#6b7280",
-            border: step.active
-              ? "1px solid #611a1a"
-              : "1px solid #d1d5db",
+            color: step.active ? "#ffffff" : "#9ca3af",
+            border: step.active ? "1.5px solid #611a1a" : "1.5px solid #d1d5db",
           }}
         >
           {step.nr}
         </div>
-
-        {index < 3 && (
-          <div
-            style={{
-              width: "24px",
-              height: "1px",
-              backgroundColor:
-                index < 2 ? "#611a1a" : "#d1d5db",
-            }}
-          />
-        )}
+        <p
+          style={{
+            margin: 0,
+            fontSize: "10px",
+            fontWeight: 700,
+            letterSpacing: "0.5px",
+            color: step.active ? "#611a1a" : "#9ca3af",
+          }}
+        >
+          {step.label}
+        </p>
       </div>
-    ))}
-  </div>
-)}
+    </div>
+  ))}
+</div>
 
 <h1
-  className="text-3xl font-bold text-gray-950"
+  className={montserrat.className}
   style={{
-    fontSize: isMobile ? "22px" : undefined,
-    transform: isMobile ? "translateY(-6px)" : undefined,
-    marginBottom: isMobile ? undefined : "8px",
+    margin: "0 0 12px",
+    fontSize: isMobile ? "20px" : "24px",
+    fontWeight: 700,
+    letterSpacing: "-0.3px",
+    color: "#111827",
   }}
 >
-  Unesite podatke
+  Vaši podaci
 </h1>
 
         <div
-  className={
-    isMobile
-      ? "mx-auto max-w-4xl rounded-3xl border border-[#611a1a] bg-white p-4 shadow-sm"
-      : "mx-auto max-w-4xl rounded-3xl border border-[#611a1a] bg-white p-6 shadow-sm"
-  }
+  style={{
+    border: "1px solid #ead1d1",
+    borderRadius: "16px",
+    backgroundColor: "#ffffff",
+    padding: "16px",
+  }}
 >
 <div
-  className={
-    isMobile
-      ? "mb-3 grid grid-cols-1 gap-2"
-      : "mb-6 grid grid-cols-2 gap-6"
-  }
+  className={isMobile ? "mb-3.5 grid grid-cols-1 gap-3.5" : "mb-3.5 grid grid-cols-2 gap-3.5"}
 >
 
   <div>
-    <label
-  style={{ color: "#611a1a" }}
-  className={
-  isMobile
-    ? "mb-1 block font-semibold"
-    : "mb-2 block font-semibold"
-}
->
-  Ime *
-</label>
+    <label className={labelClass}>Ime *</label>
 
     <input
   type="text"
@@ -599,16 +412,7 @@ className={fieldClass(!!errors.ime)}
   </div>
 
   <div>
-    <label
-  style={{ color: "#611a1a" }}
-  className={
-  isMobile
-    ? "mb-1 block font-semibold"
-    : "mb-2 block font-semibold"
-}
->
-  Prezime *
-</label>
+    <label className={labelClass}>Prezime *</label>
 
     <input
   type="text"
@@ -625,29 +429,14 @@ className={fieldClass(!!errors.prezime)}
 
 </div>
 
-<div className={isMobile ? "mb-3" : "mb-6"}>
- <label
-  style={{ color: "#611a1a" }}
-  className={
-    isMobile
-      ? "mb-1 block font-semibold"
-      : "mb-2 block font-semibold"
-  }
->
-  Telefon *
-</label>
+<div className="mb-3.5">
+ <label className={labelClass}>Telefon *</label>
 
-  <div
-  className={
-    isMobile
-      ? "flex gap-2"
-      : "flex gap-3"
-  }
->
+  <div className="flex gap-2">
    <div
   style={{
     position: "relative",
-    width: isMobile ? "112px" : "160px",
+    width: isMobile ? "112px" : "130px",
     flexShrink: 0,
   }}
 >
@@ -657,16 +446,12 @@ className={fieldClass(!!errors.prezime)}
       setPhoneCode(e.target.value);
       setErrors((prev) => ({ ...prev, phone: undefined }));
     }}
-    className={
-      isMobile
-        ? "w-28 rounded-xl border border-[#611a1a] px-3 py-2 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
-        : "w-40 rounded-xl border border-[#611a1a] px-4 py-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
-    }
+    className="w-full rounded-xl border border-[#d1d5db] bg-white px-3.5 py-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
     style={{
-      borderRadius: isMobile ? undefined : "12px",
-      appearance: isMobile ? undefined : "none",
-      WebkitAppearance: isMobile ? undefined : "none",
-      paddingRight: isMobile ? undefined : "36px",
+      appearance: "none",
+      WebkitAppearance: "none",
+      paddingRight: "30px",
+      color: "#111827",
     }}
   >
     <option value="+387">BA +387</option>
@@ -682,21 +467,19 @@ className={fieldClass(!!errors.prezime)}
     <option value="+41">CH +41</option>
   </select>
 
-  {!isMobile && (
-    <span
-      style={{
-        position: "absolute",
-        right: "14px",
-        top: "50%",
-        transform: "translateY(-50%)",
-        pointerEvents: "none",
-        color: "#611a1a",
-        fontSize: "11px",
-      }}
-    >
-      ▼
-    </span>
-  )}
+  <span
+    style={{
+      position: "absolute",
+      right: "12px",
+      top: "50%",
+      transform: "translateY(-50%)",
+      pointerEvents: "none",
+      color: "#111827",
+      fontSize: "10px",
+    }}
+  >
+    ▼
+  </span>
 </div>
 
     <input
@@ -711,28 +494,13 @@ className={fieldClass(!!errors.prezime)}
 />
   </div>
   {errorText(errors.phone)}
-  <p
-  style={{
-    fontSize: "13px",
-    color: "#666",
-    marginTop: "8px",
-  }}
->
+  <p style={{ fontSize: "13px", color: "#6b7280", marginTop: "6px" }}>
   Salon će vas kontaktirati na ovaj broj ako bude potrebno.
 </p>
 </div>
 
-<div className={isMobile ? "mb-3" : "mb-6"}>
-  <label
-  style={{ color: "#611a1a" }}
-  className={
-  isMobile
-    ? "mb-1 block font-semibold"
-    : "mb-2 block font-semibold"
-}
->
-  Email
-</label>
+<div className="mb-3.5">
+  <label className={labelClass}>Email</label>
 
   <input
   type="email"
@@ -741,62 +509,76 @@ className={fieldClass(!!errors.prezime)}
     setEmail(e.target.value);
     setErrors((prev) => ({ ...prev, email: undefined }));
   }}
-  placeholder={isMobile ? "Unesite email adresu" : "Unesite email adresu ako želite primiti potvrdu i putem emaila."}
+  placeholder="Unesite email adresu"
  className={fieldClass(!!errors.email)}
 />
   {errorText(errors.email)}
+  <p style={{ fontSize: "13px", color: "#6b7280", marginTop: "6px" }}>
+    Ako unesete email, dobit ćete potvrdu i link za otkazivanje.
+  </p>
 </div>
 
-<div className={isMobile ? "mb-2" : "mb-6"}>
-  <label
-  style={{ color: "#611a1a" }}
-  className={
-  isMobile
-    ? "mb-1 block font-semibold"
-    : "mb-2 block font-semibold"
-}
->
-  Napomena
-</label>
+<div>
+  <label className={labelClass}>Napomena</label>
 
 <textarea
   value={napomena}
   onChange={(e) => setNapomena(e.target.value)}
   placeholder="Dodatne informacije..."
-  rows={4}
-  className="w-full rounded-xl border border-[#611a1a] p-3 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
-  style={{
-  height: isMobile ? "75px" : undefined,
-}}
+  rows={3}
+  className="w-full rounded-xl border border-[#d1d5db] bg-white p-3.5 outline-none transition focus:border-[#611a1a] focus:ring-2 focus:ring-[#611a1a]/20"
 />
 </div>
+</div>
 
+      </div>
+
+{/* List längst ner med Nastavi (alltid synlig). */}
 <div
-  className={
-    isMobile
-      ? "mt-4 flex justify-end"
-      : "mt-8 flex justify-end"
-  }
+  style={{
+    position: "fixed",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 30,
+    backgroundColor: "#ffffff",
+    borderTop: "1px solid #ead1d1",
+    boxShadow: "0 -6px 20px rgba(0, 0, 0, 0.08)",
+    padding: "10px 16px calc(10px + env(safe-area-inset-bottom))",
+  }}
 >
+  <div
+    style={{
+      maxWidth: "860px",
+      margin: "0 auto",
+      display: "flex",
+      alignItems: "center",
+      gap: "14px",
+    }}
+  >
+    <p style={{ margin: 0, flex: isMobile ? "none" : 1, fontSize: "14px", color: "#6b7280" }}>
+      Korak 3 od 4
+    </p>
+
  <button
   type="button"
   onClick={handleNext}
+  className={geist.className}
   style={{
+    flex: isMobile ? 1 : "none",
+    width: isMobile ? undefined : "240px",
+    height: "48px",
     backgroundColor: "#611a1a",
     color: "white",
-    padding: "14px 40px",
-    borderRadius: "16px",
+    borderRadius: "12px",
     fontWeight: "700",
-    fontFamily: "var(--font-geist-sans)",
+    fontSize: "16px",
   }}
 >
   Nastavi
 </button>
+  </div>
 </div>
-</div>
-
-
-      </div>
     </main>
   );
 }

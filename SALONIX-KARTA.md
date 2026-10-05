@@ -1,6 +1,6 @@
 # SALONIX – KARTA ÖVER HUR FILERNA HÄNGER IHOP
 
-Senast uppdaterad: 3 oktober 2026
+Senast uppdaterad: 5 oktober 2026
 
 Läs den här filen **innan varje ändring**. Den visar de "osynliga trådarna"
 mellan filerna: om man ändrar på ett ställe måste man komma ihåg det andra.
@@ -86,6 +86,14 @@ Adminpanelen läser dem bara.
 `app/globals.css`, `app/layout.tsx`, `lib/supabase.ts`.
 `globals.css` har ett "mörkt läge" som byter färger när kundens telefon har mörkt läge.
 Byt inte det globala typsnittet.
+
+### Tråd 10 – Saker i bokningsflödet som lätt går sönder vid design
+- `/times`: rutan "Nema slobodnih termina ove sedmice" räknar hur många knappar
+  som finns inne i kalendern (`calendarRef`). Lägg inga andra knappar där.
+- `/potvrda`: `formattedDate` används i notisen till admin. Ändra den inte;
+  visningen på sidan använder `displayDate` / `displayTime`.
+- `/times`, `/podaci`, `/potvrda` har en fast list längst ner (Nastavi /
+  Završi rezervaciju) och `paddingBottom: 110px` så att inget döljs.
 
 ### Tråd 9 – Mobil och desktop
 Varje sida har sin egen gräns: startsidan 600/1024 px (`isTablet`/`isDesktop`),

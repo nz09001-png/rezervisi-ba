@@ -1,6 +1,6 @@
 ============================================================
 SALONIX – MASTER CHECKPOINT / PROJEKTSAMMANFATTNING
-Senast uppdaterad: 4 oktober 2026 (kväll)
+Senast uppdaterad: 5 oktober 2026
 ============================================================
 
 VIKTIGT TILL NÄSTA CHATT:
@@ -14,8 +14,11 @@ Vi är i SLUTET av punkt 8: Design/UX-kontroll av hela Salonix.
   kalenderkorten (namn + tjänst, vinröd "2" vid paus-dubbelbokning),
   bokningsrutan och headern med Salonix-logga (desktop + mobil).
   Se avsnitt 7 och 14.
-- Kvar i punkt 8: salongsnamn i Montserrat (A). Eget fliknamn (B) är
-  flyttat till punkt 12 (ägarens beslut). Sedan punkt 9 (QA).
+- 5 oktober: salongssidan och hela bokningsflödet (/times, /podaci,
+  /potvrda, /uspjesno) har fått en enhetlig ny stil. Se avsnitt 14.
+- Kvar i punkt 8: AVBOKNINGSSIDAN (/cancel) – förslaget är godkänt
+  (se avsnitt 14), koden är inte gjord än. Eget fliknamn per salong är
+  flyttat till punkt 12. Sedan punkt 9 (QA).
 Läs först: CLAUDE.md (regler) och SALONIX-KARTA.md (hur filerna hänger
 ihop + testlista). Läs sedan avsnitt 14 här.
 
@@ -124,16 +127,23 @@ en dag.
 ============================================================
 Varumärkesfärg: #611a1a (maroon). Radera/destructive och fel: #ef4444.
 Stil: vit, ren, professionell, rundade hörn, subtila kanter och skuggor.
-Sidrubriker i bokningsflödet: svarta (#111827).
-"Rezervacija potvrđena": vinröd. Felrutor i kort: vinröd ram, #fff7f7.
+Sidrubriker i bokningsflödet: Montserrat 700, svarta (#111827),
+20 px mobil / 24 px desktop.
+"Rezervacija potvrđena": vinröd (Montserrat) på vinröd bakgrund med vinröd
+bock. Felrutor i kort: vinröd ram, #fff7f7.
 Fältfel i formulär: röd ram + röd text under fältet.
 
 Typsnitt:
-- DM Serif Display: stora rubriker (salongssidan m.m.)
+- Montserrat (600/700): salongsnamnet, avsnittsrubriker (Informacije,
+  Galerija, Usluge – mörka, 21 px mobil / 24 px desktop, samma stil via
+  sectionHeadingStyle), kategorirubriker i Usluge (VERSALER, luft, vinröd),
+  sidrubriker i bokningsflödet, salongens namn i sammanfattningarna
+  (12 px versaler vinröd). Startsidan: KATEGORIJE, SALONI, salongskorten.
+- DM Serif Display: används nu bara kvar på enstaka ställen (t.ex.
+  felsidan "Salon nije pronađen"). Ersatt av Montserrat på salongssidan.
 - Source Sans 3: text, information, formulär
 - Geist: knappar/UI
-- Outfit: vissa boknings-/successrubriker, avbokningskortet
-- Montserrat: startsidan – KATEGORIJE, SALONI och salongsnamnen på korten
+- Outfit: informationsdelens text på salongssidan, avbokningskortet (gammalt)
 - Admin: behåller Arial (ägarens beslut – bara personalen ser admin)
 - Undantag från "allt på bosniska": admin har "Powered by" + Salonix-loggan
   längst ner (ägarens val, engelska med flit).
@@ -165,18 +175,42 @@ Loggor i public/:
 - salonix-logo-ljus.png – stående logga med slogan, krämvit (vinröd bakgrund)
 
 Fliknamn (app/layout.tsx): "Salonix – Rezervišite termin online",
-beskrivning på bosniska, lang="bs".
+beskrivning på bosniska, lang="bs". (Eget fliknamn per salong: punkt 12.)
+
+Bokningsflödet – gemensam stil (5 oktober, /times /podaci /potvrda):
+- Vit sida, innehåll högst 860 px brett.
+- Sammanfattning överst (vit, ram #ead1d1): SALONGENS NAMN (Montserrat,
+  versaler, vinröd) + tjänst + fakta (datum "Sri, 07.10.2026", tid,
+  personal, pris).
+- Stegrad med namn på mobil OCH desktop: USLUGA, VRIJEME, PODACI, POTVRDA.
+- List längst ner (fixed, vit, skugga): vänster info, höger knapp
+  (Nastavi / Završi rezervaciju). Sidan har padding-bottom 110 px.
+
+Salongssidan (5 oktober, app/[salonSlug]/page.tsx):
+- Salongsnamn i Montserrat. Informationsdel utan rutor:
+  mobil "Informacije" + Instagram/Facebook/TikTok-ikoner (de ENDA ikonerna,
+  klickbara) + rader ADRESA/TELEFON/RADNO VRIJEME i en ram + karta under;
+  desktop tabell (ADRESA, TELEFON, RADNO VRIJEME, PRATITE NAS) + karta
+  till höger. Adress = länk till Google Maps, telefon = tel-länk.
+  Öppettider grupperas automatiskt ("Pon – Pet 09:00–18:00", förkortade
+  dagar, "Nedjelja Zatvoreno", "Svaki dan").
+- Usluge: snabbval (runda knappar per kategori, hoppar dit), kategori-
+  rubriker i VERSALER. Tjänstekort: namn + pris till höger (vinrött),
+  tid under, "Osoblje" ovanför rutan, Rezerviši bredvid. Desktop 2 per rad.
+  Mobil: knappen "Rezerviši termin" längst ner (hoppar till Usluge, visas
+  bara om salongen har tjänster med kategori).
+- Ägaren vill INTE ha andra ikoner/symboler än sociala medier.
 
 ============================================================
 6. FILER OCH SIDOR
 ============================================================
 Kundsidor:
 /                  → app/page.tsx (startsida/katalog) – FRYST
-/[salonSlug]       → app/[salonSlug]/page.tsx (salongssida) – FRYST
-/times             → välja tid – FRYST
-/podaci            → kunduppgifter – FRYST
-/potvrda           → bekräfta bokning (bokningen skapas här) – FRYST
-/uspjesno          → "Rezervacija potvrđena" – FRYST
+/[salonSlug]       → app/[salonSlug]/page.tsx (salongssida) – FRYST, omgjord 5 okt
+/times             → välja tid – FRYST, omgjord 5 okt (T2 vit)
+/podaci            → kunduppgifter – FRYST, omgjord 5 okt
+/potvrda           → bekräfta bokning (bokningen skapas här) – FRYST, omgjord 5 okt (A)
+/uspjesno          → "Rezervacija potvrđena" – omgjord 5 okt (rader som Potvrda)
 /cancel            → avbokning via mejllänk (id + token) – FRYST
 app/api/send-email/route.ts        → bokningsmejl – FRYST
 app/api/send-cancel-email/route.ts → mejl när salongen avbokar i admin
@@ -414,9 +448,8 @@ inte), "TEST"-namn m.fl.
 5. Admin desktop ..................... ✅ KLAR & FRYST
 6. Startsida/katalog mobil ........... ✅ KLAR & FRYST
 7. Startsida desktop (+ surfplatta) .. ✅ KLAR & FRYST
-8. Design/UX-kontroll av hela Salonix  🔄 NÄSTAN KLAR (kundsidor och
-                                          admin klara; kvar: fliknamn +
-                                          Montserrat på salongssidan)
+8. Design/UX-kontroll av hela Salonix  🔄 NÄSTAN KLAR (allt klart utom
+                                          avbokningssidan /cancel)
 9. Full QA inkl. edge cases .......... ⬜
 10. Säkerhet och produktion .......... ⬜ (RLS, admininloggning,
     åtkomstkontroll, server-side validering, secrets)
@@ -439,6 +472,11 @@ Punkt 9 (QA):
   kunden inte kan boka då, och ta bort tiderna.
 - Vad händer med tider (available_times) och bokningar när en person
   tas bort i Osoblje?
+- Gör en HEL testbokning med nya flödet (salongssida → tid → Podaci →
+  Potvrda → Završi → Uspješno → mejl → avbokning) på mobil och desktop.
+  Claude har inte tryckt "Završi rezervaciju" efter omgörningen.
+- Kontrollera listen längst ner på riktig iPhone (hemknapps-området,
+  env(safe-area-inset-bottom)).
 - Testa ALLA nya admin-delar på riktig iPhone (tidsfält, datumfält,
   bildväljare, beskärning med fingret, meddelanderutan, fråga-rutan,
   nya headern, Statistika-menyn i kortet, bokningsrutan, kalenderkorten
@@ -545,26 +583,64 @@ KLART i punkt 8 – admin (3–4 oktober), se avsnitt 7 för detaljer:
 - Bokningsrutan (dag/datum/tid överst, personalfärg, Otkaži med röd ram).
 - Headern (vit list med logga, Odjavi se som länk), statistikkort med
   Statistika i kortet, "Powered by Salonix" längst ner.
-Allt ovan är sparat i Git (senaste commit: "Admin header: …").
+
+
+KLART i punkt 8 – salongssidan och bokningsflödet (5 oktober):
+- Salongssidan: Montserrat-namn, kompakt informationsdel (mobil K2,
+  desktop K1), nya tjänstekort, snabbval + kategorirubriker, avsnitts-
+  rubriker i Montserrat (lika stora), "Rezerviši termin" längst ner (mobil).
+- /times (T2 vit): alla 7 dagar i kolumner, "DANAS", stängda dagar gråa,
+  lika höga dagrubriker, ‹ 5. – 11. okt › (bakåt grå på aktuell vecka),
+  list "Odabrano: Sri, 07.10. u 09:30" + Nastavi. Tidsreglerna ORÖRDA.
+  Rutan "Nema slobodnih termina" räknar tidsknapparna i calendarRef –
+  lägg aldrig andra knappar inne i kalendern.
+- /podaci: rubrik "Vaši podaci", grå fältramar (vinröd vid fokus, röd vid
+  fel), hjälptext under Email ("Ako unesete email, dobit ćete potvrdu i
+  link za otkazivanje."), list "Korak 3 od 4" + Nastavi. Kontrollerna
+  oförändrade.
+- /potvrda (A): "Provjerite rezervaciju", kort TERMIN (salong, tjänst,
+  datum, tid start–slut, personal, pris) och VAŠI PODACI (namn, telefon,
+  email om ifylld, napomena), "Promijeni"-länkar (→ /times resp. /podaci),
+  "Završi rezervaciju" ensam i listen längst ner (inget "Ukupno").
+  OBS: formattedDate används i admin-notisen – rör den inte. Visningen
+  använder displayDate/displayTime.
+- /uspjesno (A): vinröd bakgrund + vinröd bock kvar, rubrik i Montserrat,
+  salong + tjänst + rader Datum/Vrijeme (start–slut, bara start om tiden
+  är dold)/Osoblje/Cijena (om synlig)/Klijent.
+- Fliknamn per salong: flyttat till punkt 12 (ägaren bestämmer före deploy).
 
 ARBETSSÄTT SOM FUNGERADE (ägaren):
 - Visa FLERA alternativ som bilder (mobil + desktop) – ägaren väljer,
-  ofta en blandning. Ägaren vill ha det enkelt men tydligt.
+  ofta en blandning. Ägaren vill ha det enkelt, kompakt, tydligt och
+  professionellt. Vit bakgrund (inte beige). Inga ikoner/symboler utom
+  sociala medier.
 - "Testa X så får vi se" = lägg in, visa, ägaren bestämmer behålla/ändra.
 - Förslagsbilder görs som testfiler i scratchpad + en tillfällig lokal
   server (python3 -m http.server 8765), bilder skickas som filer.
+- En sida/ändring i taget, testa efter varje (utan att skapa bokningar).
 
 NÄSTA – I DEN HÄR ORDNINGEN:
-1. Salongssidan:
-   B) Eget fliknamn – FLYTTAT till punkt 12 (se avsnitt 12).
-   A) Salongsnamnet i Montserrat (600) på salongssidan: importera
-      Montserrat i app/[salonSlug]/page.tsx (FRYST – ägaren måste säga
-      "kör A") och byt bara h1:ans typsnitt. Färg/storlek oförändrade.
-2. Punkt 9: full QA med testlistan i SALONIX-KARTA.md + listan i
-   avsnitt 12 (paus-dubbelbokningar, söndagstider, borttagen personal,
-   iPhone).
-3. Punkt 10: säkerhet (fråga innan start).
+1. AVBOKNINGSSIDAN /cancel (app/cancel/page.tsx, FRYST – ägaren har sagt
+   att den ska göras, men säg "kör" innan kod ändras). Godkänd riktning:
+   - Vinröd bakgrund kvar, vitt kort med Salonix-logga överst.
+   - Start: rubrik "Otkaži rezervaciju" (Montserrat, mörk), text, knapp
+     "Otkaži rezervaciju" vit med RÖD ram (#ef4444).
+   - Frågan: "Da li ste sigurni…?", "Da, otkaži" (röd fylld) och
+     "Ne, zadrži rezervaciju" (vit, vinröd ram).
+   - Klart: GRÅ bock, "Rezervacija otkazana", knapp "Rezervišite novi
+     termin" → "/" (startsidan).
+   - Valfritt (Claude rekommenderar, ägaren har inte bestämt): visa
+     bokningen (salong, tjänst, datum, tid, personal) när sidan öppnas –
+     kräver att sidan LÄSER bokningen med id + cancel_token (samma
+     kontroll som i dag), inget raderas förrän "Da, otkaži". Fråga ägaren.
+   - Rör inte raderingen, token-kontrollen eller admin-notisen (tråd 6, 7).
+   Förslagsbilder finns från 5 oktober (C1–C4) – gör om dem om de behövs.
+2. Punkt 8 klar → uppdatera checkpoint + CLAUDE.md.
+3. Punkt 9: full QA med testlistan i SALONIX-KARTA.md + listan i
+   avsnitt 12 (hel testbokning i nya flödet, paus-dubbelbokningar,
+   söndagstider, borttagen personal, iPhone).
+4. Punkt 10: säkerhet (fråga innan start).
 
 ============================================================
-SLUT PÅ MASTER CHECKPOINT – 4 OKTOBER 2026
+SLUT PÅ MASTER CHECKPOINT – 5 OKTOBER 2026
 ============================================================

@@ -39,8 +39,10 @@ Finjustera aldrig godkänd design "för att det ser bättre ut".
 ## Design
 - Varumärkesfärg: **#611a1a** (maroon). Röd färg för radera: #ef4444.
 - Stil: vit, ren, professionell, rundade hörn, subtila kanter och skuggor.
-- Typsnitt på publika sidor: DM Serif Display (rubriker), Source Sans 3 (text),
-  Geist (knappar/UI), Outfit (vissa boknings-/successrubriker).
+- Typsnitt på publika sidor: Montserrat (salongsnamn, avsnittsrubriker,
+  kategorirubriker, sidrubriker i bokningsflödet), Source Sans 3 (text),
+  Geist (knappar/UI). DM Serif Display och Outfit finns bara kvar på enstaka
+  ställen (felsidan "Salon nije pronađen", avbokningssidan, infotext).
   På startsidan: Montserrat för sektionsrubrikerna (KATEGORIJE, SALONI – versaler,
   luft mellan bokstäverna, vinröd) och för salongsnamnen på korten.
 - Loggor i `public/`: `salonix-horisontell-maroon.png` (liggande, vinröd) och
@@ -136,8 +138,24 @@ Finjustera aldrig godkänd design "för att det ser bättre ut".
   - Flerstegstjänster med paus: under paus-steg (`is_barber_busy = false`) får andra
     kunder boka samma person. Dubbelbokningen är meningen. Kalenderns räkning för
     överlapp/paus får aldrig ändras vid designarbete.
-- **Nästa i punkt 8:** salongsnamnet i Montserrat i den frysta
-  `app/[salonSlug]/page.tsx` (visa förslag, vänta på "kör"). Sedan punkt 9 (QA).
+- **Salongssidan och bokningsflödet omgjorda (5 oktober)** – detaljer i
+  `SALONIX-MASTER-CHECKPOINT.md` avsnitt 5 och 14:
+  - Salongssidan: Montserrat-namn, kompakt informationsdel (mobil: rader i ram +
+    sociala ikoner vid "Informacije"; desktop: tabell + karta), snabbval för
+    kategorier, kategorirubriker i VERSALER, tjänstekort (pris till höger),
+    avsnittsrubriker lika stora (`sectionHeadingStyle`), "Rezerviši termin"
+    längst ner på mobil.
+  - `/times`, `/podaci`, `/potvrda`: vit sida, sammanfattning med salongens namn,
+    stegnamn, list längst ner med Nastavi / Završi rezervaciju. `/potvrda` har
+    två kort (Termin + Vaši podaci) med "Promijeni". `/uspjesno`: rader som
+    Potvrda, vinröd bakgrund och bock kvar. Ingen bokningslogik ändrad.
+  - Viktigt: `/times` räknar tidsknappar i `calendarRef` för "Nema slobodnih
+    termina" – lägg inga andra knappar i kalendern. `/potvrda`: `formattedDate`
+    används i admin-notisen, visningen använder `displayDate`/`displayTime`.
+  - Ägaren vill inte ha ikoner/symboler utom sociala medier, och vit bakgrund.
+- **Nästa i punkt 8:** avbokningssidan `/cancel` (godkänd riktning i checkpoint
+  avsnitt 14 – logga, röd ram på Otkaži, "Ne, zadrži rezervaciju", grå bock,
+  "Rezervišite novi termin"; fråga om bokningens uppgifter ska visas). Sedan punkt 9 (QA).
 - Ägaren vill se FLERA alternativ som bilder (mobil + desktop) och välja; enkelt
   men tydligt. "Testa X" = lägg in och visa, ägaren bestämmer sedan.
 - Idéer efter punkt 8: Brzi izbor anpassat efter salongens typ (alternativ B),
