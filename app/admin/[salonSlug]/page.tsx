@@ -2099,10 +2099,24 @@ const currentTime = new Date();
 const currentTimeMinutes =
   currentTime.getHours() * 60 + currentTime.getMinutes();
 
+// Veckans bokningar (start och slut i minuter) – kalendern måste alltid
+// räcka till dem, även om lediga tider har tagits bort eller är udda (08:45).
+const calendarBookingStartMinutes = calendarWeekBookings.map((booking) => {
+  const [hours, minutes] = String(booking.booking_time).split(":").map(Number);
+  return hours * 60 + minutes;
+});
+const calendarBookingEndMinutes = calendarWeekBookings.map((booking, index) =>
+  calendarBookingStartMinutes[index] + (booking.duration_minutes || 30)
+);
+
+// Kalendern börjar alltid på hel timme (aldrig 08:45).
 const calendarStartMinutes =
-  calendarAvailableTimeMinutes.length > 0
-    ? earliestCalendarTime
-    : 8 * 60;
+  Math.floor(
+    Math.min(
+      calendarAvailableTimeMinutes.length > 0 ? earliestCalendarTime : 8 * 60,
+      ...calendarBookingStartMinutes
+    ) / 60
+  ) * 60;
 
 const calendarTimeDifferences: number[] = [];
 
@@ -2139,10 +2153,12 @@ const calendarIntervalMinutes =
     ? Math.min(...calendarTimeDifferences)
     : 60;
 
-const calendarEndMinutes =
+const calendarEndMinutes = Math.max(
   calendarAvailableTimeMinutes.length > 0
     ? latestCalendarTime + calendarIntervalMinutes + 60
-    : 20 * 60;
+    : 20 * 60,
+  ...calendarBookingEndMinutes
+);
 
 const calendarTimeLabels = [];
 
@@ -7784,8 +7800,22 @@ const isToday =
     />
   )}
       {dayBookings
-  .filter((booking) => booking.booking_time.slice(0, 5) === time)
+  // Bokningen ritas i raden där den börjar (t.ex. 09:15 i raden 09:00)
+  // och flyttas ner till exakt rätt höjd (bookingOffsetTop nedan).
+  .filter((booking) => {
+    const bookingMinutes = getCalendarTimeMinutes(booking.booking_time.slice(0, 5));
+    const rowMinutes = getCalendarTimeMinutes(time);
+    return (
+      bookingMinutes >= rowMinutes &&
+      bookingMinutes < rowMinutes + calendarIntervalMinutes
+    );
+  })
   .map((booking) => {
+   const bookingOffsetTop =
+     ((getCalendarTimeMinutes(booking.booking_time.slice(0, 5)) -
+       getCalendarTimeMinutes(time)) /
+       60) *
+     calendarHourHeight;
    const [bookingHour, bookingMinute] = booking.booking_time
   .split(":")
   .map(Number);
@@ -8055,7 +8085,7 @@ const hasParallelBookingInside = (() => {
       : hasParallelBookingInside
       ? 2
       : 1,
-  top: "0px",
+  top: `${bookingOffsetTop}px`,
   left: `calc(${bookingColumn * bookingWidth}% + ${
   2 + parallelInset + multiStepOverlapInset
 }px)`,
