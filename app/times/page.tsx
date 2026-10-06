@@ -987,11 +987,14 @@ isSelectedBarberIneligible ? (
     textAlign: "center",
     fontSize: isMobile ? "10px" : "12px",
     color: "#c4c4c4",
-    whiteSpace: isMobile ? "nowrap" : "normal",
+    // Texten får radbrytas även på mobil ("Dan je / prošao") så att inget klipps.
+    whiteSpace: "normal",
   }}
 >
     {isSelectedBarberIneligible
       ? "Osoblje nije dostupno za ovu uslugu"
+      : isPastDay
+      ? "Dan je prošao"
       : isClosedDay ||
         isClosedWeekday ||
         isSelectedBarberClosed ||
