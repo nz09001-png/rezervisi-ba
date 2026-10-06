@@ -234,7 +234,9 @@ useEffect(() => {
     salon || ""
   )}&salonSlug=${encodeURIComponent(
     salonSlug || ""
-  )}&serviceId=${serviceId}&barberId=${encodeURIComponent(barberId || "")}`}
+  )}&serviceId=${serviceId}&barberId=${encodeURIComponent(barberId || "")}&date=${encodeURIComponent(
+    date || ""
+  )}&time=${encodeURIComponent(time || "")}`}
   style={{
     color: "#611a1a",
     textDecoration: "none",

@@ -28,8 +28,35 @@ const salonSlug = searchParams.get("salonSlug");
 const serviceId = searchParams.get("serviceId");
 const barberId = searchParams.get("barberId");
   const [service, setService] = useState<any>(null);
-  const [selectedDate, setSelectedDate] = useState("");
-  const [selectedTime, setSelectedTime] = useState("");
+  // När kunden kommer tillbaka från /podaci ("← Nazad") finns datum och tid i
+  // adressen: sidan öppnas på rätt vecka med tiden förvald. Datum som har
+  // passerat ignoreras (då som vanligt: den här veckan, ingen vald tid).
+  const initialSelection = (() => {
+    const urlDate = searchParams.get("date") || "";
+    const urlTime = searchParams.get("time") || "";
+    const empty = { date: "", time: "", weekOffset: 0 };
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(urlDate) || !urlTime) return empty;
+
+    const [y, m, d] = urlDate.split("-").map(Number);
+    const picked = new Date(y, m - 1, d);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (picked < today) return empty;
+
+    const mondayOf = (date: Date) => {
+      const monday = new Date(date);
+      const day = monday.getDay();
+      monday.setDate(monday.getDate() + (day === 0 ? -6 : 1 - day));
+      return monday;
+    };
+    const weekOffset = Math.round(
+      (mondayOf(picked).getTime() - mondayOf(today).getTime()) /
+        (7 * 24 * 60 * 60 * 1000)
+    );
+    return { date: urlDate, time: urlTime, weekOffset };
+  })();
+  const [selectedDate, setSelectedDate] = useState(initialSelection.date);
+  const [selectedTime, setSelectedTime] = useState(initialSelection.time);
 const [bookedTimes, setBookedTimes] = useState<any[]>([]);
 const [closedDays, setClosedDays] = useState<any[]>([]);
 const [closedWeekdays, setClosedWeekdays] = useState<string[]>([]);
@@ -42,7 +69,7 @@ const selectedBarber = barberId
   ? barbers.find((barber) => barber.id === Number(barberId))
   : null;
 const [salonId, setSalonId] = useState<number | null>(null);
-const [weekOffset, setWeekOffset] = useState(0);
+const [weekOffset, setWeekOffset] = useState(initialSelection.weekOffset);
 const [eligibleBarberIds, setEligibleBarberIds] = useState<number[]>([]);
 const [isMobile, setIsMobile] = useState(false);
 // För rutan "Nema slobodnih termina ove sedmice". Reglerna för lediga tider
@@ -59,6 +86,26 @@ useEffect(() => {
   setIsWeekEmpty(
     timesLoaded && barbersLoaded && !!service && visibleSlots === 0
   );
+});
+
+// Om den valda tiden ligger i veckan som visas men inte längre finns som
+// ledig knapp (t.ex. någon annan hann boka den) tas valet bort.
+// Vilken vecka de inlästa lediga tiderna gäller (så att kontrollen nedan inte
+// körs med förra veckans tider medan en ny vecka laddas).
+const loadedWeekOffsetRef = useRef<number | null>(null);
+useEffect(() => {
+  if (!selectedDate || !selectedTime) return;
+  if (!timesLoaded || !barbersLoaded || !service) return;
+  if (loadedWeekOffsetRef.current !== weekOffset) return;
+  if (!weekDays.some((day) => day.date === selectedDate)) return;
+
+  const slotButton = calendarRef.current?.querySelector(
+    `button[data-slot="${selectedDate} ${selectedTime}"]`
+  );
+  if (!slotButton) {
+    setSelectedDate("");
+    setSelectedTime("");
+  }
 });
 
 
@@ -397,6 +444,7 @@ const { data, error } = await query
 }
 
 setAvailableTimes(data || []);
+loadedWeekOffsetRef.current = weekOffset;
 setTimesLoaded(true);
   }
 
@@ -1108,6 +1156,7 @@ if (slotsNeeded > 1 && !hasEnoughSlots) return null;
     <button
   key={time}
   type="button"
+  data-slot={`${item.date} ${time}`}
   onClick={() => {
   if (selectedTime === time && selectedDate === item.date) {
     setSelectedDate("");
