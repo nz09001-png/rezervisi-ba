@@ -2304,7 +2304,11 @@ console.log("currentDate =", currentDate);
   while (currentDate <= endDate) {
     const currentDayName = dayNames[currentDate.getDay()];
 
-    if (selectedDays.includes(currentDayName)) {
+    // Stängda veckodagar (Radno vrijeme) får aldrig lediga tider.
+    if (
+      selectedDays.includes(currentDayName) &&
+      !closedWeekdays.includes(currentDayName)
+    ) {
       for (
         let currentMinutes = startMinutes;
         currentMinutes < endMinutes;
@@ -5812,12 +5816,15 @@ formatWeekDay={(dayName) => {
 
             <div className="flex flex-wrap gap-2" style={{ marginTop: "10px" }}>
               {["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"].map((day) => {
-                const isSelected = selectedDays.includes(day);
+                // Stängd veckodag: grå och går inte att välja.
+                const isClosed = closedWeekdays.includes(day);
+                const isSelected = selectedDays.includes(day) && !isClosed;
 
                 return (
                   <button
                     key={day}
                     type="button"
+                    disabled={isClosed}
                     onClick={() => {
                       setSelectedDays((currentDays) =>
                         currentDays.includes(day)
@@ -5831,9 +5838,10 @@ formatWeekDay={(dayName) => {
                   padding: "0 14px",
                   fontSize: "15px",
                   fontWeight: isSelected ? 600 : 400,
-                  backgroundColor: isSelected ? "#611a1a" : "#ffffff",
-                  borderColor: isSelected ? "#611a1a" : "#d1d5db",
-                  color: isSelected ? "#ffffff" : "#111827",
+                  backgroundColor: isClosed ? "#f3f4f6" : isSelected ? "#611a1a" : "#ffffff",
+                  borderColor: isClosed ? "#e5e7eb" : isSelected ? "#611a1a" : "#d1d5db",
+                  color: isClosed ? "#c4c4c4" : isSelected ? "#ffffff" : "#111827",
+                  cursor: isClosed ? "not-allowed" : "pointer",
                   minWidth: "54px",
                 }}
                   >
@@ -5842,6 +5850,15 @@ formatWeekDay={(dayName) => {
                 );
               })}
             </div>
+
+            {closedWeekdays.length > 0 && (
+              <p style={{ marginTop: "8px", fontSize: "13px", color: "#6b7280" }}>
+                {["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"]
+                  .filter((day) => closedWeekdays.includes(day))
+                  .join(", ")}{" "}
+                – neradni dan
+              </p>
+            )}
           </div>
         </div>
 
