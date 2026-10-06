@@ -662,7 +662,18 @@ router.replace(
     salon || ""
   )}&salonSlug=${encodeURIComponent(
     salonSlug || ""
-  )}&serviceId=${serviceId}&barberId=${encodeURIComponent(barberId || "")}`;
+  )}&serviceId=${serviceId}&barberId=${encodeURIComponent(barberId || "")}&${new URLSearchParams({
+    // Vald tid (förvald på tidssidan) och kundens uppgifter följer med,
+    // så att fälten på /podaci inte blir tomma efter en ny tid.
+    date: date || "",
+    time: time || "",
+    ime: ime || "",
+    prezime: prezime || "",
+    phoneCode: phoneCode || "",
+    phone: phone || "",
+    email: email || "",
+    napomena: napomena || "",
+  }).toString()}`;
 
   const cardStyle = {
     border: "1px solid #ead1d1",
