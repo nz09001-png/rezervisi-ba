@@ -83,8 +83,26 @@ Finjustera aldrig godkänd design "för att det ser bättre ut".
   - Karta (knappen "Karta"): `components/SalonMap.tsx`, Leaflet + OpenStreetMap.
   - Sidfot med logga och © Salonix.
   - Kategoripanelen (☰): små ikoner utan cirklar, samma på mobil och desktop.
-- **Punkt 8 – design/UX-kontroll KLAR (6 oktober).** Nästa: **punkt 9 – QA**
-  (se `SALONIX-MASTER-CHECKPOINT.md` avsnitt 12 och 14). Nedan står vad som gjordes i punkt 8.
+- **Punkt 9 – QA KLAR (7 oktober).** Nästa: **punkt 10 – säkerhet** (fråga ägaren
+  innan start, se `SALONIX-MASTER-CHECKPOINT.md` avsnitt 12 och 14). I punkt 9:
+  - Hela flödet testat med riktiga testbokningar (mobil, desktop, riktig iPhone,
+    mejl, avbokning via länk och från admin, paus-dubbelbokning). Alla avbokade.
+  - Rättat: Promijeni/Nazad behåller kundens uppgifter och vald tid (tråd 1 –
+    `/potvrda` skickar ime/prezime/phoneCode/phone/email/napomena + date/time
+    till `/podaci` och `/times`, `/times` läser date/time och skickar kunddata
+    vidare), telefonen formateras på Potvrda, "Dan je prošao" alltid för
+    passerad dag, Potvrda visar bara starttid när längden är dold.
+  - `/times`: tidsknapparna har `data-slot="datum tid"`; en förvald tid som inte
+    finns som knapp tas bort. Inga nya knappar i kalendern (tråd 10).
+  - Admin: stängda veckodagar grå i "Raspored po sedmici" och hoppas över;
+    "Obriši" i Osoblje varnar om kommande bokningar; kalendern börjar på hel
+    timme och placerar bokningar på rätt höjd (förut kunde de bli osynliga).
+  - Databas: 768 söndagstider och 2 bokningar på "Barber House Sarajevo"
+    (Studio M:s gamla namn) borttagna av ägaren. barbers → CASCADE för
+    available_times/closed_days/service_barbers, bokningar ligger kvar.
+  - Ägarens val: kunden ser "Bez preferencije" (inte personens namn).
+    Fynd 5 (mejltexten på /uspjesno) skjuts till punkt 12.
+- **Punkt 8 – design/UX-kontroll KLAR (6 oktober).** Nedan står vad som gjordes i punkt 8.
 - **Punkt 8 – detaljer.** Kundsidor och mejl är klara. I admin
   (`app/admin/[salonSlug]/page.tsx`) är **Postavke och alla 8 avsnitt omgjorda**
   (3 oktober 2026). Admin behåller Arial.
@@ -158,24 +176,24 @@ Finjustera aldrig godkänd design "för att det ser bättre ut".
   - `/cancel` (6 oktober): vinröd bakgrund, vitt kort utan logga och utan
     bokningens uppgifter, "Otkaži rezervaciju" med röd ram, "Da, otkaži" /
     "Ne, zadrži rezervaciju", grå bock + "Rezervišite novi termin" när klart.
-- **Nästa: punkt 9 – QA.** Först en hel testbokning i nya flödet (mobil + desktop,
-  mejl, avbokning, admin). Fråga ägaren innan en riktig bokning skapas.
+- **Nästa: punkt 10 – säkerhet.** Fråga ägaren innan start, en sak i taget.
+  Fråga alltid innan en riktig testbokning skapas. När admin är inloggad i
+  webbläsarpanelen: testa kundsidor i en egen flik, annars loggas ägaren ut.
 - Ägaren vill se FLERA alternativ som bilder (mobil + desktop) och välja; enkelt
   men tydligt. "Testa X" = lägg in och visa, ägaren bestämmer sedan.
 - Idéer efter punkt 8: Brzi izbor anpassat efter salongens typ (alternativ B),
   ordning på kategorier (`sort_order` finns) och galleribilder (kräver kolumn),
   varning/förifyllda tider i Slobodni termini utifrån öppettiderna, salongen väljer
   själv startsidans kategorier.
-- Att kontrollera i punkt 9: Studio M har lediga tider på söndagar trots stängt;
-  vad händer med tider och bokningar när en person tas bort; alla nya admin-delar på
-  riktig iPhone.
 - Databasen: `salons` har `city`, `categories`, `is_published`, `latitude`, `longitude`.
   Koordinater räknas fram från adressen en gång (geokodning) och sparas med SQL.
   Adminpanelen sparar inte koordinater än, så nya salonger måste få koordinater manuellt.
-- Testsalonger finns (slug börjar med `test-`, ca 38 st). De behålls under punkt 8 och 9
-  och tas bort i punkt 11 med: `delete from salons where slug like 'test-%';`
-- Sedan: 9 QA, 10 säkerhet (RLS, admininloggning), 11 databasstädning,
-  12 deploy till Vercel, 13 slutligt test i produktion.
+- Testsalonger finns (slug börjar med `test-`, ca 38 st). De behålls till punkt 11
+  och tas bort då med: `delete from salons where slug like 'test-%';`
+  I punkt 11 även: 194 gamla bokningar med `salon = 'Barber House Sarajevo'`.
+- Sedan: 10 säkerhet (RLS, admininloggning, Supabase-varningsmejlet),
+  11 databasstädning, 12 deploy till Vercel (bygget misslyckas just nu på Vercel –
+  kör `npm run build` först), 13 slutligt test i produktion.
 - Säkerheten är medvetet planerad till punkt 10. Systemet är inte produktionssäkert än.
   Påpeka allvarliga problem, men börja inte säkerhetsarbetet utan att fråga.
 - Att komma ihåg till punkt 10: kolumnen `salons.admin_password` kan läsas av alla

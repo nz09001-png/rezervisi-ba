@@ -1,6 +1,6 @@
 # SALONIX – KARTA ÖVER HUR FILERNA HÄNGER IHOP
 
-Senast uppdaterad: 5 oktober 2026
+Senast uppdaterad: 7 oktober 2026
 
 Läs den här filen **innan varje ändring**. Den visar de "osynliga trådarna"
 mellan filerna: om man ändrar på ett ställe måste man komma ihåg det andra.
@@ -45,6 +45,10 @@ Varje sida lämnar vidare en "stafettpinne" i adressen:
 och från `/podaci`: `ime`, `prezime`, `phoneCode`, `phone`, `normalizedPhone`, `email`, `napomena`.
 **Risk:** byter man namn på något av dessa på en sida blir nästa sida tom eller fel.
 Även "← Nazad"-länkarna måste skicka med rätt delar (t.ex. `barberId`).
+Sedan punkt 9 går stafettpinnen även bakåt: `/potvrda` → `/podaci` ("Promijeni",
+"← Nazad") och `/potvrda` → `/times` ("Promijeni" i TERMIN, felrutan) skickar
+kundens uppgifter + `date`/`time`. `/times` läser `date`/`time` (rätt vecka, tiden
+förvald) och skickar kundens uppgifter vidare till `/podaci`, som fyller i fälten.
 
 ### Tråd 2 – Bokningar hittar sin salong via salongens NAMN
 `bookings.salon` = `salons.salon_name` (inte id-nummer).
@@ -90,10 +94,19 @@ Byt inte det globala typsnittet.
 ### Tråd 10 – Saker i bokningsflödet som lätt går sönder vid design
 - `/times`: rutan "Nema slobodnih termina ove sedmice" räknar hur många knappar
   som finns inne i kalendern (`calendarRef`). Lägg inga andra knappar där.
+- `/times`: varje tidsknapp har `data-slot="datum tid"`. En förvald tid (från
+  adressen) tas bort om knappen inte finns. Ändra inte attributet.
 - `/potvrda`: `formattedDate` används i notisen till admin. Ändra den inte;
   visningen på sidan använder `displayDate` / `displayTime`.
 - `/times`, `/podaci`, `/potvrda` har en fast list längst ner (Nastavi /
   Završi rezervaciju) och `paddingBottom: 110px` så att inget döljs.
+
+### Tråd 11 – Admin-kalendern och personal
+- Kalenderns rader börjar på hel timme och räcker till veckans lediga tider OCH
+  bokningar; bokningar placeras på exakt höjd (`bookingOffsetTop`).
+- Tar man bort en person raderar databasen personens lediga tider, stängda dagar
+  och tjänstekopplingar (CASCADE). Bokningarna ligger kvar – admin varnar.
+- Stängda veckodagar (`closed_weekdays`) får inga lediga tider i "Raspored po sedmici".
 
 ### Tråd 9 – Mobil och desktop
 Varje sida har sin egen gräns: startsidan 600/1024 px (`isTablet`/`isDesktop`),
