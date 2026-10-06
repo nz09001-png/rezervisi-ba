@@ -3,10 +3,17 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Outfit, Geist } from "next/font/google";
+import Link from "next/link";
+import { Source_Sans_3, Geist, Montserrat } from "next/font/google";
 
-const outfit = Outfit({
+const sourceSans = Source_Sans_3({
   subsets: ["latin"],
+});
+
+// Rubriker – samma som resten av bokningsflödet.
+const montserrat = Montserrat({
+  weight: ["600", "700"],
+  subsets: ["latin", "latin-ext"],
 });
 
 const geist = Geist({
@@ -121,53 +128,110 @@ if (bookingError || !bookingData) {
     setLoading(false);
   }
 
+  // Gemensam stil för kortet (vinröd bakgrund, vitt kort i mitten).
+  const pageStyle = {
+    minHeight: isMobile ? "100dvh" : "100vh",
+    backgroundColor: "#611a1a",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "24px 16px",
+  };
+
+  const cardStyle = {
+    width: "100%",
+    maxWidth: "440px",
+    backgroundColor: "#ffffff",
+    borderRadius: "24px",
+    padding: isMobile ? "26px 20px" : "30px 26px",
+    textAlign: "center" as const,
+    boxShadow: "0 20px 40px rgba(0,0,0,0.25)",
+  };
+
+  const titleStyle = {
+    margin: 0,
+    fontSize: isMobile ? "24px" : "26px",
+    fontWeight: 700,
+    letterSpacing: "-0.3px",
+    color: "#111827",
+  };
+
+  const textStyle = {
+    margin: "8px 0 0",
+    fontSize: "16px",
+    lineHeight: 1.5,
+    color: "#6b7280",
+  };
+
+  const buttonBase = {
+    width: "100%",
+    height: "48px",
+    borderRadius: "12px",
+    fontWeight: 700,
+    fontSize: "16px",
+    cursor: "pointer",
+  };
+
   if (cancelled) {
     return (
-      <main
-  className="min-h-screen flex items-center justify-center p-4 md:p-8"
-  style={{ backgroundColor: "#611a1a" }}
->
-       <div
-  className="max-w-md bg-white text-center"
-  style={{
-    width: "100%",
-    padding: isMobile ? "22px" : "32px",
-    borderRadius: "28px",
-    boxShadow: "0 20px 40px rgba(0,0,0,0.25)",
-  }}
->
-          <h1 className={`${outfit.className} mb-4 text-3xl font-bold`}>
-  Rezervacija otkazana
-</h1>
+      <main className={sourceSans.className} style={pageStyle}>
+        <div style={cardStyle}>
+          {/* Grå bock – bokningen gäller inte längre. */}
+          <div
+            style={{
+              width: "56px",
+              height: "56px",
+              borderRadius: "9999px",
+              backgroundColor: "#f3f4f6",
+              color: "#6b7280",
+              fontSize: "26px",
+              fontWeight: 700,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 14px",
+            }}
+          >
+            ✓
+          </div>
 
-<p className={`${outfit.className} text-gray-600`}>
-  Vaša rezervacija je uspješno otkazana.
-</p>
+          <h1 className={montserrat.className} style={titleStyle}>
+            Rezervacija otkazana
+          </h1>
+
+          <p style={textStyle}>Vaša rezervacija je uspješno otkazana.</p>
+
+          <Link
+            href="/"
+            className={geist.className}
+            style={{
+              ...buttonBase,
+              marginTop: "20px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "#ffffff",
+              color: "#611a1a",
+              border: "1px solid #611a1a",
+              textDecoration: "none",
+            }}
+          >
+            Rezervišite novi termin
+          </Link>
         </div>
       </main>
     );
   }
 
   return (
-    <main
-  className="min-h-screen flex items-center justify-center p-8"
-  style={{ backgroundColor: "#611a1a" }}
->
-      <div
-  className="max-w-md bg-white text-center"
-  style={{
-    width: "100%",
-    padding: isMobile ? "22px" : "32px",
-    borderRadius: "28px",
-    boxShadow: "0 20px 40px rgba(0,0,0,0.25)",
-  }}
->
-        <h1 className={`${outfit.className} mb-4 text-3xl font-bold`}>
-  Otkaži rezervaciju
-</h1>
+    <main className={sourceSans.className} style={pageStyle}>
+      <div style={cardStyle}>
+        <h1 className={montserrat.className} style={titleStyle}>
+          Otkaži rezervaciju
+        </h1>
 
 {!(errorBox && !errorBox.canRetry) && (
-<p className={`${outfit.className} mb-6 text-gray-600`}>
+<p style={textStyle}>
   {askConfirm
     ? "Da li ste sigurni da želite otkazati rezervaciju?"
     : "Kliknite na dugme ispod da otkažete svoju rezervaciju."}
@@ -176,11 +240,11 @@ if (bookingError || !bookingData) {
 
 {errorBox && (
   <div
-    className={`${outfit.className} rounded-2xl p-4`}
+    className="rounded-2xl p-4"
     style={{
       border: "2px solid #611a1a",
       backgroundColor: "#fff7f7",
-      marginBottom: errorBox.canRetry ? "20px" : 0,
+      marginTop: "16px",
     }}
   >
     <p className="mb-1 font-bold" style={{ color: "#611a1a" }}>
@@ -191,14 +255,17 @@ if (bookingError || !bookingData) {
 )}
 
 {askConfirm ? (
-  <div className="flex flex-wrap justify-center gap-3">
+  <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "20px" }}>
     <button
       onClick={handleCancel}
       disabled={loading}
-      className={`${geist.className} rounded-2xl px-6 py-3 font-bold text-white disabled:opacity-50`}
+      className={geist.className}
       style={{
-        backgroundColor: "#611a1a",
-        color: "white",
+        ...buttonBase,
+        backgroundColor: "#ef4444",
+        color: "#ffffff",
+        border: "none",
+        opacity: loading ? 0.6 : 1,
       }}
     >
       {loading ? "Otkazujem..." : "Da, otkaži"}
@@ -207,14 +274,16 @@ if (bookingError || !bookingData) {
     <button
       onClick={() => setAskConfirm(false)}
       disabled={loading}
-      className={`${geist.className} rounded-2xl px-6 py-3 font-bold disabled:opacity-50`}
+      className={geist.className}
       style={{
-        backgroundColor: "white",
+        ...buttonBase,
+        backgroundColor: "#ffffff",
         color: "#611a1a",
         border: "1px solid #611a1a",
+        opacity: loading ? 0.6 : 1,
       }}
     >
-      Ne
+      Ne, zadrži rezervaciju
     </button>
   </div>
 ) : (
@@ -225,10 +294,13 @@ if (bookingError || !bookingData) {
     setAskConfirm(true);
   }}
   disabled={loading}
-  className={`${geist.className} rounded-2xl px-6 py-3 font-bold text-white disabled:opacity-50`}
+  className={geist.className}
   style={{
-    backgroundColor: "#611a1a",
-    color: "white",
+    ...buttonBase,
+    marginTop: "20px",
+    backgroundColor: "#ffffff",
+    color: "#ef4444",
+    border: "1px solid #ef4444",
   }}
 >
           Otkaži rezervaciju
