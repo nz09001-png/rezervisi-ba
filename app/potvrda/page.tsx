@@ -646,7 +646,15 @@ router.replace(
     salonSlug || ""
   )}&serviceId=${serviceId}&date=${date}&time=${time}${
     barberId ? `&barberId=${barberId}` : ""
-  }`;
+  }&${new URLSearchParams({
+    // Kundens uppgifter följer med så att fälten på /podaci inte blir tomma.
+    ime: ime || "",
+    prezime: prezime || "",
+    phoneCode: phoneCode || "",
+    phone: phone || "",
+    email: email || "",
+    napomena: napomena || "",
+  }).toString()}`;
 
   const timesHref = `/times?salon=${encodeURIComponent(
     salon || ""

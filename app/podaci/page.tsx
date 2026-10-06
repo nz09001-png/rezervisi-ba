@@ -34,9 +34,10 @@ const time = searchParams.get("time");
 const barberId = searchParams.get("barberId");
   const [service, setService] = useState<any>(null);
   const [barber, setBarber] = useState<any>(null);
-  const [ime, setIme] = useState("");
-const [prezime, setPrezime] = useState("");
-const [phoneCode, setPhoneCode] = useState("+387");
+  // Fälten fylls i från adressen när kunden kommer tillbaka från /potvrda ("Promijeni" / "← Nazad").
+  const [ime, setIme] = useState(searchParams.get("ime") || "");
+const [prezime, setPrezime] = useState(searchParams.get("prezime") || "");
+const [phoneCode, setPhoneCode] = useState(searchParams.get("phoneCode") || "+387");
 const phonePlaceholders: Record<string, string> = {
   "+387": "Primjer: 061 234 567",
   "+385": "Primjer: 091 234 5678",
@@ -66,9 +67,9 @@ const phoneCountries: Record<
   "+43": "AT",
   "+41": "CH",
 };
-const [phone, setPhone] = useState("");
-const [email, setEmail] = useState("");
-const [napomena, setNapomena] = useState("");
+const [phone, setPhone] = useState(searchParams.get("phone") || "");
+const [email, setEmail] = useState(searchParams.get("email") || "");
+const [napomena, setNapomena] = useState(searchParams.get("napomena") || "");
 const [isMobile, setIsMobile] = useState(false);
 // Fel som visas i rött under respektive fält (i stället för grå alert-rutor).
 const [errors, setErrors] = useState<{
