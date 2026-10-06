@@ -634,9 +634,10 @@ router.replace(
     : "";
 
   // Tid som "09:30 – 10:00" (slut = start + tjänstens längd).
+  // Om salongen döljer längden visas bara starttiden (som på /uspjesno och i mejlet).
   const displayTime = (() => {
     if (!time) return "";
-    if (!service) return time;
+    if (!service || !service.show_duration) return time;
     const end = timeToMinutes(time) + (service.duration_minutes || 60);
     return `${time} – ${String(Math.floor(end / 60)).padStart(2, "0")}:${String(end % 60).padStart(2, "0")}`;
   })();
