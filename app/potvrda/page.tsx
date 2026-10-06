@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
+import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { Source_Sans_3, Geist, Montserrat } from "next/font/google";
 
 const sourceSans = Source_Sans_3({
@@ -835,7 +836,12 @@ router.replace(
 
     <div style={{ marginTop: "4px" }}>
       {row("Ime i prezime", `${ime || ""} ${prezime || ""}`.trim(), false, true)}
-      {row("Telefon", `${phoneCode || ""} ${phone || ""}`.trim())}
+      {row(
+        "Telefon",
+        // Visar det rättade numret ("+387 61 000 000"), annars som kunden skrev det.
+        parsePhoneNumberFromString(normalizedPhone || "")?.formatInternational() ||
+          `${phoneCode || ""} ${phone || ""}`.trim()
+      )}
       {email?.trim() && row("Email", email)}
       {row("Napomena", napomena || "Nema napomene", !napomena)}
     </div>
