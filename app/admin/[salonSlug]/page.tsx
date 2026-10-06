@@ -1122,11 +1122,38 @@ async function handleAddBarber() {
 async function handleDeleteBarber(id: number) {
   const barberName = barbers.find((barber) => barber.id === id)?.name;
 
+  // Räkna personens kommande bokningar (från i dag). Bokningarna ligger kvar
+  // efter borttagningen, så ägaren varnas och kan kontakta kunderna.
+  const now = new Date();
+  const todayString = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const { count: upcomingCount } = await supabase
+    .from("bookings")
+    .select("id", { count: "exact", head: true })
+    .eq("barber_id", id)
+    .gte("booking_date", todayString);
+
+  const upcoming = upcomingCount || 0;
+  const lastTwo = upcoming % 100;
+  const lastOne = upcoming % 10;
+  const rezervacijaWord =
+    lastOne === 1 && lastTwo !== 11
+      ? "buduću rezervaciju"
+      : lastOne >= 2 && lastOne <= 4 && (lastTwo < 12 || lastTwo > 14)
+      ? "buduće rezervacije"
+      : "budućih rezervacija";
+  const upcomingWarning =
+    upcoming > 0
+      ? ` Pažnja: ${barberName || "Član osoblja"} ima ${upcoming} ${rezervacijaWord}. ${
+          upcoming === 1 ? "Ona ostaje" : "One ostaju"
+        } u kalendaru – kontaktirajte ${upcoming === 1 ? "klijenta" : "klijente"}.`
+      : "";
+
   const confirmDelete = await askConfirm({
     title: "Obrisati člana osoblja?",
-    text: barberName
-      ? `${barberName} će biti obrisan/a iz salona.`
-      : "Član osoblja će biti obrisan.",
+    text:
+      (barberName
+        ? `${barberName} će biti obrisan/a iz salona.`
+        : "Član osoblja će biti obrisan.") + upcomingWarning,
   });
 
   if (!confirmDelete) return;
