@@ -1,12 +1,13 @@
 ============================================================
 SALONIX – MASTER CHECKPOINT / PROJEKTSAMMANFATTNING
-Senast uppdaterad: 5 oktober 2026
+Senast uppdaterad: 6 oktober 2026
 ============================================================
 
 VIKTIGT TILL NÄSTA CHATT:
 Det här är den aktuella master-checkpointen för Salonix.
 Punkt 1–7 i lanseringsplanen är KLARA och FRYSTA.
-Vi är i SLUTET av punkt 8: Design/UX-kontroll av hela Salonix.
+PUNKT 8 (Design/UX-kontroll av hela Salonix) är KLAR (6 oktober).
+NÄSTA: PUNKT 9 – full QA. Se avsnitt 12 och 14.
 - Kundsidorna (startsida, salongssida, bokningsflöde, avbokning, mejl)
   är genomgångna och fixade.
 - Admin är genomgången och omgjord: Postavke som egen sida, alla 8
@@ -16,9 +17,8 @@ Vi är i SLUTET av punkt 8: Design/UX-kontroll av hela Salonix.
   Se avsnitt 7 och 14.
 - 5 oktober: salongssidan och hela bokningsflödet (/times, /podaci,
   /potvrda, /uspjesno) har fått en enhetlig ny stil. Se avsnitt 14.
-- Kvar i punkt 8: AVBOKNINGSSIDAN (/cancel) – förslaget är godkänt
-  (se avsnitt 14), koden är inte gjord än. Eget fliknamn per salong är
-  flyttat till punkt 12. Sedan punkt 9 (QA).
+- 6 oktober: avbokningssidan (/cancel) omgjord – sista delen av punkt 8.
+  Eget fliknamn per salong är flyttat till punkt 12.
 Läs först: CLAUDE.md (regler) och SALONIX-KARTA.md (hur filerna hänger
 ihop + testlista). Läs sedan avsnitt 14 här.
 
@@ -143,7 +143,7 @@ Typsnitt:
   felsidan "Salon nije pronađen"). Ersatt av Montserrat på salongssidan.
 - Source Sans 3: text, information, formulär
 - Geist: knappar/UI
-- Outfit: informationsdelens text på salongssidan, avbokningskortet (gammalt)
+- Outfit: informationsdelens text på salongssidan (inte längre på /cancel)
 - Admin: behåller Arial (ägarens beslut – bara personalen ser admin)
 - Undantag från "allt på bosniska": admin har "Powered by" + Salonix-loggan
   längst ner (ägarens val, engelska med flit).
@@ -211,7 +211,7 @@ Kundsidor:
 /podaci            → kunduppgifter – FRYST, omgjord 5 okt
 /potvrda           → bekräfta bokning (bokningen skapas här) – FRYST, omgjord 5 okt (A)
 /uspjesno          → "Rezervacija potvrđena" – omgjord 5 okt (rader som Potvrda)
-/cancel            → avbokning via mejllänk (id + token) – FRYST
+/cancel            → avbokning via mejllänk (id + token) – FRYST, omgjord 6 okt
 app/api/send-email/route.ts        → bokningsmejl – FRYST
 app/api/send-cancel-email/route.ts → mejl när salongen avbokar i admin
 Admin:
@@ -448,8 +448,7 @@ inte), "TEST"-namn m.fl.
 5. Admin desktop ..................... ✅ KLAR & FRYST
 6. Startsida/katalog mobil ........... ✅ KLAR & FRYST
 7. Startsida desktop (+ surfplatta) .. ✅ KLAR & FRYST
-8. Design/UX-kontroll av hela Salonix  🔄 NÄSTAN KLAR (allt klart utom
-                                          avbokningssidan /cancel)
+8. Design/UX-kontroll av hela Salonix  ✅ KLAR (6 oktober)
 9. Full QA inkl. edge cases .......... ⬜
 10. Säkerhet och produktion .......... ⬜ (RLS, admininloggning,
     åtkomstkontroll, server-side validering, secrets)
@@ -555,7 +554,7 @@ Allmänt:
   ("Pauza 11:20–12:00 · Za vrijeme pauze: Ajdin Z")
 
 ============================================================
-14. NÄSTA STEG – PUNKT 8 (NÄSTAN KLAR)
+14. NÄSTA STEG – PUNKT 9 (QA). PUNKT 8 ÄR KLAR
 ============================================================
 KLART i punkt 8 – kundsidor och mejl (3 oktober):
 - Salongssidan mobil: "Rezerviši" syns även när personal är dold.
@@ -619,28 +618,30 @@ ARBETSSÄTT SOM FUNGERADE (ägaren):
   server (python3 -m http.server 8765), bilder skickas som filer.
 - En sida/ändring i taget, testa efter varje (utan att skapa bokningar).
 
+KLART i punkt 8 – avbokningssidan (6 oktober):
+- /cancel: vinröd bakgrund, vitt kort UTAN logga och UTAN bokningens
+  uppgifter (ägarens val). Rubrik "Otkaži rezervaciju" (Montserrat, mörk),
+  knapp "Otkaži rezervaciju" vit med röd ram → frågan "Da li ste
+  sigurni…?" med "Da, otkaži" (röd) och "Ne, zadrži rezervaciju" →
+  klart: GRÅ bock, "Rezervacija otkazana", knapp "Rezervišite novi termin"
+  (→ "/"). Felrutorna oförändrade. Radering, token-kontroll och admin-
+  notis ORÖRDA. Läget "otkazana" är inte testat med riktig bokning.
+
 NÄSTA – I DEN HÄR ORDNINGEN:
-1. AVBOKNINGSSIDAN /cancel (app/cancel/page.tsx, FRYST – ägaren har sagt
-   att den ska göras, men säg "kör" innan kod ändras). Godkänd riktning:
-   - Vinröd bakgrund kvar, vitt kort med Salonix-logga överst.
-   - Start: rubrik "Otkaži rezervaciju" (Montserrat, mörk), text, knapp
-     "Otkaži rezervaciju" vit med RÖD ram (#ef4444).
-   - Frågan: "Da li ste sigurni…?", "Da, otkaži" (röd fylld) och
-     "Ne, zadrži rezervaciju" (vit, vinröd ram).
-   - Klart: GRÅ bock, "Rezervacija otkazana", knapp "Rezervišite novi
-     termin" → "/" (startsidan).
-   - Valfritt (Claude rekommenderar, ägaren har inte bestämt): visa
-     bokningen (salong, tjänst, datum, tid, personal) när sidan öppnas –
-     kräver att sidan LÄSER bokningen med id + cancel_token (samma
-     kontroll som i dag), inget raderas förrän "Da, otkaži". Fråga ägaren.
-   - Rör inte raderingen, token-kontrollen eller admin-notisen (tråd 6, 7).
-   Förslagsbilder finns från 5 oktober (C1–C4) – gör om dem om de behövs.
-2. Punkt 8 klar → uppdatera checkpoint + CLAUDE.md.
-3. Punkt 9: full QA med testlistan i SALONIX-KARTA.md + listan i
-   avsnitt 12 (hel testbokning i nya flödet, paus-dubbelbokningar,
-   söndagstider, borttagen personal, iPhone).
-4. Punkt 10: säkerhet (fråga innan start).
+1. PUNKT 9 – QA (fråga ägaren vad som ska testas först, en sak i taget):
+   a) En HEL testbokning i det nya flödet på mobil och desktop:
+      salongssida → Rezerviši → tid → Nastavi → Podaci → Potvrda →
+      Završi rezervaciju → Uspješno → mejl → avbokningslänk → "Rezervacija
+      otkazana" → admin (bokning borta + notis). Ägaren gör bokningen
+      själv eller godkänner att Claude gör en testbokning.
+   b) Paus-dubbelbokningar (kund bokar under paus, kalendern visar "2").
+   c) Studio M:s lediga tider på söndagar trots stängt.
+   d) Vad händer med tider och bokningar när en person tas bort.
+   e) Allt nytt på riktig iPhone (listen längst ner, tidsfält, admin).
+   f) Resten av listan i avsnitt 12 (Punkt 9).
+2. Punkt 10: säkerhet (fråga innan start).
+3. Punkt 11–13 enligt avsnitt 11.
 
 ============================================================
-SLUT PÅ MASTER CHECKPOINT – 5 OKTOBER 2026
+SLUT PÅ MASTER CHECKPOINT – 6 OKTOBER 2026
 ============================================================

@@ -83,7 +83,9 @@ Finjustera aldrig godkänd design "för att det ser bättre ut".
   - Karta (knappen "Karta"): `components/SalonMap.tsx`, Leaflet + OpenStreetMap.
   - Sidfot med logga och © Salonix.
   - Kategoripanelen (☰): små ikoner utan cirklar, samma på mobil och desktop.
-- **Punkt 8 – design/UX-kontroll PÅGÅR.** Kundsidor och mejl är klara. I admin
+- **Punkt 8 – design/UX-kontroll KLAR (6 oktober).** Nästa: **punkt 9 – QA**
+  (se `SALONIX-MASTER-CHECKPOINT.md` avsnitt 12 och 14). Nedan står vad som gjordes i punkt 8.
+- **Punkt 8 – detaljer.** Kundsidor och mejl är klara. I admin
   (`app/admin/[salonSlug]/page.tsx`) är **Postavke och alla 8 avsnitt omgjorda**
   (3 oktober 2026). Admin behåller Arial.
   - Postavke är en egen helsida ovanpå kalendern (`id="postavke-stranica"`, fixed,
@@ -153,9 +155,11 @@ Finjustera aldrig godkänd design "för att det ser bättre ut".
     termina" – lägg inga andra knappar i kalendern. `/potvrda`: `formattedDate`
     används i admin-notisen, visningen använder `displayDate`/`displayTime`.
   - Ägaren vill inte ha ikoner/symboler utom sociala medier, och vit bakgrund.
-- **Nästa i punkt 8:** avbokningssidan `/cancel` (godkänd riktning i checkpoint
-  avsnitt 14 – logga, röd ram på Otkaži, "Ne, zadrži rezervaciju", grå bock,
-  "Rezervišite novi termin"; fråga om bokningens uppgifter ska visas). Sedan punkt 9 (QA).
+  - `/cancel` (6 oktober): vinröd bakgrund, vitt kort utan logga och utan
+    bokningens uppgifter, "Otkaži rezervaciju" med röd ram, "Da, otkaži" /
+    "Ne, zadrži rezervaciju", grå bock + "Rezervišite novi termin" när klart.
+- **Nästa: punkt 9 – QA.** Först en hel testbokning i nya flödet (mobil + desktop,
+  mejl, avbokning, admin). Fråga ägaren innan en riktig bokning skapas.
 - Ägaren vill se FLERA alternativ som bilder (mobil + desktop) och välja; enkelt
   men tydligt. "Testa X" = lägg in och visa, ägaren bestämmer sedan.
 - Idéer efter punkt 8: Brzi izbor anpassat efter salongens typ (alternativ B),
