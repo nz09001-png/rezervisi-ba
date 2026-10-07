@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
+import { CustomerData, readCustomerData } from "@/lib/customerData";
 import { Source_Sans_3, Geist, Montserrat } from "next/font/google";
 
 const sourceSans = Source_Sans_3({
@@ -39,13 +40,38 @@ const formattedDate = date
   : "";
 const time = searchParams.get("time");
 const barberId = searchParams.get("barberId");
-  const ime = searchParams.get("ime");
-  const prezime = searchParams.get("prezime");
-  const phoneCode = searchParams.get("phoneCode");
-  const phone = searchParams.get("phone");
-  const normalizedPhone = searchParams.get("normalizedPhone");
-  const email = searchParams.get("email");
-  const napomena = searchParams.get("napomena");
+  // Kundens uppgifter kommer från flikens minne (sparade av /podaci), inte
+  // från adressen. Saknas de skickas kunden tillbaka till /podaci.
+  const [customer, setCustomer] = useState<CustomerData | null>(null);
+  const ime = customer?.ime || "";
+  const prezime = customer?.prezime || "";
+  const phoneCode = customer?.phoneCode || "";
+  const phone = customer?.phone || "";
+  const normalizedPhone = customer?.normalizedPhone || "";
+  const email = customer?.email || "";
+  const napomena = customer?.napomena || "";
+
+  useEffect(() => {
+    const saved = readCustomerData();
+
+    if (!saved.ime || !saved.phone) {
+      router.replace(
+        `/podaci?${new URLSearchParams({
+          salon: salon || "",
+          salonSlug: salonSlug || "",
+          serviceId: serviceId || "",
+          date: date || "",
+          time: time || "",
+          barberId: barberId || "",
+        }).toString()}`
+      );
+      return;
+    }
+
+    setCustomer(saved);
+    // Körs en gång när sidan öppnas.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [service, setService] = useState<any>(null);
   const [barberName, setBarberName] = useState<string | null>(null);
   const [barbers, setBarbers] = useState<any[]>([]);
@@ -621,11 +647,7 @@ router.replace(
     service?.show_duration ? "true" : "false"
   }&date=${encodeURIComponent(
     date || ""
-  )}&time=${encodeURIComponent(time || "")}&ime=${encodeURIComponent(
-    ime || ""
-  )}&prezime=${encodeURIComponent(
-    prezime || ""
-  )}&email=${encodeURIComponent(email || "")}`
+  )}&time=${encodeURIComponent(time || "")}`
 );
 }
 
@@ -654,31 +676,18 @@ router.replace(
     salonSlug || ""
   )}&serviceId=${serviceId}&date=${date}&time=${time}${
     barberId ? `&barberId=${barberId}` : ""
-  }&${new URLSearchParams({
-    // Kundens uppgifter följer med så att fälten på /podaci inte blir tomma.
-    ime: ime || "",
-    prezime: prezime || "",
-    phoneCode: phoneCode || "",
-    phone: phone || "",
-    email: email || "",
-    napomena: napomena || "",
-  }).toString()}`;
+  }`;
+  // Kundens uppgifter följer inte med i adressen – /podaci läser flikens minne.
 
   const timesHref = `/times?salon=${encodeURIComponent(
     salon || ""
   )}&salonSlug=${encodeURIComponent(
     salonSlug || ""
   )}&serviceId=${serviceId}&barberId=${encodeURIComponent(barberId || "")}&${new URLSearchParams({
-    // Vald tid (förvald på tidssidan) och kundens uppgifter följer med,
-    // så att fälten på /podaci inte blir tomma efter en ny tid.
+    // Vald tid (förvald på tidssidan). Kundens uppgifter ligger i flikens
+    // minne, så fälten på /podaci blir inte tomma efter en ny tid.
     date: date || "",
     time: time || "",
-    ime: ime || "",
-    prezime: prezime || "",
-    phoneCode: phoneCode || "",
-    phone: phone || "",
-    email: email || "",
-    napomena: napomena || "",
   }).toString()}`;
 
   const cardStyle = {

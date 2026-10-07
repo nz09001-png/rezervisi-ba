@@ -196,21 +196,11 @@ const getBusyIntervalsForBooking = (booking: any) => {
     selectedDate
   )}&time=${encodeURIComponent(
     selectedTime
-  )}&barberId=${encodeURIComponent(barberId || "")}${customerParams}`
+  )}&barberId=${encodeURIComponent(barberId || "")}`
 );
 }
-
-// Kundens uppgifter (finns i adressen när kunden kommer från /potvrda via
-// "Promijeni") skickas vidare till /podaci så att fälten inte blir tomma.
-const customerParams = (() => {
-  const params = new URLSearchParams();
-  ["ime", "prezime", "phoneCode", "phone", "email", "napomena"].forEach((key) => {
-    const value = searchParams.get(key);
-    if (value) params.set(key, value);
-  });
-  const text = params.toString();
-  return text ? `&${text}` : "";
-})();
+// Kundens uppgifter ligger i flikens minne (lib/customerData.ts), så /podaci
+// fyller i fälten själv – de skickas inte längre i adressen.
 
 
 useEffect(() => {

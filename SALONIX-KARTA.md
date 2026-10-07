@@ -41,18 +41,24 @@ Filen `npm` i rotmappen är skräp från en felskriven kommandorad.
 ### Tråd 1 – Bokningsflödet skickar data i webbadressen
 Salong → `/times` → `/podaci` → `/potvrda` → `/uspjesno`.
 Varje sida lämnar vidare en "stafettpinne" i adressen:
-`salon` (salongens namn), `salonSlug`, `serviceId`, `barberId`, `date`, `time`,
-och från `/podaci`: `ime`, `prezime`, `phoneCode`, `phone`, `normalizedPhone`, `email`, `napomena`.
+`salon` (salongens namn), `salonSlug`, `serviceId`, `barberId`, `date`, `time`
+(`/uspjesno` får dessutom `service`, `barber`, `price`, `duration`, `showPrice`, `showDuration`).
+**Kundens uppgifter ligger INTE i adressen** (sedan punkt 10): `/podaci` sparar
+`ime`, `prezime`, `phoneCode`, `phone`, `normalizedPhone`, `email`, `napomena` i
+flikens minne (sessionStorage) via `lib/customerData.ts`. `/potvrda` och `/uspjesno`
+läser därifrån, och `/podaci` fyller i fälten därifrån. Saknas uppgifterna (t.ex. ny
+flik) skickar `/potvrda` kunden till `/podaci`.
 **Risk:** byter man namn på något av dessa på en sida blir nästa sida tom eller fel.
 Även "← Nazad"-länkarna måste skicka med rätt delar (t.ex. `barberId`).
-Sedan punkt 9 går stafettpinnen även bakåt: `/potvrda` → `/podaci` ("Promijeni",
-"← Nazad") och `/potvrda` → `/times` ("Promijeni" i TERMIN, felrutan) skickar
-kundens uppgifter + `date`/`time`. `/times` läser `date`/`time` (rätt vecka, tiden
-förvald) och skickar kundens uppgifter vidare till `/podaci`, som fyller i fälten.
+Bakåt: `/potvrda` → `/podaci` ("Promijeni", "← Nazad") och `/potvrda` → `/times`
+("Promijeni" i TERMIN, felrutan) skickar `date`/`time`. `/times` läser `date`/`time`
+(rätt vecka, tiden förvald). Kundens uppgifter följer med via flikens minne.
 
 ### Tråd 2 – Bokningar hittar sin salong via salongens NAMN
 `bookings.salon` = `salons.salon_name` (inte id-nummer).
-Används i: salongssidan, `/times`, `/potvrda`, `/cancel`, adminpanelen.
+Används i: salongssidan, `/times`, `/potvrda`, `/cancel`, adminpanelen – och sedan
+punkt 10 även i databasen: funktionerna `get_booked_slots` / `create_booking` och
+RLS-regeln för `bookings` (ägaren hittas via `salons.salon_name`).
 **Risk:** ändras ett salongsnamn i Supabase försvinner gamla bokningar ur admin
 och dubbelbokningar blir möjliga. Två salonger med exakt samma namn delar bokningar.
 (Admin kan inte ändra namnet – risken finns bara om man ändrar direkt i Supabase.)

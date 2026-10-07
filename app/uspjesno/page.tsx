@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Source_Sans_3, Geist, Montserrat } from "next/font/google";
+import { CustomerData, readCustomerData } from "@/lib/customerData";
 
 const sourceSans = Source_Sans_3({
   subsets: ["latin"],
@@ -59,9 +60,17 @@ const showPrice = searchParams.get("showPrice") === "true";
 const showDuration = searchParams.get("showDuration") === "true";
   const date = searchParams.get("date");
   const time = searchParams.get("time");
-  const email = searchParams.get("email");
-  const ime = searchParams.get("ime");
-const prezime = searchParams.get("prezime");
+  // Namn och e-post kommer från flikens minne (lib/customerData.ts), inte från
+  // adressen. null = inte inläst än (då visas ingen e-posttext).
+  const [customer, setCustomer] = useState<CustomerData | null>(null);
+
+  useEffect(() => {
+    setCustomer(readCustomerData());
+  }, []);
+
+  const email = customer?.email || "";
+  const ime = customer?.ime || "";
+  const prezime = customer?.prezime || "";
 
 // Datum som "Sri, 07.10.2026".
 const formattedDate = date
@@ -208,7 +217,7 @@ const rows: [string, string][] = [
 )}
 
       {/* Utan e-post finns ingen avbokningslänk – berätta hur man avbokar. */}
-      {!email?.trim() && (
+      {customer && !email.trim() && (
   <p
     className={sourceSans.className}
     style={{
