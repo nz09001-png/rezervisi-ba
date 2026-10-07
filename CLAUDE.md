@@ -83,8 +83,12 @@ Finjustera aldrig godkänd design "för att det ser bättre ut".
   - Karta (knappen "Karta"): `components/SalonMap.tsx`, Leaflet + OpenStreetMap.
   - Sidfot med logga och © Salonix.
   - Kategoripanelen (☰): små ikoner utan cirklar, samma på mobil och desktop.
-- **Punkt 10 – säkerhet KLAR (7 oktober).** Nästa: **punkt 11 – databasstädning**
-  (fråga ägaren innan start). Detaljer: `SALONIX-MASTER-CHECKPOINT.md` avsnitt 8 och 14.
+- **Punkt 11 – databasstädning KLAR (7 oktober).** Nästa: **punkt 12 – deploy**
+  (fråga ägaren innan start). Bara Studio M Exclusive finns kvar. Som SISTA steg
+  före lansering (efter punkt 13) körs `sql/lansering-tom-studio-m.sql`, som tömmer
+  Studio M (kvar: namn, naslovna slika, adress, telefon, Instagram, Facebook).
+- **Punkt 10 – säkerhet KLAR (7 oktober).** Detaljer: `SALONIX-MASTER-CHECKPOINT.md`
+  avsnitt 8 och 14.
   - Admin loggar in med Supabase Auth (e-post + lösenord, överlever omladdning),
     `salons.owner_id` kopplar kontot till salongen, `admin_password` är borttagen.
     Bara Studio M har konto än – andra salonger behöver konto före lansering.
@@ -184,7 +188,7 @@ Finjustera aldrig godkänd design "för att det ser bättre ut".
   - `/cancel` (6 oktober): vinröd bakgrund, vitt kort utan logga och utan
     bokningens uppgifter, "Otkaži rezervaciju" med röd ram, "Da, otkaži" /
     "Ne, zadrži rezervaciju", grå bock + "Rezervišite novi termin" när klart.
-- **Nästa: punkt 11 – databasstädning.** Fråga ägaren innan start, en sak i taget.
+- **Nästa: punkt 12 – deploy till Vercel.** Fråga ägaren innan start, en sak i taget.
   Fråga alltid innan en riktig testbokning skapas. När admin är inloggad i
   webbläsarpanelen: testa kundsidor i en egen flik.
 - Ägaren vill se FLERA alternativ som bilder (mobil + desktop) och välja; enkelt
@@ -196,10 +200,8 @@ Finjustera aldrig godkänd design "för att det ser bättre ut".
 - Databasen: `salons` har `city`, `categories`, `is_published`, `latitude`, `longitude`.
   Koordinater räknas fram från adressen en gång (geokodning) och sparas med SQL.
   Adminpanelen sparar inte koordinater än, så nya salonger måste få koordinater manuellt.
-- Testsalonger finns (slug börjar med `test-`, ca 38 st). De behålls till punkt 11
-  och tas bort då med: `delete from salons where slug like 'test-%';`
-  I punkt 11 även: 194 gamla bokningar med `salon = 'Barber House Sarajevo'`.
-- Sedan: 11 databasstädning, 12 deploy till Vercel (bygget misslyckas just nu på Vercel –
+- Testsalonger, salon-y, salon-z och gamla bokningar är raderade (punkt 11).
+- Sedan: 12 deploy till Vercel (bygget misslyckas just nu på Vercel –
   kör `npm run build` först), 13 slutligt test i produktion.
 - Att komma ihåg till punkt 12: varje riktig salong behöver ett Supabase Auth-konto
   + `owner_id` (se checkpoint avsnitt 7, Inloggning). Varje ny tabell måste få RLS.

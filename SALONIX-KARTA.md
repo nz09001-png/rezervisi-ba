@@ -27,8 +27,8 @@ Efter varje ändring körs **testlistan** längst ner.
 | `app/globals.css` | alla sidor | Gemensam stil (påverkar ALLT) |
 | `lib/supabase.ts` | alla sidor | Kopplingen till databasen |
 
-Riktiga salonger just nu: `/salon-x` (Studio M Exclusive), `/salon-y`, `/salon-z`.
-Testsalonger: slug börjar med `test-`.
+Enda salongen just nu: `/salon-x` (Studio M Exclusive). Testsalonger, `/salon-y` och
+`/salon-z` raderades i punkt 11.
 
 Gamla filer som inte används (ändra inte, ta inte bort utan att fråga):
 `app/salon-x-old`, `app/salon-y-old`, `app/salon-z-old`, `app/admin/salon-*-old`, `app/booking`.

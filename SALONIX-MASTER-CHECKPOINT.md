@@ -8,8 +8,12 @@ Det här är den aktuella master-checkpointen för Salonix.
 Punkt 1–7 i lanseringsplanen är KLARA och FRYSTA.
 PUNKT 8 (Design/UX-kontroll av hela Salonix) är KLAR (6 oktober).
 PUNKT 9 (Full QA) är KLAR (6–7 oktober).
-PUNKT 10 (Säkerhet) är KLAR (7 oktober). Se avsnitt 14.
-NÄSTA: PUNKT 11 – databasstädning. Fråga ägaren innan start.
+PUNKT 10 (Säkerhet) är KLAR (7 oktober).
+PUNKT 11 (Databasstädning) är KLAR (7 oktober). Se avsnitt 14.
+NÄSTA: PUNKT 12 – deploy till Vercel. Fråga ägaren innan start.
+- Punkt 11: bara Studio M Exclusive finns kvar. Testsalonger, salon-y,
+  salon-z och alla andra salongers bokningar är raderade. Studio M töms
+  helt som SISTA steg före lansering (sql/lansering-tom-studio-m.sql).
 - Punkt 10: gamla /admin borttagen, admin loggar in med Supabase Auth
   (e-post + lösenord, överlever omladdning), RLS på ALLA tabeller +
   bildlagringen, bokningar via säkra databasfunktioner, kundens
@@ -32,8 +36,8 @@ Logga: "SALONIX" med slogan "BRŽE | LAKŠE | ONLINE".
 Salonix är en SaaS-bokningsplattform (multi-salon) för salonger och
 tjänsteföretag i Bosnien och Hercegovina, liknande Fresha/Bokadirekt.
 Varje salong har en egen sida via slug.
-Riktiga salonger just nu: /salon-x (Studio M Exclusive, Sarajevo),
-/salon-y (Gentlemen Tuzla), /salon-z (Mostar Fade Studio).
+Enda salongen just nu: /salon-x (Studio M Exclusive, Sarajevo).
+(Gentlemen Tuzla /salon-y och Mostar Fade /salon-z raderades i punkt 11.)
 Admin: /admin/salon-x osv.
 
 Ägaren (Salonix) står bakom plattformen och tar betalt av salongerna.
@@ -464,7 +468,6 @@ SÄKERHET (RLS, punkt 10 – alla tabeller har RLS PÅ):
   ägaren läser/ändrar.
 - bookings: bara ägaren (salons.salon_name = bookings.salon och
   owner_id = auth.uid()). Kunder går via funktionerna nedan.
-- available_times_backup_before_barbers: RLS på, inga regler (oanvänd).
 - Bildlagringen (bucket salon-images, publik läsning): bara inloggade
   får ladda upp (regel "Inloggade kan ladda upp salongsbilder").
 Databasfunktioner (security definer):
@@ -497,8 +500,11 @@ Subota 10:00–15:00 (förkortad), Nedjelja stängd. Telefon 033875-600.
 Personal: Amar (blå), Jasmin (gul), Muhamed (grön), Sulejman (lila).
 Tjänstekategorier: Šišanje, Brada, Farbanje (+ några testtjänster
 "Bez kategorije"). Naslovna slika = salongens logga.
-Gentlemen Tuzla (id 2, /salon-y): en tjänst "Test", personal Suljo,
-inga lediga tider just nu.
+Inga andra salonger finns (raderade i punkt 11).
+Obs: services, barbers, available_times, closed_days, admin_notifications
+och bookings har INGEN databaskoppling till salons – raderas en salong
+måste de rensas för hand (salon_images, service_categories och
+salon_shortened_hours raderas automatiskt).
 
 ============================================================
 9. STARTSIDAN (PUNKT 6 + 7 – KLAR OCH FRYST)
@@ -522,14 +528,12 @@ danas = stängd dag > förkortade tider > vanliga tider.
 ============================================================
 10. TESTDATA
 ============================================================
-Ca 38 testsalonger (slug börjar med "test-") i 9 städer.
-Behålls till punkt 11, tas bort då med:
-delete from salons where slug like 'test-%';
-Studio M har flera testbokningar (Nedim Z, Lamija, Adel M, Almedina m.fl.).
-En gammal bokning söndag 4 okt fast söndag är stängd (gjord innan).
-Studio M:s lediga tider på söndagar är BORTTAGNA (7 okt, 768 rader).
-Studio M hette tidigare "Barber House Sarajevo": 194 GAMLA bokningar
-(bakåt i tiden) har fortfarande det namnet – städas i punkt 11.
+Punkt 11 (7 okt): 38 testsalonger, salon-y, salon-z, 207 bokningar
+(194 "Barber House Sarajevo" + 13 från salon-y/z) och tabellen
+available_times_backup_before_barbers är RADERADE.
+Studio M har kvar sina testdata (27 bokningar, 17 tjänster, 4 personer,
+lediga tider) för testerna i punkt 12–13. Allt töms före lansering med
+sql/lansering-tom-studio-m.sql (se avsnitt 12).
 Testtjänster i Studio M som är bra för QA: "sisanje test A" (30 min,
 20 KM), "test dva" (60 min), "testetstetst" (120 min: 30 jobb, 60 paus,
 30 jobb, längd dold för kunden).
@@ -549,7 +553,7 @@ Supabase Auth: en användare (ägarens iCloud) kopplad till Studio M.
 8. Design/UX-kontroll av hela Salonix  ✅ KLAR (6 oktober)
 9. Full QA inkl. edge cases .......... ✅ KLAR (7 oktober)
 10. Säkerhet ....................... ✅ KLAR (7 oktober)
-11. Databas-/produktionsstädning ..... ⬜ (ta bort testsalonger m.m.)
+11. Databasstädning ................ ✅ KLAR (7 oktober)
 12. Deploy till Vercel + salonix.ba .. ⬜
 13. Slutligt smoke test i produktion . ⬜
 
@@ -561,9 +565,9 @@ Kvar efter punkt 10 (säkerhet):
   försvinner bokningar ur admin och blockerar inte tider (hände med
   "Barber House Sarajevo"). Överväg att koppla via salons.id (påverkar
   även RLS-regeln och funktionerna för bookings).
-- Före lansering: varje riktig salong (salon-y, salon-z m.fl.) behöver
-  ett eget Supabase Auth-konto + owner_id (se avsnitt 7, Inloggning).
-  Utan det kan salongen inte logga in i admin.
+- Före lansering: Studio M är kopplad till ägarens iCloud. Ska salongens
+  egen admin logga in behövs ett eget Supabase Auth-konto + owner_id
+  (se avsnitt 7, Inloggning). Samma sak för varje ny salong.
 - "Glömt lösenord" (Zaboravili ste lozinku?) finns inte än – ägaren
   byter lösenord åt salongen i Supabase (Authentication → Users).
 - Leaked Password Protection (Supabase) kräver troligen betalplan –
@@ -575,11 +579,13 @@ Kvar efter punkt 10 (säkerhet):
   create_booking/cancel_booking senare.
 - Personuppgifter: Bosniens lag om personuppgifter. Bekräftelse-sms/mejl
   = servicemeddelande; reklam kräver samtycke.
-Punkt 11 (databasstädning):
-- Ta bort testsalongerna (slug 'test-%').
-- 194 gamla bokningar med salon = 'Barber House Sarajevo' (Studio M:s
-  gamla namn) – ta bort eller byt till "Studio M Exclusive" (fråga ägaren).
-- Gamla söndagsbokningen 4 okt och testbokningar i Studio M.
+SISTA STEGET FÖRE LANSERING (efter punkt 13):
+- Kör sql/lansering-tom-studio-m.sql i Supabase. Den tömmer Studio M:
+  kvar blir bara salongen med namn, naslovna slika, adress, telefon,
+  Instagram och Facebook (+ stad, startsidans kategorier, koordinater
+  och inloggning). Ägarens beslut 7 okt: salongens admin bygger själv
+  upp tjänster, personal, tider, beskrivning och öppettider.
+- Bildfilerna från galleriet ligger kvar i Storage (syns inte).
 Punkt 12 (lansering):
 - Vercel: "Preview deployment failed / build error" kommer i mejl för
   varje push – bygget fungerar inte på Vercel just nu. Kör
@@ -619,8 +625,6 @@ Punkt 12 (lansering):
 Allmänt:
 - Efter git pull på en ny dator: kör npm install.
 - .env.local sparas inte i Git – måste kopieras manuellt.
-- Gentlemen Tuzla och Mostar Fade: tjänster utan kategori syns inte på
-  salongssidan – ägaren väljer kategori i admin.
 
 ============================================================
 13. IDÉER TILL SENARE
@@ -648,8 +652,18 @@ Allmänt:
   ("Pauza 11:20–12:00 · Za vrijeme pauze: Ajdin Z")
 
 ============================================================
-14. NÄSTA STEG – PUNKT 11 (DATABASSTÄDNING). PUNKT 10 ÄR KLAR
+14. NÄSTA STEG – PUNKT 12 (DEPLOY). PUNKT 11 ÄR KLAR
 ============================================================
+KLART i punkt 11 – databasstädning (7 oktober):
+- 38 testsalonger raderade (de var tomma).
+- Gentlemen Tuzla (salon-y) och Mostar Fade (salon-z) raderade med
+  tjänster, personal, tider, bilder – och alla bokningar som inte är
+  Studio M:s (207 st, varav 194 "Barber House Sarajevo").
+- Tabellen available_times_backup_before_barbers borttagen.
+- Ägarens beslut: vid lansering finns bara Studio M med namn, naslovna
+  slika, adress, telefon, Instagram, Facebook. Koden ligger i
+  sql/lansering-tom-studio-m.sql och körs EFTER punkt 13.
+
 KLART i punkt 10 – säkerhet (7 oktober), allt testat av ägaren:
 a) Supabase-mejlet: "rls_disabled_in_public" – 11 tabeller utan RLS,
    2 (available_times, services) med regler som släppte igenom alla.
@@ -784,14 +798,12 @@ KLART i punkt 8 – avbokningssidan (6 oktober):
   förut. Läget "otkazana" testat med riktiga bokningar i punkt 9 och 10.
 
 NÄSTA – I DEN HÄR ORDNINGEN:
-1. PUNKT 11 – databasstädning (fråga ägaren innan start, en sak i taget):
-   testsalonger (slug 'test-%'), 194 "Barber House Sarajevo"-bokningar,
-   gamla testbokningar i Studio M, ev. tabellen
-   available_times_backup_before_barbers (oanvänd).
-2. Punkt 12: deploy (rätta bygget på Vercel först – kör npm run build),
-   fynd 5, salonix.ba, Resend-domän, MapTiler, solarijum.jpg, fliknamn
-   per salong, Auth-konton för alla riktiga salonger.
-3. Punkt 13: slutligt test i produktion.
+1. PUNKT 12 – deploy (fråga ägaren innan start, en sak i taget):
+   rätta bygget (kör npm run build), Vercel, salonix.ba, Resend-domän,
+   fynd 5, MapTiler, solarijum.jpg, fliknamn per salong, eget
+   Auth-konto för Studio M:s admin.
+2. Punkt 13: slutligt test i produktion.
+3. Sist: kör sql/lansering-tom-studio-m.sql (tömmer Studio M).
 
 ============================================================
 SLUT PÅ MASTER CHECKPOINT – 7 OKTOBER 2026
