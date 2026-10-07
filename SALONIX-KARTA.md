@@ -30,9 +30,10 @@ Efter varje ändring körs **testlistan** längst ner.
 Enda salongen just nu: `/salon-x` (Studio M Exclusive). Testsalonger, `/salon-y` och
 `/salon-z` raderades i punkt 11.
 
-Gamla filer som inte används (ändra inte, ta inte bort utan att fråga):
-`app/salon-x-old`, `app/salon-y-old`, `app/salon-z-old`, `app/admin/salon-*-old`, `app/booking`.
-Filen `npm` i rotmappen är skräp från en felskriven kommandorad.
+Gamla sidor (`app/salon-*-old`, `app/admin/salon-*-old`, `app/booking`, `app/admin/page.tsx`)
+är borttagna i punkt 10 och 12. Filen `npm` i rotmappen är skräp från en felskriven kommandorad.
+`app/podaci`, `app/potvrda`, `app/uspjesno` och `app/cancel` har en liten `layout.tsx` som bara
+lägger en Suspense-ram runt sidan (krävs för `npm run build`). Ta inte bort dem.
 
 ---
 

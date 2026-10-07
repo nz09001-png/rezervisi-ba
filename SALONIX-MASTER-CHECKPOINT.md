@@ -270,11 +270,14 @@ Dokument i rotmappen:
 - SALONIX-KARTA.md – trådarna mellan filerna + testlista efter ändringar
 - sql/lansering-tom-studio-m.sql – tömmer Studio M (körs SIST före lansering)
 
-Filer som INTE används längre (ändra inte, ta inte bort utan att fråga):
-app/salon-x-old, app/salon-y-old, app/salon-z-old,
-app/admin/salon-*-old, app/booking. Filen "npm" i rotmappen är skräp.
-Gamla app/admin/page.tsx (/admin, lösenord admin123) är BORTTAGEN
-(punkt 10). /admin visar nu "Salon nije pronađen".
+Borttagna gamla sidor: app/admin/page.tsx (punkt 10) och app/booking,
+app/salon-*-old, app/admin/salon-*-old (punkt 12, de hade gamla lösenord
+i koden). Adresserna visar nu "Salon nije pronađen". Finns i Gits historik.
+Filen "npm" i rotmappen är skräp.
+Suspense-ram (punkt 12): app/podaci, app/potvrda, app/uspjesno och
+app/cancel har var sin liten layout.tsx som bara lägger en Suspense-ram
+runt sidan – krävs för "npm run build" (useSearchParams). /times har
+ramen inne i page.tsx. Ta inte bort dem.
 
 Bokningsflödet: SALONG → TJÄNST → PERSONAL → TID → UPPGIFTER → BEKRÄFTA
 → BOKNING SKAPAS → NOTIS TILL ADMIN → EMAIL → "Rezervacija potvrđena".
@@ -588,10 +591,9 @@ SISTA STEGET FÖRE LANSERING (efter punkt 13):
   upp tjänster, personal, tider, beskrivning och öppettider.
 - Bildfilerna från galleriet ligger kvar i Storage (syns inte).
 Punkt 12 (lansering):
-- Vercel: "Preview deployment failed / build error" kommer i mejl för
-  varje push – bygget fungerar inte på Vercel just nu. Kör
-  "npm run build" lokalt och rätta felen före deploy (sidor med
-  useSearchParams utan Suspense kan ge byggfel).
+- ✅ Bygget rättat (7 okt): "npm run build" går igenom lokalt efter
+  Suspense-ramar (layout.tsx) i /podaci, /potvrda, /uspjesno, /cancel.
+  Kör alltid "npm run build" före en push som ska till Vercel.
 - Fynd 5 (QA): /uspjesno säger "Potvrda rezervacije je poslana na email."
   även om mejlet misslyckades (/api/send-email svarar alltid 200, Resends
   svar läses inte). I Resends testläge når mejl BARA ägarens iCloud – en
@@ -799,11 +801,26 @@ KLART i punkt 8 – avbokningssidan (6 oktober):
   token-kontroll i databasfunktionen cancel_booking; admin-notisen som
   förut. Läget "otkazana" testat med riktiga bokningar i punkt 9 och 10.
 
+PÅGÅR – punkt 12 (deploy), startad 7 oktober:
+- ✅ 12a Bygget fungerar (Suspense-ramar, commit cf78fa3). Gamla sidor
+  borttagna (e105f99).
+- Domänen salonix.ba är INTE köpt. Ägaren är bosnisk medborgare (JMBG)
+  utan företag → registrera som privatperson hos en registrar från
+  nic.ba (OUticu/registrari). Fråga om handlingar, pris och om DNS kan
+  ändras själv. Kundmejl (Resend) kräver domänen → lansering väntar på den.
+- Vercel-projektet heter troligen "rezervisi-ba" (kopplat till GitHub).
+  Ägaren vet inte mer. Branchen termini-redesign ger bara förhandsbyggen
+  – produktion byggs från main (beslut om sammanslagning senare).
+
 NÄSTA – I DEN HÄR ORDNINGEN:
 1. PUNKT 12 – deploy (fråga ägaren innan start, en sak i taget):
-   rätta bygget (kör npm run build), Vercel, salonix.ba, Resend-domän,
-   fynd 5, MapTiler, solarijum.jpg, fliknamn per salong, eget
-   Auth-konto för Studio M:s admin.
+   12b Vercel: ägaren loggar in på vercel.com (Continue with GitHub),
+   öppnar projektet rezervisi-ba och skickar skärmbild → nycklar
+   (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY,
+   RESEND_API_KEY, NEXT_PUBLIC_SITE_URL) → sajten på .vercel.app.
+   12c salonix.ba (när köpt), 12d Resend-domän + fynd 5,
+   12e MapTiler, solarijum.jpg, fliknamn per salong, eget Auth-konto
+   för Studio M:s admin.
 2. Punkt 13: slutligt test i produktion.
 3. Sist: kör sql/lansering-tom-studio-m.sql (tömmer Studio M).
 

@@ -50,9 +50,10 @@ Finjustera aldrig godkänd design "för att det ser bättre ut".
   bakgrund, för vinröd bakgrund).
 - Fliknamn, beskrivning och språk (`lang="bs"`) sätts i `app/layout.tsx`.
 
-## Filer som inte används längre
-`app/salon-x-old`, `app/salon-y-old`, `app/salon-z-old`, `app/admin/salon-*-old`,
-`app/booking`. Ändra dem inte, och ta inte bort dem utan att fråga.
+## Borttagna gamla filer
+De gamla sidorna `app/salon-*-old`, `app/admin/salon-*-old`, `app/booking` och
+`app/admin/page.tsx` är borttagna (punkt 10 och 12). De finns kvar i Gits historik.
+Filen `npm` i rotmappen är skräp – ta inte bort den utan att fråga.
 
 ## Var vi är nu
 - Punkt 6 och 7: Salonix startsida/katalog (`app/page.tsx`) – **KLAR och FRYST**
