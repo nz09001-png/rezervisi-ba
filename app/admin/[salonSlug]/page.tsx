@@ -11,6 +11,13 @@ import DatePicker, {
 import { format } from "date-fns";
 import { bs } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
+import { Montserrat } from "next/font/google";
+
+// Salongens namn på inloggningssidan – samma typsnitt som på de publika sidorna.
+const montserrat = Montserrat({
+  weight: ["600", "700"],
+  subsets: ["latin", "latin-ext"],
+});
 
 registerLocale("bs", bs);
 
@@ -82,8 +89,14 @@ const salonSlug = params.salonSlug as string;
 const [salon, setSalon] = useState<any>(null);
   const [bookings, setBookings] = useState<any[]>([]);
   const [calendarServiceSteps, setCalendarServiceSteps] = useState<any[]>([]);
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // Inloggning via Supabase Auth: authChecked = sparad inloggning kontrollerad,
+  // loginError = röd text under fälten, isLoggingIn = knappen väntar på svar.
+  const [authChecked, setAuthChecked] = useState(false);
+  const [loginError, setLoginError] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [error, setError] = useState(false);
   const [filter, setFilter] = useState("all");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -392,14 +405,41 @@ setSelectedServiceBarberIds(
 
 
 
-  function handleLogin() {
-  
+  // Supabase kontrollerar e-post och lösenord. Inloggningen måste dessutom
+  // tillhöra just den här salongen (salons.owner_id).
+  async function handleLogin() {
+  if (isLoggingIn) return;
+  setLoginError("");
+  setIsLoggingIn(true);
 
-  if (password.trim() === salon?.admin_password) {
-    setIsLoggedIn(true);
-  } else {
-    alert("Pogrešna lozinka");
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email.trim(),
+    password,
+  });
+
+  if (error || !data.user) {
+    setLoginError("Pogrešan email ili lozinka.");
+    setIsLoggingIn(false);
+    return;
   }
+
+  if (data.user.id !== salon?.owner_id) {
+    await supabase.auth.signOut();
+    setLoginError("Nemate pristup ovom salonu.");
+    setIsLoggingIn(false);
+    return;
+  }
+
+  setPassword("");
+  setIsLoggingIn(false);
+  setIsLoggedIn(true);
+}
+
+async function handleLogout() {
+  await supabase.auth.signOut();
+  setPassword("");
+  setLoginError("");
+  setIsLoggedIn(false);
 }
 
 // Bosnisk böjning: 1 usluga, 2–4 usluge, 5+ usluga (21 usluga, 22 usluge …).
@@ -1856,6 +1896,7 @@ useEffect(() => {
 
     if (error) {
       console.error(error);
+      setAuthChecked(true);
       return;
     }
 
@@ -1865,6 +1906,21 @@ setShowBarbers(data.show_barbers ?? false);
 
   fetchSalon();
 }, [salonSlug]);
+
+// Sparad inloggning (överlever omladdning): släpp in direkt om den tillhör salongen.
+useEffect(() => {
+  if (!salon?.id) return;
+
+  supabase.auth.getSession().then(({ data }) => {
+    const user = data.session?.user;
+
+    if (user && user.id === salon.owner_id) {
+      setIsLoggedIn(true);
+    }
+
+    setAuthChecked(true);
+  });
+}, [salon?.id]);
 useEffect(() => {
   if (!selectedDate || !salon?.id) {
     setTimes([]);
@@ -1905,7 +1961,7 @@ useEffect(() => {
 }, [isLoggedIn, salon]);
 
 // Hämta nya notiser och bokningar automatiskt varje minut, så att admin inte
-// behöver laddas om (en omladdning loggar ut). Bara data – kalenderns kod är orörd.
+// behöver laddas om. Bara data – kalenderns kod är orörd.
 useEffect(() => {
   if (!isLoggedIn || !salon?.id) return;
 
@@ -2455,37 +2511,153 @@ await fetchCalendarAvailableTimes();
 showNotice("Termini uspješno zamijenjeni.", "success");
 setTimesSaved(true);
 }
+// Inloggningssidan (design B): vinröd bakgrund, vitt kort, Salonix-logga.
 if (!isLoggedIn) {
+  const loginFieldStyle = {
+    width: "100%",
+    height: "46px",
+    border: `1px solid ${loginError ? "#ef4444" : "#d6d6d6"}`,
+    borderRadius: "10px",
+    padding: "0 14px",
+    fontSize: "16px",
+    marginBottom: "14px",
+    background: "#ffffff",
+    color: "#222222",
+    outline: "none",
+  };
+  const loginLabelStyle = {
+    display: "block",
+    textAlign: "left" as const,
+    fontSize: "13px",
+    fontWeight: 700,
+    color: "#444444",
+    marginBottom: "6px",
+  };
+
   return (
-      <main className="min-h-screen flex items-center justify-center bg-[#f7f3ee]">
-        <div className="bg-white p-8 rounded-2xl shadow w-96">
-          <h1 className="text-2xl font-bold mb-4">Admin prijava</h1>
+    <main
+      style={{
+        minHeight: "100vh",
+        background: "#611a1a",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "18px",
+        fontFamily: "Arial, Helvetica, sans-serif",
+      }}
+    >
+      {/* Tomt kort medan en sparad inloggning kontrolleras – inget formulär blinkar till. */}
+      <div
+        style={{
+          background: "#ffffff",
+          width: "100%",
+          maxWidth: "380px",
+          borderRadius: "16px",
+          padding: "28px 24px",
+          textAlign: "center",
+          boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+          minHeight: authChecked ? undefined : "200px",
+        }}
+      >
+        {authChecked && (
+          <>
+            <img
+              src="/salonix-horisontell-maroon.png"
+              alt="Salonix"
+              style={{ height: "30px", margin: "0 auto 18px" }}
+            />
+            <h1
+              className={montserrat.className}
+              style={{
+                fontSize: "22px",
+                fontWeight: 700,
+                color: "#611a1a",
+                margin: 0,
+              }}
+            >
+              {salon?.salon_name || "Salonix"}
+            </h1>
+            <p style={{ fontSize: "14px", color: "#777777", margin: "6px 0 22px" }}>
+              Prijava za administratora salona
+            </p>
 
-          <form
-  onSubmit={(e) => {
-    e.preventDefault();
-    handleLogin();
-  }}
->
-  <input
-    type="password"
-    placeholder="Lozinka"
-    value={password}
-    onChange={(e) => setPassword(e.target.value)}
-    className="w-full border p-2 rounded mb-4"
-  />
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleLogin();
+              }}
+            >
+              <label htmlFor="admin-email" style={loginLabelStyle}>
+                Email
+              </label>
+              <input
+                id="admin-email"
+                type="email"
+                autoComplete="username"
+                placeholder="vas@email.com"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setLoginError("");
+                }}
+                style={loginFieldStyle}
+              />
 
-  <button
-    type="submit"
-    className="w-full bg-black text-white p-2 rounded"
-  >
-    Prijavite se
-  </button>
-</form>
-        </div>
-      </main>
-    );
-  }
+              <label htmlFor="admin-lozinka" style={loginLabelStyle}>
+                Lozinka
+              </label>
+              <input
+                id="admin-lozinka"
+                type="password"
+                autoComplete="current-password"
+                placeholder="Lozinka"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setLoginError("");
+                }}
+                style={loginFieldStyle}
+              />
+
+              {loginError && (
+                <p
+                  style={{
+                    color: "#ef4444",
+                    fontSize: "14px",
+                    textAlign: "left",
+                    margin: "-6px 0 12px",
+                  }}
+                >
+                  {loginError}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={isLoggingIn}
+                style={{
+                  width: "100%",
+                  height: "48px",
+                  borderRadius: "10px",
+                  border: "none",
+                  background: "#611a1a",
+                  color: "#ffffff",
+                  fontSize: "16px",
+                  fontWeight: 700,
+                  marginTop: "4px",
+                  cursor: isLoggingIn ? "default" : "pointer",
+                  opacity: isLoggingIn ? 0.7 : 1,
+                }}
+              >
+                {isLoggingIn ? "Prijava..." : "Prijavite se"}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </main>
+  );
+}
 
   if (error) {
     return (
@@ -2675,7 +2847,7 @@ if (!isLoggedIn) {
           </div>
 
           <button
-            onClick={() => setIsLoggedIn(false)}
+            onClick={handleLogout}
             style={{
               background: "none",
               border: "none",
@@ -2896,7 +3068,7 @@ if (!isLoggedIn) {
       </div>
 
       <button
-        onClick={() => setIsLoggedIn(false)}
+        onClick={handleLogout}
         style={{
           background: "none",
           border: "none",
