@@ -68,31 +68,12 @@ useEffect(() => {
 
     setLoading(true);
 
-    const { data: bookingData, error: bookingError } = await supabase
-  .from("bookings")
-  .select("*")
-  .eq("id", bookingId)
-  .eq("cancel_token", token)
-  .single();
-
-if (bookingError || !bookingData) {
-  setAskConfirm(false);
-  showNotFound();
-  setLoading(false);
-  return;
-}
-
-  const { data: salonData } = await supabase
-  .from("salons")
-  .select("id")
-  .eq("salon_name", bookingData?.salon)
-  .single();
-    
-    const { error } = await supabase
-  .from("bookings")
-  .delete()
-  .eq("id", bookingId)
-  .eq("cancel_token", token);
+    // Säker databasfunktion: raderar bara om id OCH kod stämmer, och
+    // lämnar tillbaka bokningens uppgifter till notisen (null = hittades inte).
+    const { data: bookingData, error } = await supabase.rpc("cancel_booking", {
+      p_id: bookingId,
+      p_token: token || "",
+    });
 
     if (error) {
       console.error(error);
@@ -105,6 +86,19 @@ if (bookingError || !bookingData) {
       setLoading(false);
       return;
     }
+
+if (!bookingData) {
+  setAskConfirm(false);
+  showNotFound();
+  setLoading(false);
+  return;
+}
+
+  const { data: salonData } = await supabase
+  .from("salons")
+  .select("id")
+  .eq("salon_name", bookingData?.salon)
+  .single();
 
    if (salonData?.id && bookingData) {
   const formattedBookingDate = bookingData.booking_date

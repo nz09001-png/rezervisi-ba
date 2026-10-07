@@ -400,12 +400,20 @@ if (!hasEnoughAvailableSlots) {
 
 const currentBusyIntervals =
   getBusyIntervalsForCurrentService(requestedStart);
-  const { data: bookingsAtTime, error: bookingsAtTimeError } = await supabase
-  .from("bookings")
-  .select("barber_id, booking_time, duration_minutes, service_id")
-  .eq("salon", salon)
-  .eq("booking_date", date)
-  
+  // Säker databasfunktion: bara upptagna tider, inga kunduppgifter.
+  const { data: bookedSlotsData, error: bookingsAtTimeError } = await supabase.rpc(
+    "get_booked_slots",
+    { p_salon: salon, p_date: date }
+  );
+  const bookingsAtTime = bookedSlotsData as
+    | {
+        barber_id: number | null;
+        booking_time: string;
+        duration_minutes: number | null;
+        service_id: number | null;
+      }[]
+    | null;
+
 
 if (bookingsAtTimeError) {
   console.error(bookingsAtTimeError);
@@ -529,10 +537,10 @@ if (hasOverlapForFinalBarber) {
   setLoading(false);
   return;
 }
-  const { data, error } = await supabase
-  .from("bookings")
-  .insert([
-    {
+  // Bokningen skapas av en säker databasfunktion som kontrollerar att salong,
+  // tjänst och personal hör ihop. Svaret är { id } som förut.
+  const { data, error } = await supabase.rpc("create_booking", {
+    p_booking: {
   customer_name: `${ime} ${prezime}`,
   phone: normalizedPhone || `${phoneCode} ${phone}`,
   salon,
@@ -547,9 +555,7 @@ email: email || null,
 note: napomena || null,
 cancel_token: cancelToken,
 },
-  ])
-  .select()
-  .single();
+  });
   if (error) {
   console.error(error);
   showTechnicalError();

@@ -466,16 +466,11 @@ useEffect(() => {
  async function fetchBookedTimes() {
   if (!salon) return;
 
-  let query = supabase
-    .from("bookings")
-    .select("booking_date, booking_time, duration_minutes, barber_id, service_id")
-    .eq("salon", salon);
-
-  if (barberId) {
-    query = query.eq("barber_id", Number(barberId));
-  }
-
-  const { data, error } = await query;
+  // Säker databasfunktion: bara upptagna tider, inga kunduppgifter.
+  const { data, error } = await supabase.rpc("get_booked_slots", {
+    p_salon: salon,
+    p_barber_id: barberId ? Number(barberId) : null,
+  });
 
   if (error) {
     console.error(error);

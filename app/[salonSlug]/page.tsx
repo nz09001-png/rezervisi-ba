@@ -254,11 +254,11 @@ useEffect(() => {
 
     setLoadingTimes(true);
 
-    const { data, error } = await supabase
-      .from("bookings")
-      .select("booking_time")
-      .eq("salon", salon.salon_name)
-      .eq("booking_date", selectedDate);
+    // Säker databasfunktion: bara upptagna tider, inga kunduppgifter.
+    const { data, error } = await supabase.rpc("get_booked_slots", {
+      p_salon: salon.salon_name,
+      p_date: selectedDate,
+    });
 
     if (error) {
       console.error(error);
@@ -267,7 +267,7 @@ useEffect(() => {
       return;
     }
 
-    setBookedTimes(data.map((booking) => booking.booking_time));
+    setBookedTimes(((data || []) as { booking_time: string }[]).map((booking) => booking.booking_time));
     setLoadingTimes(false);
   }
 
