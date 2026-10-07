@@ -7,8 +7,13 @@ VIKTIGT TILL NÄSTA CHATT:
 Det här är den aktuella master-checkpointen för Salonix.
 Punkt 1–7 i lanseringsplanen är KLARA och FRYSTA.
 PUNKT 8 (Design/UX-kontroll av hela Salonix) är KLAR (6 oktober).
-PUNKT 9 (Full QA) är KLAR (6–7 oktober). Se avsnitt 14.
-NÄSTA: PUNKT 10 – säkerhet. Fråga ägaren innan start. Se avsnitt 12.
+PUNKT 9 (Full QA) är KLAR (6–7 oktober).
+PUNKT 10 (Säkerhet) är KLAR (7 oktober). Se avsnitt 14.
+NÄSTA: PUNKT 11 – databasstädning. Fråga ägaren innan start.
+- Punkt 10: gamla /admin borttagen, admin loggar in med Supabase Auth
+  (e-post + lösenord, överlever omladdning), RLS på ALLA tabeller +
+  bildlagringen, bokningar via säkra databasfunktioner, kundens
+  uppgifter i flikens minne i stället för i webbadressen.
 - Punkt 9: hela bokningsflödet testat med riktiga testbokningar (mobil,
   desktop, riktig iPhone, mejl, avbokning via länk och från admin,
   paus-dubbelbokning). 9 buggar rättade (fynd 1, 2, 3, 6, 8, 9, 10,
@@ -81,18 +86,23 @@ en dag.
   En ändring på ena får inte påverka den andra.
 - Git-kommandon: git add ... && git commit -m "..." && git push
 - Ha inte samma fil öppen och osparad i VS Code medan Claude ändrar den.
-- Claude skriver ALDRIG in lösenord. Ägaren loggar in själv i admin i
-  Claude-appens webbläsarpanel.
-- En ny useState i admin-filen loggar ut ägaren under utveckling – säg
-  till i förväg, återanvänd befintlig state när det går.
-- Byter Claude sida i samma webbläsarflik som admin loggas ägaren ut.
-  Testa kundflödet i en EGEN flik (tabs_create) när admin är inloggad.
-- Databasen kan läsas (inte ändras) med ett litet node-skript i
-  projektmappen (.qa-tmp.mjs med den publika nyckeln från .env.local,
-  tas bort direkt efter). Ändringar gör ägaren själv med SQL.
+- Claude skriver ALDRIG in lösenord. Ägaren loggar in själv i admin
+  (i Safari eller i Claude-appens webbläsarpanel).
+- Ägaren vill ta det SAKTA: ett litet steg per meddelande, och alltid
+  säga EXAKT var det görs (Supabase / VS Code / Terminal / Safari).
+- En ny useState i admin-filen kan logga ut ägaren under utveckling –
+  säg till i förväg, återanvänd befintlig state när det går.
+- Testa kundflödet i en EGEN flik (tabs_create) när admin är inloggad.
+- Databasen kan läsas med den publika nyckeln (curl mot Supabase med
+  nyckeln från .env.local). Sedan punkt 10 ger bookings och
+  admin_notifications TOMT svar utifrån (RLS) – det är rätt.
+  Ändringar gör ägaren själv med SQL.
 - Testa aldrig genom att spara/radera riktig data utan att fråga.
-  Claude testar spara/radera genom att fånga upp databasanropen i
-  webbläsaren (inget når Supabase).
+  Admin-test görs av ägaren med ofarliga ändringar som tas bort igen
+  (t.ex. stängd dag 31.12.2027, kategori/person/tjänst "Test").
+- VIKTIGT vid RLS: en ändring som stoppas av reglerna ger INGET fel –
+  den sparas bara inte. Testa därför alltid: spara → ladda om → finns
+  ändringen kvar?
 
 ============================================================
 4. VIKTIGA REGLER I KODEN
@@ -117,16 +127,25 @@ en dag.
 - Byt inte det globala typsnittet i globals.css.
 - Mörkt läge är borttaget i globals.css – Salonix är alltid ljust.
 - Bokningar kopplas till salong via salongens NAMN (bookings.salon =
-  salons.salon_name). Byt inte salongsnamn direkt i Supabase.
+  salons.salon_name). Byt inte salongsnamn direkt i Supabase. Namnet
+  används även i databasfunktionerna och i RLS-regeln för bookings.
+- SÄKERHET (punkt 10): kundsidorna rör ALDRIG tabellen bookings direkt –
+  de använder supabase.rpc("get_booked_slots" / "create_booking" /
+  "cancel_booking"). Bara inloggad ägare läser/ändrar bookings direkt
+  (admin). Varje ny tabell MÅSTE få RLS + regler innan den används.
 - Kundtext som visas i mejl escapas (görs säker).
 - Salongssidan visar bara tjänster som har en kategori (tomma
   kategorier och tjänster utan kategori syns inte för kunder).
-- Bokningsflödet skickar "stafettpinnen" i adressen (tråd 1). Sedan
-  punkt 9 följer även kundens uppgifter (ime, prezime, phoneCode, phone,
-  email, napomena) med tillbaka från /potvrda till /podaci och via
-  /times, och /times läser date + time ur adressen (rätt vecka, tiden
-  förvald). Varje tidsknapp har data-slot="datum tid" – en förvald tid
-  som inte längre finns som knapp tas bort automatiskt.
+- Bokningsflödet skickar "stafettpinnen" i adressen (tråd 1): salong,
+  tjänst, personal, datum, tid. Kundens uppgifter (ime, prezime,
+  phoneCode, phone, normalizedPhone, email, napomena) ligger INTE i
+  adressen sedan punkt 10 – /podaci sparar dem i flikens minne
+  (sessionStorage, lib/customerData.ts), /potvrda och /uspjesno läser
+  därifrån, /podaci fyller i fälten därifrån ("Promijeni"/"← Nazad").
+  Saknas uppgifterna (ny flik) skickar /potvrda kunden till /podaci.
+  /times läser date + time ur adressen (rätt vecka, tiden förvald).
+  Varje tidsknapp har data-slot="datum tid" – en förvald tid som inte
+  längre finns som knapp tas bort automatiskt.
 - Stängda veckodagar (closed_weekdays) får aldrig lediga tider: admin
   grånar dagen i "Raspored po sedmici" och hoppar över den.
 - Tar man bort en person (barbers) raderar databasen automatiskt
@@ -220,19 +239,25 @@ Kundsidor:
 /[salonSlug]       → app/[salonSlug]/page.tsx (salongssida) – FRYST, omgjord 5 okt
 /times             → välja tid – FRYST, omgjord 5 okt (T2 vit)
 /podaci            → kunduppgifter – FRYST, omgjord 5 okt
-/potvrda           → bekräfta bokning (bokningen skapas här) – FRYST, omgjord 5 okt (A)
+/potvrda           → bekräfta bokning (bokningen skapas här via
+                     create_booking) – FRYST, omgjord 5 okt (A)
 /uspjesno          → "Rezervacija potvrđena" – omgjord 5 okt (rader som Potvrda)
-/cancel            → avbokning via mejllänk (id + token) – FRYST, omgjord 6 okt
+/cancel            → avbokning via mejllänk (id + token, via
+                     cancel_booking) – FRYST, omgjord 6 okt
+(Punkt 10 ändrade bara HUR datan hämtas/sparas i de frysta sidorna –
+ design och bokningsregler är orörda.)
 app/api/send-email/route.ts        → bokningsmejl – FRYST
 app/api/send-cancel-email/route.ts → mejl när salongen avbokar i admin
 Admin:
 /admin/[salonSlug] → app/admin/[salonSlug]/page.tsx – omgjord i punkt 8,
-                     rättad i punkt 9 (ca 7 700 rader, en enda fil)
+                     rättad i punkt 9, ny inloggning i punkt 10
+                     (ca 8 500 rader, en enda fil)
 Övrigt:
 components/SalonMap.tsx → kartan på startsidan – FRYST
 app/layout.tsx → fliknamn, beskrivning, språk
 app/globals.css → gemensam stil (påverkar ALLA sidor)
 lib/supabase.ts → kopplingen till databasen
+lib/customerData.ts → kundens uppgifter i flikens minne (punkt 10)
 next.config.ts → allowedDevOrigins (datorns IP för test på mobil)
 
 Dokument i rotmappen:
@@ -243,8 +268,8 @@ Dokument i rotmappen:
 Filer som INTE används längre (ändra inte, ta inte bort utan att fråga):
 app/salon-x-old, app/salon-y-old, app/salon-z-old,
 app/admin/salon-*-old, app/booking. Filen "npm" i rotmappen är skräp.
-⚠️ app/admin/page.tsx (/admin) är en GAMMAL adminsida som fortfarande är
-aktiv – se avsnitt 12, punkt 10.
+Gamla app/admin/page.tsx (/admin, lösenord admin123) är BORTTAGEN
+(punkt 10). /admin visar nu "Salon nije pronađen".
 
 Bokningsflödet: SALONG → TJÄNST → PERSONAL → TID → UPPGIFTER → BEKRÄFTA
 → BOKNING SKAPAS → NOTIS TILL ADMIN → EMAIL → "Rezervacija potvrđena".
@@ -312,8 +337,7 @@ Kalendern – knapprad (ny, desktop och mobil var för sig):
 
 Meddelanden (hela admin):
 - showNotice(text, "success" | "error") → ruta överst. Grön 3 s, röd 6 s,
-  × stänger. Ersätter alla alert() utom "Pogrešna lozinka" (inloggning,
-  görs om i punkt 10).
+  × stänger. Ersätter alla alert().
 - Grön ruta efter ALLA lyckade spara/lägg till/ta bort.
 - Tekniska fel visar "Greška pri spremanju usluge. Pokušajte ponovo.",
   detaljer bara i webbläsarens logg.
@@ -384,8 +408,21 @@ Avsnitten:
 OBS: Admin sparar inte koordinater, stad eller startsidans kategorier
 (salons.categories) – sätts i Supabase. service_categories (Kategorije
 usluga) är salongens egna grupper och har inget med startsidan att göra.
-OBS: Inloggningen gäller bara medan sidan är öppen – omladdning loggar ut.
-Under utveckling loggas man också ut när en ny useState läggs till.
+Inloggning (punkt 10, design B): vinröd bakgrund, vitt kort, Salonix-
+logga, salongens namn (Montserrat), "Prijava za administratora salona",
+fälten Email + Lozinka, vinröd "Prijavite se" ("Prijava..." medan den
+väntar). Fel: röd text "Pogrešan email ili lozinka." / "Nemate pristup
+ovom salonu." (inloggning som tillhör en annan salong).
+- Tekniskt: supabase.auth.signInWithPassword, kontroll att
+  user.id === salons.owner_id. Sessionen sparas i webbläsaren →
+  inloggningen ÖVERLEVER omladdning. "Odjavi se" = supabase.auth.signOut.
+- Varje salong behöver ett eget konto: Supabase → Authentication →
+  Users → Add user → Create new user (kryssa i Auto Confirm User) +
+  SQL: update salons set owner_id = (select id from auth.users where
+  email = '...') where slug = '...';
+- Bara Studio M (salon-x) har konto nu (ägarens iCloud). Öppen
+  registrering är AVSTÄNGD (Authentication → Sign In / Providers →
+  "Allow new users to sign up" av).
 Admin hämtar notiser och bokningar automatiskt varje minut.
 
 ============================================================
@@ -394,8 +431,9 @@ Admin hämtar notiser och bokningar automatiskt varje minut.
 salons: id, salon_name, slug, description, phone, address,
   opening_hours (text, t.ex. "09:00-18:00"), image_url, instagram_url,
   facebook_url, tiktok_url, closed_weekdays (text[], t.ex. ["Ned"]),
-  hero_position, show_barbers, admin_password, city, categories (text[]),
-  is_published (bool), latitude, longitude
+  hero_position, show_barbers, city, categories (text[]),
+  is_published (bool), latitude, longitude, owner_id (uuid → auth.users,
+  salongens inloggning). admin_password är BORTTAGEN (punkt 10).
 services (salon_id, name, description, price, duration_minutes,
   show_price, show_duration, category_id), service_categories (salon_id,
   name, sort_order), service_steps (service_id, name, duration_minutes,
@@ -414,6 +452,34 @@ Kopplingar till barbers (kontrollerat 7 okt): available_times,
 closed_days och service_barbers har barber_id med ON DELETE CASCADE
 (raderas automatiskt). bookings.barber_id har INGEN koppling –
 bokningar ligger kvar när en person tas bort.
+
+SÄKERHET (RLS, punkt 10 – alla tabeller har RLS PÅ):
+- Läsa: alla (anon + inloggade): salons, salon_images,
+  salon_shortened_hours, closed_days, available_times, services,
+  service_categories, service_steps, service_barbers, barbers.
+- Ändra: bara salongens ägare (regel "for all to authenticated" med
+  is_salon_owner(salon_id), eller is_service_owner(service_id) för
+  service_steps/service_barbers). salons: bara update av ägaren.
+- admin_notifications: alla får SKAPA (för en salong som finns), bara
+  ägaren läser/ändrar.
+- bookings: bara ägaren (salons.salon_name = bookings.salon och
+  owner_id = auth.uid()). Kunder går via funktionerna nedan.
+- available_times_backup_before_barbers: RLS på, inga regler (oanvänd).
+- Bildlagringen (bucket salon-images, publik läsning): bara inloggade
+  får ladda upp (regel "Inloggade kan ladda upp salongsbilder").
+Databasfunktioner (security definer):
+- get_booked_slots(p_salon, p_date?, p_barber_id?) → upptagna tider
+  (datum, tid, längd, personal, tjänst) – inga kunduppgifter.
+- create_booking(p_booking jsonb) → { id }. Kontrollerar att salong,
+  tjänst och personal hör ihop, namn/telefon/kod finns och att dagen
+  inte passerat. Kontrollerar INTE om tiden är ledig (det gör /potvrda).
+- cancel_booking(p_id, p_token) → raderar bara om id + kod stämmer,
+  returnerar uppgifter till notisen (null = hittades inte).
+- is_salon_owner / is_service_owner: hjälp för reglerna (bara inloggade
+  får köra dem).
+Supabase Security Advisor: 0 errors. Kvarvarande varningar är avsiktliga
+(de tre bokningsfunktionerna får köras av alla) + "Leaked Password
+Protection" (kräver troligen betalplan).
 
 Notisernas message: nya sparas som två rader "Namn\n05.10.2026 u 09:00 ·
 Personal" (admin visar namnet fetstilt). Gamla är en hel mening.
@@ -467,7 +533,8 @@ Studio M hette tidigare "Barber House Sarajevo": 194 GAMLA bokningar
 Testtjänster i Studio M som är bra för QA: "sisanje test A" (30 min,
 20 KM), "test dva" (60 min), "testetstetst" (120 min: 30 jobb, 60 paus,
 30 jobb, längd dold för kunden).
-Alla testbokningar från punkt 9 är avbokade.
+Alla testbokningar från punkt 9 och 10 är avbokade.
+Supabase Auth: en användare (ägarens iCloud) kopplad till Studio M.
 
 ============================================================
 11. CHECKLISTA FRAM TILL LANSERING
@@ -481,8 +548,7 @@ Alla testbokningar från punkt 9 är avbokade.
 7. Startsida desktop (+ surfplatta) .. ✅ KLAR & FRYST
 8. Design/UX-kontroll av hela Salonix  ✅ KLAR (6 oktober)
 9. Full QA inkl. edge cases .......... ✅ KLAR (7 oktober)
-10. Säkerhet och produktion .......... ⬜ (RLS, admininloggning,
-    åtkomstkontroll, server-side validering, secrets)
+10. Säkerhet ....................... ✅ KLAR (7 oktober)
 11. Databas-/produktionsstädning ..... ⬜ (ta bort testsalonger m.m.)
 12. Deploy till Vercel + salonix.ba .. ⬜
 13. Slutligt smoke test i produktion . ⬜
@@ -490,22 +556,23 @@ Alla testbokningar från punkt 9 är avbokade.
 ============================================================
 12. ATT KOMMA IHÅG (VIKTIGT)
 ============================================================
-Punkt 10 (säkerhet):
-- Supabase skickar mejlet "Action required: security issues" – läs det
-  först (troligen tabeller utan RLS).
+Kvar efter punkt 10 (säkerhet):
 - Bokningar kopplas till salongen via NAMNET (tråd 2). Byts ett namn
   försvinner bokningar ur admin och blockerar inte tider (hände med
-  "Barber House Sarajevo"). Överväg att koppla via salons.id.
-- salons.admin_password kan läsas av vem som helst med den publika
-  Supabase-nyckeln. Admin jämför lösenordet i webbläsaren. Måste fixas.
-- Gamla sidan /admin (app/admin/page.tsx) är aktiv med lösenordet
-  admin123 i koden och visar ALLA salongers bokningar + kan radera.
-  Stäng/ta bort den (fråga först).
-- Admininloggningen ("Admin prijava") byggs om säkert OCH får Salonix-
-  utseende samtidigt: logga, salongens namn, vinröd knapp, röd text vid
-  fel lösenord (i stället för alert "Pogrešna lozinka"). Inloggningen
-  ska överleva omladdning. (Ägarens beslut: görs i punkt 10.)
-- Kundens namn/telefon/e-post skickas i webbadressen mellan sidorna.
+  "Barber House Sarajevo"). Överväg att koppla via salons.id (påverkar
+  även RLS-regeln och funktionerna för bookings).
+- Före lansering: varje riktig salong (salon-y, salon-z m.fl.) behöver
+  ett eget Supabase Auth-konto + owner_id (se avsnitt 7, Inloggning).
+  Utan det kan salongen inte logga in i admin.
+- "Glömt lösenord" (Zaboravili ste lozinku?) finns inte än – ägaren
+  byter lösenord åt salongen i Supabase (Authentication → Users).
+- Leaked Password Protection (Supabase) kräver troligen betalplan –
+  slå på vid lansering om möjligt.
+- create_booking kontrollerar inte om tiden är ledig (bara /potvrda gör
+  det). Två kunder som trycker exakt samtidigt kan i teorin dubbelboka.
+- Alla får skapa notiser (admin_notifications) för en salong som finns –
+  falska notiser är möjliga men ofarliga. Kan flyttas in i
+  create_booking/cancel_booking senare.
 - Personuppgifter: Bosniens lag om personuppgifter. Bekräftelse-sms/mejl
   = servicemeddelande; reklam kräver samtycke.
 Punkt 11 (databasstädning):
@@ -581,8 +648,32 @@ Allmänt:
   ("Pauza 11:20–12:00 · Za vrijeme pauze: Ajdin Z")
 
 ============================================================
-14. NÄSTA STEG – PUNKT 10 (SÄKERHET). PUNKT 9 ÄR KLAR
+14. NÄSTA STEG – PUNKT 11 (DATABASSTÄDNING). PUNKT 10 ÄR KLAR
 ============================================================
+KLART i punkt 10 – säkerhet (7 oktober), allt testat av ägaren:
+a) Supabase-mejlet: "rls_disabled_in_public" – 11 tabeller utan RLS,
+   2 (available_times, services) med regler som släppte igenom alla.
+b) Gamla /admin (app/admin/page.tsx, admin123) borttagen.
+c) Ny admininloggning med Supabase Auth, design B (vinröd bakgrund,
+   vitt kort, Email + Lozinka, röd feltext). Överlever omladdning,
+   "Nemate pristup ovom salonu" vid fel salong, Odjavi se loggar ut på
+   riktigt. salons.owner_id tillagd, salons.admin_password BORTTAGEN.
+d) RLS på alla tabeller + bildlagringen (se avsnitt 8). Hjälpfunktioner
+   is_salon_owner / is_service_owner (bara för inloggade).
+e1) Öppen registrering avstängd i Supabase Auth.
+e2–e4) bookings: kundsidorna använder get_booked_slots / create_booking /
+   cancel_booking. Tabellen bookings bara för ägaren. Testat: bokning,
+   mejl, notis, avbokning via länk (andra gången → felruta), avbokning
+   från admin + mejl.
+e5) Kundens uppgifter i flikens minne (lib/customerData.ts) i stället
+   för i webbadressen. Testat: Promijeni (båda), ny tid, ny flik →
+   /podaci, riktig bokning.
+Supabase Security Advisor: 0 errors.
+Git: 355df70 (b), 16fa255 (c), 06023db (e3), ba036e9 (e5).
+Ändrade frysta filer (bara datahämtning, ingen design/logik):
+app/[salonSlug]/page.tsx, app/times, app/podaci, app/potvrda,
+app/uspjesno, app/cancel, app/admin/[salonSlug]/page.tsx (inloggning).
+
 KLART i punkt 9 – QA (6–7 oktober):
 a) Hel testbokning mobil (Amar) + desktop (Bez preferencije) i Studio M:
    bokning, "Rezervacija potvrđena", mejl till ägarens iCloud,
@@ -665,8 +756,8 @@ KLART i punkt 8 – salongssidan och bokningsflödet (5 oktober):
   "Završi rezervaciju" ensam i listen längst ner (inget "Ukupno").
   OBS: formattedDate används i admin-notisen – rör den inte. Visningen
   använder displayDate/displayTime (displayTime = bara starttid om
-  tjänstens längd är dold). Båda "Promijeni" och felrutans knapp tar med
-  kundens uppgifter (punkt 9).
+  tjänstens längd är dold). Båda "Promijeni" och felrutans knapp behåller
+  kundens uppgifter (sedan punkt 10 via flikens minne, inte adressen).
 - /uspjesno (A): vinröd bakgrund + vinröd bock kvar, rubrik i Montserrat,
   salong + tjänst + rader Datum/Vrijeme (start–slut, bara start om tiden
   är dold)/Osoblje/Cijena (om synlig)/Klijent.
@@ -688,21 +779,19 @@ KLART i punkt 8 – avbokningssidan (6 oktober):
   knapp "Otkaži rezervaciju" vit med röd ram → frågan "Da li ste
   sigurni…?" med "Da, otkaži" (röd) och "Ne, zadrži rezervaciju" →
   klart: GRÅ bock, "Rezervacija otkazana", knapp "Rezervišite novi termin"
-  (→ "/"). Felrutorna oförändrade. Radering, token-kontroll och admin-
-  notis ORÖRDA. Läget "otkazana" testat med riktiga bokningar i punkt 9.
+  (→ "/"). Felrutorna oförändrade. Sedan punkt 10 sker radering +
+  token-kontroll i databasfunktionen cancel_booking; admin-notisen som
+  förut. Läget "otkazana" testat med riktiga bokningar i punkt 9 och 10.
 
 NÄSTA – I DEN HÄR ORDNINGEN:
-1. PUNKT 10 – säkerhet (fråga ägaren innan start, en sak i taget):
-   a) Läs Supabase-mejlet "Action required: security issues".
-   b) RLS (vem får läsa/ändra vilka tabeller med den publika nyckeln).
-   c) admin_password får inte kunna läsas – säker admininloggning som
-      överlever omladdning, med Salonix-utseende (se avsnitt 12).
-   d) Stäng den gamla sidan /admin (app/admin/page.tsx, admin123).
-   e) Kunduppgifter i webbadressen, server-side kontroller.
-2. Punkt 11: databasstädning (testsalonger, 194 "Barber House"-bokningar).
-3. Punkt 12: deploy (rätta bygget på Vercel först), fynd 5, salonix.ba,
-   Resend-domän, MapTiler, solarijum.jpg, fliknamn per salong.
-4. Punkt 13: slutligt test i produktion.
+1. PUNKT 11 – databasstädning (fråga ägaren innan start, en sak i taget):
+   testsalonger (slug 'test-%'), 194 "Barber House Sarajevo"-bokningar,
+   gamla testbokningar i Studio M, ev. tabellen
+   available_times_backup_before_barbers (oanvänd).
+2. Punkt 12: deploy (rätta bygget på Vercel först – kör npm run build),
+   fynd 5, salonix.ba, Resend-domän, MapTiler, solarijum.jpg, fliknamn
+   per salong, Auth-konton för alla riktiga salonger.
+3. Punkt 13: slutligt test i produktion.
 
 ============================================================
 SLUT PÅ MASTER CHECKPOINT – 7 OKTOBER 2026

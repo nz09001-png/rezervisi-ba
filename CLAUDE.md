@@ -83,8 +83,16 @@ Finjustera aldrig godkänd design "för att det ser bättre ut".
   - Karta (knappen "Karta"): `components/SalonMap.tsx`, Leaflet + OpenStreetMap.
   - Sidfot med logga och © Salonix.
   - Kategoripanelen (☰): små ikoner utan cirklar, samma på mobil och desktop.
-- **Punkt 9 – QA KLAR (7 oktober).** Nästa: **punkt 10 – säkerhet** (fråga ägaren
-  innan start, se `SALONIX-MASTER-CHECKPOINT.md` avsnitt 12 och 14). I punkt 9:
+- **Punkt 10 – säkerhet KLAR (7 oktober).** Nästa: **punkt 11 – databasstädning**
+  (fråga ägaren innan start). Detaljer: `SALONIX-MASTER-CHECKPOINT.md` avsnitt 8 och 14.
+  - Admin loggar in med Supabase Auth (e-post + lösenord, överlever omladdning),
+    `salons.owner_id` kopplar kontot till salongen, `admin_password` är borttagen.
+    Bara Studio M har konto än – andra salonger behöver konto före lansering.
+  - RLS på ALLA tabeller. Kundsidorna rör aldrig `bookings` direkt utan använder
+    `supabase.rpc("get_booked_slots" / "create_booking" / "cancel_booking")`.
+    En ändring som RLS stoppar ger inget fel – testa med spara → ladda om.
+  - Kundens uppgifter ligger i flikens minne (`lib/customerData.ts`), inte i adressen.
+- **Punkt 9 – QA KLAR (7 oktober).** I punkt 9:
   - Hela flödet testat med riktiga testbokningar (mobil, desktop, riktig iPhone,
     mejl, avbokning via länk och från admin, paus-dubbelbokning). Alla avbokade.
   - Rättat: Promijeni/Nazad behåller kundens uppgifter och vald tid (tråd 1 –
@@ -176,9 +184,9 @@ Finjustera aldrig godkänd design "för att det ser bättre ut".
   - `/cancel` (6 oktober): vinröd bakgrund, vitt kort utan logga och utan
     bokningens uppgifter, "Otkaži rezervaciju" med röd ram, "Da, otkaži" /
     "Ne, zadrži rezervaciju", grå bock + "Rezervišite novi termin" när klart.
-- **Nästa: punkt 10 – säkerhet.** Fråga ägaren innan start, en sak i taget.
+- **Nästa: punkt 11 – databasstädning.** Fråga ägaren innan start, en sak i taget.
   Fråga alltid innan en riktig testbokning skapas. När admin är inloggad i
-  webbläsarpanelen: testa kundsidor i en egen flik, annars loggas ägaren ut.
+  webbläsarpanelen: testa kundsidor i en egen flik.
 - Ägaren vill se FLERA alternativ som bilder (mobil + desktop) och välja; enkelt
   men tydligt. "Testa X" = lägg in och visa, ägaren bestämmer sedan.
 - Idéer efter punkt 8: Brzi izbor anpassat efter salongens typ (alternativ B),
@@ -191,13 +199,10 @@ Finjustera aldrig godkänd design "för att det ser bättre ut".
 - Testsalonger finns (slug börjar med `test-`, ca 38 st). De behålls till punkt 11
   och tas bort då med: `delete from salons where slug like 'test-%';`
   I punkt 11 även: 194 gamla bokningar med `salon = 'Barber House Sarajevo'`.
-- Sedan: 10 säkerhet (RLS, admininloggning, Supabase-varningsmejlet),
-  11 databasstädning, 12 deploy till Vercel (bygget misslyckas just nu på Vercel –
+- Sedan: 11 databasstädning, 12 deploy till Vercel (bygget misslyckas just nu på Vercel –
   kör `npm run build` först), 13 slutligt test i produktion.
-- Säkerheten är medvetet planerad till punkt 10. Systemet är inte produktionssäkert än.
-  Påpeka allvarliga problem, men börja inte säkerhetsarbetet utan att fråga.
-- Att komma ihåg till punkt 10: kolumnen `salons.admin_password` kan läsas av alla
-  med den publika Supabase-nyckeln.
+- Att komma ihåg till punkt 12: varje riktig salong behöver ett Supabase Auth-konto
+  + `owner_id` (se checkpoint avsnitt 7, Inloggning). Varje ny tabell måste få RLS.
 - Att komma ihåg till punkt 12: välj fliknamn och länktext per salongssida
   ("Studio M Exclusive – Salonix", med/utan beskrivning och bild) – ny fil
   `app/[salonSlug]/layout.tsx`. Ägaren vill bestämma före deploy.
