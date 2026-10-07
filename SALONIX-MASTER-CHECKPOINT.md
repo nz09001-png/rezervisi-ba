@@ -268,6 +268,7 @@ Dokument i rotmappen:
 - CLAUDE.md – regler för Claude + "Var vi är nu"
 - SALONIX-MASTER-CHECKPOINT.md – den här filen
 - SALONIX-KARTA.md – trådarna mellan filerna + testlista efter ändringar
+- sql/lansering-tom-studio-m.sql – tömmer Studio M (körs SIST före lansering)
 
 Filer som INTE används längre (ändra inte, ta inte bort utan att fråga):
 app/salon-x-old, app/salon-y-old, app/salon-z-old,
@@ -663,6 +664,7 @@ KLART i punkt 11 – databasstädning (7 oktober):
 - Ägarens beslut: vid lansering finns bara Studio M med namn, naslovna
   slika, adress, telefon, Instagram, Facebook. Koden ligger i
   sql/lansering-tom-studio-m.sql och körs EFTER punkt 13.
+- Git: f2cae18 (lanseringskoden + dokumenten).
 
 KLART i punkt 10 – säkerhet (7 oktober), allt testat av ägaren:
 a) Supabase-mejlet: "rls_disabled_in_public" – 11 tabeller utan RLS,
