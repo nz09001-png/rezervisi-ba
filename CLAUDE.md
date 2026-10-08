@@ -84,8 +84,12 @@ Filen `npm` i rotmappen är skräp – ta inte bort den utan att fråga.
   - Karta (knappen "Karta"): `components/SalonMap.tsx`, Leaflet + OpenStreetMap.
   - Sidfot med logga och © Salonix.
   - Kategoripanelen (☰): små ikoner utan cirklar, samma på mobil och desktop.
-- **Punkt 11 – databasstädning KLAR (7 oktober).** Nästa: **punkt 12 – deploy**
-  (fråga ägaren innan start). Bara Studio M Exclusive finns kvar. Som SISTA steg
+- **TESTPERIOD till vintern (beslut 8 oktober).** Punkt 12a–12b klara: sajten ligger på
+  https://rezervisi-ba-alpha.vercel.app (ingen lansering). Ägaren sköter Studio M själv och
+  kompisar testar. Fel rättas en i taget. Nästa i koden: **fynd 5** (se checkpoint avsnitt 14).
+  Ny version ut: jobba i `termini-redesign`, kör `npm run build`, sedan
+  `git checkout main && git merge --ff-only termini-redesign && git push origin main && git checkout termini-redesign`.
+- **Punkt 11 – databasstädning KLAR (7 oktober). Bara Studio M Exclusive finns kvar. Som SISTA steg
   före lansering (efter punkt 13) körs `sql/lansering-tom-studio-m.sql`, som tömmer
   Studio M (kvar: namn, naslovna slika, adress, telefon, Instagram, Facebook).
 - **Punkt 10 – säkerhet KLAR (7 oktober).** Detaljer: `SALONIX-MASTER-CHECKPOINT.md`
@@ -189,7 +193,7 @@ Filen `npm` i rotmappen är skräp – ta inte bort den utan att fråga.
   - `/cancel` (6 oktober): vinröd bakgrund, vitt kort utan logga och utan
     bokningens uppgifter, "Otkaži rezervaciju" med röd ram, "Da, otkaži" /
     "Ne, zadrži rezervaciju", grå bock + "Rezervišite novi termin" när klart.
-- **Nästa: punkt 12 – deploy till Vercel.** Fråga ägaren innan start, en sak i taget.
+- **Nästa: fynd 5, sedan testernas fel.** Fråga ägaren innan start, en sak i taget.
   Fråga alltid innan en riktig testbokning skapas. När admin är inloggad i
   webbläsarpanelen: testa kundsidor i en egen flik.
 - Ägaren vill se FLERA alternativ som bilder (mobil + desktop) och välja; enkelt

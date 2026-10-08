@@ -1,6 +1,6 @@
 ============================================================
 SALONIX – MASTER CHECKPOINT / PROJEKTSAMMANFATTNING
-Senast uppdaterad: 7 oktober 2026
+Senast uppdaterad: 8 oktober 2026
 ============================================================
 
 VIKTIGT TILL NÄSTA CHATT:
@@ -9,11 +9,22 @@ Punkt 1–7 i lanseringsplanen är KLARA och FRYSTA.
 PUNKT 8 (Design/UX-kontroll av hela Salonix) är KLAR (6 oktober).
 PUNKT 9 (Full QA) är KLAR (6–7 oktober).
 PUNKT 10 (Säkerhet) är KLAR (7 oktober).
-PUNKT 11 (Databasstädning) är KLAR (7 oktober). Se avsnitt 14.
-NÄSTA: PUNKT 12 – deploy till Vercel. Fråga ägaren innan start.
+PUNKT 11 (Databasstädning) är KLAR (7 oktober).
+PUNKT 12 (Deploy) PÅGÅR: 12a + 12b KLARA (8 oktober). Se avsnitt 14.
+NU: TESTPERIOD FRAM TILL VINTERN (ägarens beslut 8 oktober):
+- Sajten ligger kvar på https://rezervisi-ba-alpha.vercel.app (okänd
+  adress, ingen lansering). Ägaren sköter Studio M själv i admin så att
+  det ser äkta ut, och kompisar testar att boka.
+- Studio M:s ägare har godkänt att salongens namn och telefonnummer
+  används under testet.
+- Fel och idéer samlas i en lista (t.ex. Anteckningar) och rättas en i
+  taget i nästa chattar. Ingen brådska – allt ska vara klart till vintern.
+- Lansering med salonix.ba sker först efter testperioden.
+NÄSTA I KODEN: fynd 5 (ägarens val A, se avsnitt 12 och 14).
 - Punkt 11: bara Studio M Exclusive finns kvar. Testsalonger, salon-y,
-  salon-z och alla andra salongers bokningar är raderade. Studio M töms
-  helt som SISTA steg före lansering (sql/lansering-tom-studio-m.sql).
+  salon-z och alla andra salongers bokningar är raderade. Planen var att
+  tömma Studio M före lansering (sql/lansering-tom-studio-m.sql) – ompröva
+  efter testperioden.
 - Punkt 10: gamla /admin borttagen, admin loggar in med Supabase Auth
   (e-post + lösenord, överlever omladdning), RLS på ALLA tabeller +
   bildlagringen, bokningar via säkra databasfunktioner, kundens
@@ -55,7 +66,7 @@ en dag.
 - Leaflet + react-leaflet + OpenStreetMap (karta på startsidan)
 - libphonenumber-js (telefonkontroll), react-datepicker, react-easy-crop (admin)
 - Git/GitHub, VS Code, Terminal
-- Planerad hosting: Vercel
+- Hosting: Vercel (projekt rezervisi-ba, sajten på rezervisi-ba-alpha.vercel.app)
 - Kodassistent: Claude Code i Claude-appen (ändrar filer direkt, men frågar
   först). Claude har en egen webbläsarpanel i appen där den tar skärmbilder
   på mobil och desktop.
@@ -268,7 +279,7 @@ Dokument i rotmappen:
 - CLAUDE.md – regler för Claude + "Var vi är nu"
 - SALONIX-MASTER-CHECKPOINT.md – den här filen
 - SALONIX-KARTA.md – trådarna mellan filerna + testlista efter ändringar
-- sql/lansering-tom-studio-m.sql – tömmer Studio M (körs SIST före lansering)
+- sql/lansering-tom-studio-m.sql – tömmer Studio M (planerad före lansering – ompröva)
 
 Borttagna gamla sidor: app/admin/page.tsx (punkt 10) och app/booking,
 app/salon-*-old, app/admin/salon-*-old (punkt 12, de hade gamla lösenord
@@ -536,8 +547,9 @@ Punkt 11 (7 okt): 38 testsalonger, salon-y, salon-z, 207 bokningar
 (194 "Barber House Sarajevo" + 13 från salon-y/z) och tabellen
 available_times_backup_before_barbers är RADERADE.
 Studio M har kvar sina testdata (27 bokningar, 17 tjänster, 4 personer,
-lediga tider) för testerna i punkt 12–13. Allt töms före lansering med
-sql/lansering-tom-studio-m.sql (se avsnitt 12).
+lediga tider). Under testperioden sköter ägaren Studio M själv och
+kompisar testbokar. Tömning före lansering (sql/lansering-tom-studio-m.sql)
+ska omprövas efter testperioden (se avsnitt 12).
 Testtjänster i Studio M som är bra för QA: "sisanje test A" (30 min,
 20 KM), "test dva" (60 min), "testetstetst" (120 min: 30 jobb, 60 paus,
 30 jobb, längd dold för kunden).
@@ -558,7 +570,7 @@ Supabase Auth: en användare (ägarens iCloud) kopplad till Studio M.
 9. Full QA inkl. edge cases .......... ✅ KLAR (7 oktober)
 10. Säkerhet ....................... ✅ KLAR (7 oktober)
 11. Databasstädning ................ ✅ KLAR (7 oktober)
-12. Deploy till Vercel + salonix.ba .. ⬜
+12. Deploy till Vercel + salonix.ba .. 🟡 12a–12b KLARA, domän väntar
 13. Slutligt smoke test i produktion . ⬜
 
 ============================================================
@@ -583,13 +595,23 @@ Kvar efter punkt 10 (säkerhet):
   create_booking/cancel_booking senare.
 - Personuppgifter: Bosniens lag om personuppgifter. Bekräftelse-sms/mejl
   = servicemeddelande; reklam kräver samtycke.
-SISTA STEGET FÖRE LANSERING (efter punkt 13):
+SISTA STEGET FÖRE LANSERING (planerat 7 okt – OMPRÖVA efter testperioden):
 - Kör sql/lansering-tom-studio-m.sql i Supabase. Den tömmer Studio M:
   kvar blir bara salongen med namn, naslovna slika, adress, telefon,
   Instagram och Facebook (+ stad, startsidans kategorier, koordinater
   och inloggning). Ägarens beslut 7 okt: salongens admin bygger själv
   upp tjänster, personal, tider, beskrivning och öppettider.
 - Bildfilerna från galleriet ligger kvar i Storage (syns inte).
+Testperioden (8 oktober → vinter):
+- Mejl: Resend är i TESTLÄGE → bara ägarens iCloud får mejl. Kompisar
+  som bokar får INGET mejl och ingen avbokningslänk (de kan avboka via
+  ägaren i admin). Ägarens val A: rätta fynd 5 nu så att /uspjesno inte
+  påstår att mejl skickats när det misslyckats. Riktiga mejl först när
+  salonix.ba är kopplad till Resend.
+- Admin-inloggningen är ägarens iCloud (ägaren sköter Studio M själv).
+- sql/lansering-tom-studio-m.sql: ompröva före lansering – ägaren fyller
+  nu i Studio M på riktigt under testperioden.
+- Ny version ut: se "PUBLICERA NY VERSION" i avsnitt 14.
 Punkt 12 (lansering):
 - ✅ Bygget rättat (7 okt): "npm run build" går igenom lokalt efter
   Suspense-ramar (layout.tsx) i /podaci, /potvrda, /uspjesno, /cancel.
@@ -597,9 +619,9 @@ Punkt 12 (lansering):
 - Fynd 5 (QA): /uspjesno säger "Potvrda rezervacije je poslana na email."
   även om mejlet misslyckades (/api/send-email svarar alltid 200, Resends
   svar läses inte). I Resends testläge når mejl BARA ägarens iCloud – en
-  riktig kund får inget mejl men sidan säger att det skickats. Rättas
-  samtidigt som salonix.ba kopplas till Resend: /potvrda läser svaret och
-  /uspjesno visar annan text vid fel (ägarens val: alternativ B).
+  riktig kund får inget mejl men sidan säger att det skickats. Ägarens
+  val 8 okt: rättas NU (före domänen): /potvrda läser svaret och
+  /uspjesno visar annan text vid fel.
 - Avbokningslänken i mejlet går till NEXT_PUBLIC_SITE_URL, annars
   localhost:3000 – sätt NEXT_PUBLIC_SITE_URL=https://salonix.ba på Vercel.
 - Välj fliknamn och länktext per salongssida (Google/WhatsApp/Viber):
@@ -655,7 +677,7 @@ Allmänt:
   ("Pauza 11:20–12:00 · Za vrijeme pauze: Ajdin Z")
 
 ============================================================
-14. NÄSTA STEG – PUNKT 12 (DEPLOY). PUNKT 11 ÄR KLAR
+14. NÄSTA STEG – TESTPERIOD + FYND 5. PUNKT 12a–12b KLARA
 ============================================================
 KLART i punkt 11 – databasstädning (7 oktober):
 - 38 testsalonger raderade (de var tomma).
@@ -665,7 +687,8 @@ KLART i punkt 11 – databasstädning (7 oktober):
 - Tabellen available_times_backup_before_barbers borttagen.
 - Ägarens beslut: vid lansering finns bara Studio M med namn, naslovna
   slika, adress, telefon, Instagram, Facebook. Koden ligger i
-  sql/lansering-tom-studio-m.sql och körs EFTER punkt 13.
+  sql/lansering-tom-studio-m.sql (körs efter punkt 13 – ompröva efter
+  testperioden, se avsnitt 12).
 - Git: f2cae18 (lanseringskoden + dokumenten).
 
 KLART i punkt 10 – säkerhet (7 oktober), allt testat av ägaren:
@@ -808,10 +831,8 @@ PÅGÅR – punkt 12 (deploy), startad 7 oktober:
   utan företag → registrera som privatperson hos en registrar från
   nic.ba (OUticu/registrari). Fråga om handlingar, pris och om DNS kan
   ändras själv. Kundmejl (Resend) kräver domänen → lansering väntar på den.
-- Vercel-projektet heter troligen "rezervisi-ba" (kopplat till GitHub).
-  Ägaren vet inte mer. Branchen termini-redesign ger bara förhandsbyggen
-  – produktion byggs från main (beslut om sammanslagning senare).
-
+- Grenen termini-redesign ger förhandsbyggen (Preview, låsta bakom
+  Vercel-inloggning). Produktion byggs från main.
 - ✅ 12b Vercel (8 oktober): projektet "rezervisi-ba" (plan Hobby).
   Environment Variables (Production + Preview): RESEND_API_KEY (Secret),
   NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -832,15 +853,33 @@ PÅGÅR – punkt 12 (deploy), startad 7 oktober:
 - Före lansering: uppgradera Vercel till Pro (Hobby får inte användas
   kommersiellt) och slå på 2FA på Vercel-kontot.
 
+IDÉDISKUSSION 8 oktober (beslut):
+- Studio M:s riktiga ägare kan inte testa förrän i vinter. Ägaren har
+  ingen brådska. Plan: testperiod på vercel.app-adressen (se överst).
+- Pilot-idéer till senare: korta videor på bosniska för salonger,
+  videosamtal vid start, support via WhatsApp/Viber, gratis 3–6 mån för
+  pilotsalonger, lansera när 5–10 salonger finns i en stad.
+- App i App Store/Google Play diskuterades: Claudes råd är att INTE
+  bygga en egen app nu. Bättre: webbapp (PWA) för salongerna – ikon på
+  hemskärmen + push-notis vid ny bokning, samma kod. Ej beslutat.
+- Saknas i planen: juridiska texter på bosniska (Uslovi korištenja,
+  Politika privatnosti), "Zaboravili ste lozinku?", "Prvi koraci" i
+  admin, demosalong, ev. företag i BiH.
+
 NÄSTA – I DEN HÄR ORDNINGEN:
-1. PUNKT 12 – resten (fråga ägaren innan start, en sak i taget):
-   12c salonix.ba (när köpt) → Vercel Domains + byt NEXT_PUBLIC_SITE_URL,
-   12d Resend-domän (kräver salonix.ba) + fynd 5 (kan göras före),
-   12e MapTiler, solarijum.jpg, fliknamn per salong, eget Auth-konto
-   för Studio M:s admin.
+1. Fynd 5 (ägarens val A): /potvrda läser svaret från /api/send-email,
+   /uspjesno visar annan text om mejlet misslyckades (send-email svarar
+   i dag alltid 200 och Resends svar läses inte). Rör den frysta mejl-
+   filen och bokningsflödet – visa plan först.
+2. Rätta det som testerna hittar (ägarens lista), en sak i taget.
+3. 12e när det passar: MapTiler, solarijum.jpg, fliknamn per salong.
+4. Före lansering (vinter): köp salonix.ba (privatperson via nic.ba-
+   registrar) → 12c Vercel Domains + NEXT_PUBLIC_SITE_URL, 12d Resend-
+   domän, Vercel Pro + 2FA, eget Auth-konto för Studio M:s admin,
+   punkt 13 slutligt test, ompröva sql/lansering-tom-studio-m.sql.
 2. Punkt 13: slutligt test i produktion.
 3. Sist: kör sql/lansering-tom-studio-m.sql (tömmer Studio M).
 
 ============================================================
-SLUT PÅ MASTER CHECKPOINT – 7 OKTOBER 2026
+SLUT PÅ MASTER CHECKPOINT – 8 OKTOBER 2026
 ============================================================
