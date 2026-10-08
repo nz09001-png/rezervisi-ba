@@ -812,13 +812,30 @@ PÅGÅR – punkt 12 (deploy), startad 7 oktober:
   Ägaren vet inte mer. Branchen termini-redesign ger bara förhandsbyggen
   – produktion byggs från main (beslut om sammanslagning senare).
 
+- ✅ 12b Vercel (8 oktober): projektet "rezervisi-ba" (plan Hobby).
+  Environment Variables (Production + Preview): RESEND_API_KEY (Secret),
+  NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  NEXT_PUBLIC_SITE_URL = https://rezervisi-ba-alpha.vercel.app (byts till
+  https://salonix.ba när domänen finns). Alla tidigare Vercel-fel berodde
+  på saknade nycklar ("supabaseUrl is required").
+  main flyttad fram till termini-redesign (78174a1). Den nya Salonix
+  ligger på https://rezervisi-ba-alpha.vercel.app (okänd adress, INTE
+  lansering – ägarens val: lansera först med salonix.ba).
+  Testat där: startsida, salongssida, /times, admin, riktig bokning,
+  mejl, avbokningslänk (fungerar på internet), avbokning.
+- PUBLICERA NY VERSION: jobba i termini-redesign, kör npm run build,
+  sedan i Terminal:
+  git checkout main && git merge --ff-only termini-redesign && git push origin main && git checkout termini-redesign
+  Vercel bygger automatiskt. Misslyckas bygget på "Google Fonts"/
+  Montserrat är det tillfälligt → Redeploy. "Instant Rollback" på
+  Vercel tar tillbaka föregående version.
+- Före lansering: uppgradera Vercel till Pro (Hobby får inte användas
+  kommersiellt) och slå på 2FA på Vercel-kontot.
+
 NÄSTA – I DEN HÄR ORDNINGEN:
-1. PUNKT 12 – deploy (fråga ägaren innan start, en sak i taget):
-   12b Vercel: ägaren loggar in på vercel.com (Continue with GitHub),
-   öppnar projektet rezervisi-ba och skickar skärmbild → nycklar
-   (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY,
-   RESEND_API_KEY, NEXT_PUBLIC_SITE_URL) → sajten på .vercel.app.
-   12c salonix.ba (när köpt), 12d Resend-domän + fynd 5,
+1. PUNKT 12 – resten (fråga ägaren innan start, en sak i taget):
+   12c salonix.ba (när köpt) → Vercel Domains + byt NEXT_PUBLIC_SITE_URL,
+   12d Resend-domän (kräver salonix.ba) + fynd 5 (kan göras före),
    12e MapTiler, solarijum.jpg, fliknamn per salong, eget Auth-konto
    för Studio M:s admin.
 2. Punkt 13: slutligt test i produktion.
