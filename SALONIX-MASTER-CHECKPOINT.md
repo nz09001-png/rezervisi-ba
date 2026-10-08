@@ -872,6 +872,13 @@ NÄSTA – I DEN HÄR ORDNINGEN:
    i dag alltid 200 och Resends svar läses inte). Rör den frysta mejl-
    filen och bokningsflödet – visa plan först.
 2. Rätta det som testerna hittar (ägarens lista), en sak i taget.
+   FYND T1 (9 okt): kompis iPhone 11 – startsidan fastnar på
+   "Učitavanje...", stadslistan visar bara "Svi gradovi" (salongerna
+   laddas aldrig). Trolig orsak: iOS äldre än 16.4 (Next.js 16 stödjer
+   bara Safari 16.4+). Nästa gång (ägaren sitter med kompisen): kolla
+   Inställningar → Allmänt → Om → iOS-version. Under 16.4 → snabbt:
+   uppdatera iOS; långsiktigt: ev. browserslist/polyfills i
+   package.json (kompisen testar). 16.4 eller högre → leta vidare.
 3. 12e när det passar: MapTiler, solarijum.jpg, fliknamn per salong.
 4. Före lansering (vinter): köp salonix.ba (privatperson via nic.ba-
    registrar) → 12c Vercel Domains + NEXT_PUBLIC_SITE_URL, 12d Resend-
